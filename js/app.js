@@ -7,7 +7,7 @@ import { renderSquad } from './ui/squadUI.js';
 import { renderTransfers } from './ui/transfersUI.js';
 import { renderYouth } from './ui/youthUI.js';
 import { renderTrophyRoom } from './ui/trophyUI.js';
-import { renderMinigames } from './ui/minigamesUI.js';
+import { renderTraining } from './ui/trainingUI.js';
 import { renderMatch } from './ui/matchUI.js';
 import { renderContractView } from './ui/contractUI.js';
 import { ContractEngine } from './engine/contracts.js';
@@ -59,7 +59,7 @@ class App {
           <a class="nav-item" data-view="squad">📋 Plantilla & Tácticas</a>
           <a class="nav-item" data-view="transfers">📝 Mercado Fichajes</a>
           <a class="nav-item" data-view="youth">🌱 Cantera</a>
-          <a class="nav-item" data-view="minigames">🎮 Minijuegos</a>
+          <a class="nav-item" data-view="training">🧠 Preparación Táctica</a>
           <a class="nav-item" data-view="trophies">🏆 Palmarés</a>
           <a class="nav-item mt-4" id="btnResetCareer" style="color: var(--accent-red);">🔄 Nueva Carrera</a>
         </aside>
@@ -172,8 +172,8 @@ class App {
       renderTransfers(this.mainContainer);
     } else if (viewName === 'youth') {
       renderYouth(this.mainContainer);
-    } else if (viewName === 'minigames') {
-      renderMinigames(this.mainContainer, (v, p) => this.navigateTo(v, p));
+    } else if (viewName === 'training') {
+      renderTraining(this.mainContainer, (v, p) => this.navigateTo(v, p));
     } else if (viewName === 'trophies') {
       renderTrophyRoom(this.mainContainer);
     } else if (viewName === 'match') {

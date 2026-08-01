@@ -2,7 +2,6 @@
 
 import { db } from '../data/db.js';
 import { MatchEngine } from '../engine/matchEngine.js';
-import { EventsEngine } from '../engine/eventsEngine.js';
 import { TrophyRoomEngine } from '../engine/trophyRoom.js';
 import { CompetitionsEngine } from '../engine/competitionsEngine.js';
 import { TransferEngine } from '../engine/transfers.js';
@@ -34,29 +33,29 @@ export function renderDashboard(container, navigateTo) {
         </div>
 
         <div class="match-vs-container">
-          <div class="team-box">
-            <div class="team-badge-circle" style="background: linear-gradient(135deg, ${userTeam.colors[0]}, ${userTeam.colors[1]});">
+          <div class="team-box text-center">
+            <div class="team-badge-circle" style="background: linear-gradient(135deg, ${userTeam.colors[0]}, ${userTeam.colors[1]}); width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; margin: 0 auto 6px auto;">
               ${userTeam.short}
             </div>
             <h4>${userTeam.name}</h4>
-            <span class="team-ovr">OVR: ${userTeam.overall}</span>
+            <span class="team-ovr text-sub">OVR: ${userTeam.overall}</span>
           </div>
 
-          <div class="vs-divider">
-            <span class="vs-text">VS</span>
-            <span class="stadium-subtext">🏟️ ${userTeam.stadium}</span>
+          <div class="vs-divider text-center">
+            <span class="vs-text" style="font-size: 1.6rem; font-weight: 900; color: var(--accent-cyan);">VS</span>
+            <span class="stadium-subtext text-sub d-block">🏟️ ${userTeam.stadium}</span>
           </div>
 
-          <div class="team-box">
-            <div class="team-badge-circle" style="background: linear-gradient(135deg, ${nextRival.colors[0]}, ${nextRival.colors[1]});">
+          <div class="team-box text-center">
+            <div class="team-badge-circle" style="background: linear-gradient(135deg, ${nextRival.colors[0]}, ${nextRival.colors[1]}); width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; margin: 0 auto 6px auto;">
               ${nextRival.short}
             </div>
             <h4>${nextRival.name}</h4>
-            <span class="team-ovr">OVR: ${nextRival.overall}</span>
+            <span class="team-ovr text-sub">OVR: ${nextRival.overall}</span>
           </div>
         </div>
 
-        <div class="match-actions">
+        <div class="match-actions mt-3">
           <button id="btnPlayMatch" class="btn-primary btn-large">⚽ JUGAR PARTIDO EN VIVO</button>
           <button id="btnSimBlock" class="btn-secondary">⏩ SIMULAR HASTA MITAD / FINAL</button>
         </div>
@@ -104,7 +103,7 @@ export function renderDashboard(container, navigateTo) {
             </thead>
             <tbody>
               ${topScorers.length === 0 ? `
-                <tr><td colspan="4" class="text-sub text-center">Sin goles registrados aún en la temporada ${seasonLabel}.</td></tr>
+                <tr><td colspan="4" class="text-sub text-center py-3">Sin goles registrados aún en la temporada ${seasonLabel}.</td></tr>
               ` : topScorers.slice(0, 8).map((s, idx) => `
                 <tr>
                   <td>${idx + 1}</td>
@@ -121,7 +120,7 @@ export function renderDashboard(container, navigateTo) {
 
     <!-- Modal de Parón Invernal / Final de Temporada -->
     <div id="seasonModal" class="modal-overlay hidden">
-      <div id="seasonModalContent" class="modal-card glass-panel"></div>
+      <div id="seasonModalContent" class="modal-card glass-panel text-center"></div>
     </div>
   `;
 
@@ -171,6 +170,7 @@ export function renderDashboard(container, navigateTo) {
 
       // PROCESAR COMPETICIÓN CONTINENTAL O COPA NACIONAL (SEMANAS 6, 12, 18, 24, 30, 36)
       CompetitionsEngine.processCupWeek(gameState.week);
+      CompetitionsEngine.processNationalCupWeek(gameState.week);
 
       gameState.week++;
     }
@@ -179,7 +179,7 @@ export function renderDashboard(container, navigateTo) {
     db.saveGame();
 
     if (gameState.week === 19) {
-      TransferEngine.resetWindowLocks(); // Reiniciar negociaciones para la ventana de invierno
+      TransferEngine.resetWindowLocks();
       showMidSeasonModal();
     } else if (gameState.week >= gameState.maxWeeks) {
       showEndOfSeasonModal();
@@ -194,17 +194,17 @@ export function renderDashboard(container, navigateTo) {
     modal.classList.remove('hidden');
 
     content.innerHTML = `
-      <h3>❄️ Parón de Mitad de Temporada ${seasonLabel} (Semana 19)</h3>
-      <p class="text-sub">¡Ha comenzado el receso invernal! La <strong>Ventana de Fichajes de Invierno</strong> está abierta. Las negociaciones bloqueadas previamente han sido liberadas.</p>
+      <h2>❄️ Parón de Mitad de Temporada ${seasonLabel} (Semana 19)</h2>
+      <p class="text-sub mt-2">¡Ha comenzado el receso invernal! La <strong>Ventana de Fichajes de Invierno</strong> está abierta. Las negociaciones bloqueadas previamente han sido liberadas.</p>
       
       <div class="mt-3">
         <h4>📊 Tu Posición en la Liga: #${gameState.standings.findIndex(s => s.teamId === userTeam.id) + 1}</h4>
-        <p>Puntos: <strong>${gameState.standings.find(s => s.teamId === userTeam.id)?.points || 0}</strong></p>
+        <p>Puntos Acumulados: <strong class="text-highlight">${gameState.standings.find(s => s.teamId === userTeam.id)?.points || 0} PTS</strong></p>
       </div>
 
-      <div class="modal-actions mt-4">
+      <div class="modal-actions mt-4" style="display: flex; gap: 14px; justify-content: center;">
         <button id="btnGoTransfersModal" class="btn-primary">📝 IR AL MERCADO DE INVIERNO</button>
-        <button id="btnCloseSeasonModal" class="btn-secondary">Continuar Temporada</button>
+        <button id="btnCloseSeasonModal" class="btn-secondary">CONTINUAR TEMPORADA</button>
       </div>
     `;
 
@@ -250,16 +250,16 @@ export function renderDashboard(container, navigateTo) {
       if (tipBtn) tipBtn.classList.remove('hidden');
 
       content.innerHTML = `
-        <h3>🏆 ¡CARRERA PROFESIONAL FINALIZADA (25 AÑOS)!</h3>
-        <p class="text-sub">Has completado tu trayectoria histórica como Director Técnico (2026 - 2051).</p>
+        <h2>🏆 ¡CARRERA PROFESIONAL FINALIZADA (25 AÑOS)!</h2>
+        <p class="text-sub mt-2">Has completado tu trayectoria histórica como Director Técnico (2026 - 2051).</p>
         
         <div class="mt-3">
-          <p>Títulos Conquistados: <strong class="text-highlight">${gameState.trophies ? gameState.trophies.length : 0}</strong></p>
+          <p>Títulos Conquistados: <strong class="text-highlight">${gameState.trophies ? gameState.trophies.length : 0} Títulos</strong></p>
           <p>Premio de Fin de Carrera: <strong class="text-highlight">+€${(prizeMoney / 1000000).toFixed(1)}M</strong></p>
         </div>
 
         <div class="modal-actions mt-4">
-          <button id="btnFinish25Years" class="btn-primary">📜 VER PALMARÉS FINAL DE MI CARRERA</button>
+          <button id="btnFinish25Years" class="btn-primary btn-large">📜 VER PALMARÉS FINAL DE MI CARRERA</button>
         </div>
       `;
 
@@ -271,16 +271,16 @@ export function renderDashboard(container, navigateTo) {
     }
 
     content.innerHTML = `
-      <h3>🏁 Final de la Temporada ${seasonLabel}</h3>
-      <p class="text-sub">${isChampion ? '🏆 ¡FELICIDADES! ¡ERES EL CAMPEÓN DE LA LIGA!' : `Campeón de la liga: <strong>${champion.name}</strong>`}</p>
+      <h2>🏁 Final de la Temporada ${seasonLabel}</h2>
+      <p class="text-sub mt-2">${isChampion ? '🏆 ¡FELICIDADES! ¡ERES EL CAMPEÓN OFICIAL DE LA LIGA!' : `Campeón de la liga: <strong>${champion.name}</strong>`}</p>
       
       <div class="mt-3">
-        <p class="text-highlight">💰 Premio por posición (#${userRank}): +€${(prizeMoney / 1000000).toFixed(1)}M al presupuesto de traspasos.</p>
-        <p>Al avanzar a la siguiente temporada (${gameState.season + 1}/${gameState.season + 2}), las medias de tus jugadores evolucionarán según su edad y minutos disputados.</p>
+        <p class="text-highlight">💰 Premio por posición (#${userRank}): +€${(prizeMoney / 1000000).toFixed(1)}M ingresados al presupuesto.</p>
+        <p class="text-sub mt-1">Al avanzar a la temporada ${gameState.season + 1}/${gameState.season + 2}, las medias de tus jugadores evolucionarán según su edad y partidos disputados.</p>
       </div>
 
       <div class="modal-actions mt-4">
-        <button id="btnAdvanceSeason" class="btn-primary">🚀 EVOLUCIONAR PLANTILLA & TEMPORADA ${gameState.season + 1}/${gameState.season + 2}</button>
+        <button id="btnAdvanceSeason" class="btn-primary btn-large">🚀 EVOLUCIONAR PLANTILLA & TEMPORADA ${gameState.season + 1}/${gameState.season + 2}</button>
       </div>
     `;
 
