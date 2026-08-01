@@ -1,6 +1,7 @@
-// Gestor de Base de Datos, Reset de Temporada, Estadísticas y Evolución de Jugadores
+// Gestor de Base de Datos, Reset de Temporada, Estadísticas, Evolución y Trigger de Actualización Global
 
 import { generateTeamPlayers, calculatePositionOvr } from './teamData.js';
+import { TransferEngine } from '../engine/transfers.js';
 
 class DatabaseManager {
   constructor() {
@@ -82,6 +83,7 @@ class DatabaseManager {
       week: 1,
       maxWeeks: 38,
       isCareerFinished: false,
+      failedTransferPlayers: [],
       standings: leagueStandings,
       topScorers: [],
       trophies: [],
@@ -147,8 +149,8 @@ class DatabaseManager {
 
         p.overall = calculatePositionOvr(p.pos, p.pac, p.sho, p.pas, p.dri, p.def, p.phy);
         p.age++;
-        p.appearances = 0; // Reiniciar apariciones para la nueva temporada
-        p.seasonGoals = 0; // Reiniciar goles de temporada
+        p.appearances = 0;
+        p.seasonGoals = 0;
       });
     }
 
@@ -166,15 +168,16 @@ class DatabaseManager {
       });
     }
 
-    // 3. REINICIAR TABLA DE GOLEADORES (PICHICHI)
+    // 3. REINICIAR TABLA DE GOLEADORES Y BLOQUEOS DE FICHAJES
     this.gameState.topScorers = [];
+    TransferEngine.resetWindowLocks();
 
     // 4. Avanzar año y semana
     this.gameState.season++;
     this.gameState.week = 1;
     this.gameState.eventsLog.unshift({
       date: `Temporada ${this.gameState.season}`,
-      text: `🔄 ¡Nueva Temporada ${this.gameState.season}! Se han reiniciado las posiciones, victorias y tabla de goleadores. Las medias de los jugadores se actualizaron.`
+      text: `🔄 ¡Nueva Temporada ${this.gameState.season}/${this.gameState.season + 1}! Se han reiniciado las posiciones, victorias y mercado de fichajes.`
     });
 
     this.saveGame();
@@ -187,6 +190,11 @@ class DatabaseManager {
       players: this.players
     };
     localStorage.setItem('entrenador_leyenda_save', JSON.stringify(saveObj));
+
+    // Disparar sincronización instantánea de la interfaz superior si existe el actualizador
+    if (typeof window !== 'undefined' && typeof window.updateGlobalUI === 'function') {
+      window.updateGlobalUI();
+    }
   }
 
   loadGame() {

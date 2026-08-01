@@ -212,12 +212,12 @@
 .stat-box .lbl { font-size: 0.75rem; color: var(--text-sub); font-weight: 700; }
 .stat-box .val { font-weight: 800; font-size: 1.05rem; }
 
-/* Modal */
+/* Modal de Negociación por Pasos Estilo EA FC */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(4, 7, 12, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(4, 7, 12, 0.88);
+  backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -225,36 +225,46 @@
 }
 
 .modal-card {
-  width: 90%;
-  max-width: 520px;
-  border: 1px solid rgba(0, 255, 179, 0.3);
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8);
+  width: 92%;
+  max-width: 580px;
+  border: 1px solid rgba(0, 255, 179, 0.35);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+  padding: 26px;
+  border-radius: 18px;
 }
 
-/* Probability Bar */
+/* Barra de Probabilidad sin Recortes */
 .prob-container {
   margin-top: 18px;
 }
 
 .prob-bar-track {
-  height: 28px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 14px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
   overflow: hidden;
   margin-top: 8px;
+  position: relative;
 }
 
 .prob-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
-  color: #040810;
-  font-weight: 900;
-  font-size: 0.9rem;
+  transition: width 0.35s ease;
+}
+
+.prob-bar-text {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: width 0.35s ease;
+  font-weight: 900;
+  font-size: 0.88rem;
+  color: #ffffff;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
 }
 
 /* Scoreboard Panel */

@@ -1,4 +1,4 @@
-// Aplicación Principal, Ruteador de Vistas, Formato de Temporada 2026/2027 y Sincronización de Presupuesto
+// Aplicación Principal, Ruteador de Vistas y Sincronización Global Instantánea de Estado
 
 import { db } from './data/db.js';
 import { renderNewCareer } from './ui/newCareerUI.js';
@@ -43,8 +43,8 @@ class App {
         <div class="brand-logo">⚽ ENTRENADOR LEYENDA</div>
 
         <div class="manager-status-bar" id="topStatusBar">
-          <div class="status-pill">DT: <strong>${db.gameState.managerName}</strong></div>
-          <div class="status-pill">Club: <strong>${userTeam.name}</strong></div>
+          <div class="status-pill">DT: <strong id="topManagerDisplay">${db.gameState.managerName}</strong></div>
+          <div class="status-pill">Club: <strong id="topClubDisplay">${userTeam.name}</strong></div>
           <div class="status-pill">Presupuesto: <strong class="text-highlight" id="topBudgetDisplay">€${(db.gameState.budget / 1000000).toFixed(1)}M</strong></div>
           <div class="status-pill">Confianza Directiva: <strong class="text-highlight" id="topConfidenceDisplay">${contract.boardConfidence}%</strong></div>
           <div class="status-pill">Temporada: <strong id="topSeasonDisplay">${seasonLabel}</strong></div>
@@ -55,7 +55,7 @@ class App {
         <!-- Sidebar de Navegación -->
         <aside class="sidebar-nav">
           <a class="nav-item active" data-view="dashboard">🏠 Dashboard</a>
-          <a class="nav-item" data-view="contract">📜 Mi Contrato (${contract.yearsRemaining}a)</a>
+          <a class="nav-item" data-view="contract" id="navItemContract">📜 Mi Contrato (${contract.yearsRemaining}a)</a>
           <a class="nav-item" data-view="squad">📋 Plantilla & Tácticas</a>
           <a class="nav-item" data-view="transfers">📝 Mercado Fichajes</a>
           <a class="nav-item" data-view="youth">🌱 Cantera</a>
@@ -80,6 +80,9 @@ class App {
 
     this.mainContainer = document.getElementById('mainContent');
 
+    // Registrar actualizador global de UI
+    window.updateGlobalUI = () => this.updateTopStatusBar();
+
     // Tab Event Listeners
     document.querySelectorAll('.nav-item[data-view]').forEach(item => {
       item.addEventListener('click', (e) => {
@@ -102,22 +105,39 @@ class App {
   }
 
   /**
-   * Sincroniza la barra de estado superior (presupuesto dinámico, confianza, temporada 2026/2027)
+   * Sincronización instantánea de los 4 valores superiores (DT, Club, Presupuesto, Confianza Directiva y Temporada)
    */
   updateTopStatusBar() {
     if (!db.gameState) return;
+
+    // Recalcular KPIs y confianza de la directiva
+    const contract = ContractEngine.evaluatePerformance();
+
+    const mDisplay = document.getElementById('topManagerDisplay');
+    const cDisplay = document.getElementById('topClubDisplay');
     const bDisplay = document.getElementById('topBudgetDisplay');
-    const cDisplay = document.getElementById('topConfidenceDisplay');
+    const confDisplay = document.getElementById('topConfidenceDisplay');
     const sDisplay = document.getElementById('topSeasonDisplay');
+    const navContract = document.getElementById('navItemContract');
+
+    if (mDisplay) mDisplay.innerText = db.gameState.managerName || 'Director Técnico';
+    
+    const userTeam = db.teams[db.gameState.userTeamId];
+    if (cDisplay && userTeam) cDisplay.innerText = userTeam.name;
 
     if (bDisplay) bDisplay.innerText = `€${(db.gameState.budget / 1000000).toFixed(1)}M`;
     
-    if (cDisplay && db.gameState.contract) {
-      cDisplay.innerText = `${db.gameState.contract.boardConfidence}%`;
+    if (confDisplay && contract) {
+      confDisplay.innerText = `${contract.boardConfidence}%`;
+      confDisplay.style.color = contract.boardConfidence > 65 ? 'var(--accent-green)' : (contract.boardConfidence > 45 ? '#ffd700' : 'var(--accent-red)');
     }
 
     if (sDisplay) {
       sDisplay.innerText = `${db.gameState.season}/${db.gameState.season + 1}`;
+    }
+
+    if (navContract && contract) {
+      navContract.innerText = `📜 Mi Contrato (${contract.yearsRemaining}a)`;
     }
   }
 

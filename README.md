@@ -4,6 +4,14 @@ Entrenador Leyenda es un videojuego de gestion deportiva en HTML5 y JavaScript o
 
 ---
 
+## Jugar en Linea
+
+Puedes jugar directamente desde tu navegador en el siguiente enlace oficial del proyecto:
+
+**[https://jotagsdev.github.io/Modo-Manager-DT/](https://jotagsdev.github.io/Modo-Manager-DT/)**
+
+---
+
 ## Descripcion General del Juego
 
 En Entrenador Leyenda, asumes el rol de un entrenador principal al mando de un club profesional. A lo largo de tu trayectoria deberas gestionar el rendimiento en el terreno de juego, planificar la plantilla a corto y largo plazo, tomar decisiones financieras en el mercado de pases y cumplir con las expectativas planteadas por la directiva del equipo.
@@ -108,7 +116,9 @@ Entrenador leyenda/
 
 ---
 
-## Instrucciones de Ejecucion Local
+## Ejecución Local (Opcional)
+
+Si deseas ejecutar el proyecto localmente:
 
 1. Clona o descarga el repositorio en tu equipo local.
 2. Abre una terminal de comandos en la carpeta raiz del proyecto.
@@ -116,11 +126,7 @@ Entrenador leyenda/
    ```bash
    python -m http.server 8080
    ```
-4. Abre tu navegador web e ingresa a la direccion:
-   ```
-   http://localhost:8080
-   ```
-5. Comienza una nueva carrera seleccionando tu equipo preferido y gestiona tu club hacia la gloria deportiva.
+4. Abre tu navegador web e ingresa a `http://localhost:8080` o accede directamente a la version alojada en **[https://jotagsdev.github.io/Modo-Manager-DT/](https://jotagsdev.github.io/Modo-Manager-DT/)**.
 
 ---
 

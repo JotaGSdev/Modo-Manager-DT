@@ -1,4 +1,4 @@
-// Motor de Mercado de Fichajes y Negociaciones Limitar a 2 Ventanas por Temporada
+// Motor de Mercado de Fichajes y Negociaciones Estilo EA FC / FIFA por Pasos y Bloqueo de Ventana
 
 import { db } from '../data/db.js';
 import { ProbabilityEngine } from './probability.js';
@@ -9,7 +9,37 @@ export function isTransferWindowOpen(week) {
 
 export class TransferEngine {
   /**
-   * Obtiene todos los jugadores disponibles para fichar en el mercado
+   * Verifica si las negociaciones con un jugador están bloqueadas en la ventana actual
+   */
+  static isPlayerLocked(playerId) {
+    const gameState = db.gameState;
+    if (!gameState.failedTransferPlayers) gameState.failedTransferPlayers = [];
+    return gameState.failedTransferPlayers.includes(playerId);
+  }
+
+  /**
+   * Bloquea a un jugador por negociación fallida hasta la siguiente ventana
+   */
+  static lockPlayerForCurrentWindow(playerId) {
+    const gameState = db.gameState;
+    if (!gameState.failedTransferPlayers) gameState.failedTransferPlayers = [];
+    if (!gameState.failedTransferPlayers.includes(playerId)) {
+      gameState.failedTransferPlayers.push(playerId);
+    }
+    db.saveGame();
+  }
+
+  /**
+   * Resetea el bloqueo de negociaciones al abrir una nueva ventana (Semana 1 o Semana 19)
+   */
+  static resetWindowLocks() {
+    const gameState = db.gameState;
+    gameState.failedTransferPlayers = [];
+    db.saveGame();
+  }
+
+  /**
+   * Obtiene los jugadores disponibles en el mercado
    */
   static getMarketPlayers(filters = {}) {
     const market = [];
@@ -29,7 +59,8 @@ export class TransferEngine {
         if (match) {
           market.push({
             ...p,
-            teamName: db.teams[teamId]?.name || 'Club Libre'
+            teamName: db.teams[teamId]?.name || 'Club Libre',
+            isLocked: this.isPlayerLocked(p.id)
           });
         }
       });
@@ -39,70 +70,106 @@ export class TransferEngine {
   }
 
   /**
-   * Negocia el fichaje de un jugador respetando la ventana activa
+   * Evalúa la Oferta de Traspaso enviada al Club Vendedor (Paso 1)
    */
-  static submitOffer(player, transferFee, wageOffer) {
-    const userState = db.gameState;
+  static evaluateClubOffer(player, fee, sellOnPct = 0) {
+    const gameState = db.gameState;
 
-    // Verificar si la ventana de fichajes está abierta
-    if (!isTransferWindowOpen(userState.week)) {
-      return { success: false, reason: 'El mercado de fichajes se encuentra CERRADO. Solo se permite negociar en las semanas 1-4 (Verano) y 19-22 (Invierno).' };
+    if (!isTransferWindowOpen(gameState.week)) {
+      return { success: false, reason: 'El mercado de fichajes está cerrado.' };
     }
 
-    const userTeam = db.teams[userState.userTeamId];
-    const sellingTeam = db.teams[player.teamId] || { reputation: 70 };
+    if (this.isPlayerLocked(player.id)) {
+      return { success: false, reason: 'Las negociaciones con este jugador o club se han roto en esta ventana.' };
+    }
 
-    if (transferFee > userState.budget) {
+    if (fee > gameState.budget) {
       return { success: false, reason: 'Presupuesto de traspasos insuficiente.' };
     }
-    if (wageOffer > userState.wageBudget) {
+
+    // Ponderación de aceptación del club según valor de mercado y cláusulas
+    const minAcceptableFee = player.value * 0.95;
+    const bonusFromClause = (sellOnPct / 100) * player.value * 0.15;
+    const totalEffectiveOffer = fee + bonusFromClause;
+
+    if (totalEffectiveOffer >= minAcceptableFee) {
+      return {
+        success: true,
+        message: `¡ACUERDO CON EL CLUB! ${db.teams[player.teamId]?.name || 'El club'} ha aceptado la oferta de €${(fee / 1000000).toFixed(1)}M. Procediendo a acordar condiciones con el jugador.`
+      };
+    } else {
+      // Romper negociación para esta ventana estilo EA FC
+      this.lockPlayerForCurrentWindow(player.id);
+      return {
+        success: false,
+        breakNegotiation: true,
+        reason: `🔒 NEGOCIACIÓN ROTA: El club consideró la oferta insultante (€${(fee / 1000000).toFixed(1)}M vs €${(player.value / 1000000).toFixed(1)}M valor de mercado). Se han cerrado las conversaciones hasta la próxima ventana de fichajes.`
+      };
+    }
+  }
+
+  /**
+   * Evalúa el Contrato del Jugador y Representante (Paso 2)
+   */
+  static evaluateContractOffer(player, transferFee, role, contractYears, wage, signingBonus = 0) {
+    const gameState = db.gameState;
+
+    if (wage > gameState.wageBudget) {
       return { success: false, reason: 'Presupuesto salarial insuficiente.' };
     }
 
-    const tablePos = userState.standings.findIndex(s => s.teamId === userTeam.id) + 1;
-    const trophyCount = userState.trophies.length;
+    // Expectativas del jugador
+    const expectedWage = Math.round(player.salary * (player.overall >= 82 ? 1.25 : 1.10));
+    let score = 50;
 
-    const successProb = ProbabilityEngine.calculateTransferChance(
-      player, userTeam, sellingTeam, transferFee, wageOffer, tablePos || 5, trophyCount
-    );
+    // Rol en plantilla
+    if (role === 'Crucial' && player.overall >= 80) score += 20;
+    else if (role === 'Titular Habitual') score += 15;
+    else if (role === 'Rotación' && player.overall < 78) score += 10;
+    else if (role === 'Prospecto' && player.age <= 20) score += 15;
 
-    const rivalBid = ProbabilityEngine.generateRivalCounterOffer(player, transferFee);
+    // Salario
+    if (wage >= expectedWage) score += 30;
+    else if (wage >= expectedWage * 0.85) score += 15;
+    else score -= 25;
 
-    const roll = Math.floor(Math.random() * 100);
-    const isAccepted = roll < successProb && (!rivalBid || rivalBid.offerAmount <= transferFee * 1.15);
+    // Prima de fichaje
+    if (signingBonus >= player.value * 0.05) score += 15;
 
-    if (isAccepted) {
-      userState.budget -= transferFee;
-      userState.wageBudget -= wageOffer;
+    if (score >= 60) {
+      // ¡Fichaje Exitoso!
+      gameState.budget -= transferFee;
+      gameState.wageBudget -= wage;
 
       const sellerPlayers = db.getTeamPlayers(player.teamId);
       const idx = sellerPlayers.findIndex(p => p.id === player.id);
       if (idx !== -1) sellerPlayers.splice(idx, 1);
 
-      player.teamId = userTeam.id;
-      player.salary = wageOffer;
-      db.getTeamPlayers(userTeam.id).push(player);
+      player.teamId = gameState.userTeamId;
+      player.salary = wage;
+      player.contractYears = contractYears;
+      player.squadRole = role;
+
+      db.getTeamPlayers(gameState.userTeamId).push(player);
+
+      gameState.eventsLog.unshift({
+        date: `Semana ${gameState.week}`,
+        text: `📝 FICHAJE OFICIAL: ${player.name} se une al equipo firmando por ${contractYears} años con salario de €${(wage / 1000).toFixed(0)}K/sem.`
+      });
 
       db.saveGame();
 
       return {
         success: true,
-        chance: successProb,
-        message: `¡ACUERDO CERRADO! ${player.name} se une a ${userTeam.name} por €${(transferFee / 1000000).toFixed(1)}M.`
+        message: `¡FICHAJE COMPLETADO! ${player.name} estampó su firma en el contrato por ${contractYears} temporadas.`
       };
     } else {
-      let failMsg = `Oferta rechazada (${successProb}% de probabilidad). `;
-      if (rivalBid) {
-        failMsg += `${rivalBid.rivalName} ha superado tu oferta con €${(rivalBid.offerAmount / 1000000).toFixed(1)}M.`;
-      } else {
-        failMsg += `El club o el jugador exigían mejores condiciones económicas.`;
-      }
-
+      // Romper negociación estilo EA FC
+      this.lockPlayerForCurrentWindow(player.id);
       return {
         success: false,
-        chance: successProb,
-        rivalBid: rivalBid,
-        reason: failMsg
+        breakNegotiation: true,
+        reason: `🔒 NEGOCIACIÓN ROTA: El representante y el jugador rechazaron las condiciones de rol (${role}) o salario (€${(wage / 1000).toFixed(0)}K vs €${(expectedWage / 1000).toFixed(0)}K exigidos). No aceptarán más ofertas en esta ventana.`
       };
     }
   }

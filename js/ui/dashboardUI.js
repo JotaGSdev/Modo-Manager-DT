@@ -5,6 +5,7 @@ import { MatchEngine } from '../engine/matchEngine.js';
 import { EventsEngine } from '../engine/eventsEngine.js';
 import { TrophyRoomEngine } from '../engine/trophyRoom.js';
 import { CompetitionsEngine } from '../engine/competitionsEngine.js';
+import { TransferEngine } from '../engine/transfers.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
 export function renderDashboard(container, navigateTo) {
@@ -178,6 +179,7 @@ export function renderDashboard(container, navigateTo) {
     db.saveGame();
 
     if (gameState.week === 19) {
+      TransferEngine.resetWindowLocks(); // Reiniciar negociaciones para la ventana de invierno
       showMidSeasonModal();
     } else if (gameState.week >= gameState.maxWeeks) {
       showEndOfSeasonModal();
@@ -193,7 +195,7 @@ export function renderDashboard(container, navigateTo) {
 
     content.innerHTML = `
       <h3>❄️ Parón de Mitad de Temporada ${seasonLabel} (Semana 19)</h3>
-      <p class="text-sub">¡Ha comenzado el receso invernal! La <strong>Ventana de Fichajes de Invierno</strong> está abierta.</p>
+      <p class="text-sub">¡Ha comenzado el receso invernal! La <strong>Ventana de Fichajes de Invierno</strong> está abierta. Las negociaciones bloqueadas previamente han sido liberadas.</p>
       
       <div class="mt-3">
         <h4>📊 Tu Posición en la Liga: #${gameState.standings.findIndex(s => s.teamId === userTeam.id) + 1}</h4>
