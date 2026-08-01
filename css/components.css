@@ -369,3 +369,93 @@
     font-size: 0.82rem;
   }
 }
+
+/* --- ESTILOS DE CANTERA Y CAZATALENTOS --- */
+.scout-status-panel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 255, 179, 0.2);
+  flex-wrap: wrap;
+}
+
+.scout-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scout-badge {
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: var(--accent-green);
+}
+
+.scout-meta {
+  font-size: 0.85rem;
+  color: var(--text-sub);
+}
+
+.btn-upgrade {
+  background: linear-gradient(135deg, var(--accent-gold), #ff8800);
+  color: #000000;
+  font-weight: 900;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.btn-upgrade:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 136, 0, 0.4);
+}
+
+.region-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.btn-region {
+  background: linear-gradient(145deg, rgba(20, 30, 48, 0.9), rgba(12, 18, 30, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.btn-region:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 255, 179, 0.15);
+  transform: translateY(-2px);
+}
+
+.youth-card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-dismiss {
+  background: rgba(255, 42, 109, 0.2);
+  border: 1px solid var(--accent-red);
+  color: var(--accent-red);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.btn-dismiss:hover {
+  background: var(--accent-red);
+  color: #ffffff;
+}
+

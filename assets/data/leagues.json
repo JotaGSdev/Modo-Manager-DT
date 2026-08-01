@@ -7,64 +7,2588 @@
     "tier": 1,
     "reputation": 82,
     "teams": [
-      {"id": "aldosivi", "name": "Aldosivi", "short": "ALD", "budget": 2600000, "wageBudget": 40000, "reputation": 66, "overall": 66, "colors": ["#006633", "#ffcc00"], "stadium": "José María Minella"},
-      {"id": "argentinos", "name": "Argentinos Juniors", "short": "ARG", "budget": 6000000, "wageBudget": 85000, "reputation": 73, "overall": 72, "colors": ["#cc0000", "#ffffff"], "stadium": "Diego Armando Maradona"},
-      {"id": "atl_tucuman", "name": "Atlético Tucumán", "short": "ATU", "budget": 3600000, "wageBudget": 55000, "reputation": 69, "overall": 68, "colors": ["#3399ff", "#ffffff"], "stadium": "Monumental José Fierro"},
-      {"id": "banfield", "name": "Banfield", "short": "BAN", "budget": 3800000, "wageBudget": 58000, "reputation": 69, "overall": 69, "colors": ["#006633", "#ffffff"], "stadium": "Florencio Sola"},
-      {"id": "barracas", "name": "Barracas Central", "short": "BAR", "budget": 3000000, "wageBudget": 48000, "reputation": 68, "overall": 67, "colors": ["#cc0000", "#ffffff"], "stadium": "Claudio Chiqui Tapia"},
-      {"id": "belgrano", "name": "Belgrano", "short": "BEL", "budget": 5000000, "wageBudget": 72000, "reputation": 71, "overall": 71, "colors": ["#3399ff", "#ffffff"], "stadium": "Julio César Villagra"},
-      {"id": "boca", "name": "Boca Juniors", "short": "BOC", "budget": 20000000, "wageBudget": 240000, "reputation": 83, "overall": 77, "colors": ["#002b7a", "#ffcc00"], "stadium": "La Bombonera"},
-      {"id": "central_cordoba", "name": "Central Córdoba (SdE)", "short": "CCO", "budget": 3200000, "wageBudget": 50000, "reputation": 68, "overall": 68, "colors": ["#000000", "#ffffff"], "stadium": "Madre de Ciudades"},
-      {"id": "defensa", "name": "Defensa y Justicia", "short": "DYJ", "budget": 5500000, "wageBudget": 80000, "reputation": 73, "overall": 71, "colors": ["#006633", "#ffcc00"], "stadium": "Norberto Tomaghello"},
-      {"id": "riestra", "name": "Deportivo Riestra", "short": "RIE", "budget": 2500000, "wageBudget": 40000, "reputation": 66, "overall": 66, "colors": ["#000000", "#ffffff"], "stadium": "Guillermo Laza"},
-      {"id": "estudiantes", "name": "Estudiantes de La Plata", "short": "EDLP", "budget": 10000000, "wageBudget": 130000, "reputation": 77, "overall": 75, "colors": ["#e30613", "#ffffff"], "stadium": "UNO Jorge Luis Hirschi"},
-      {"id": "estudiantes_rc", "name": "Estudiantes (Río Cuarto)", "short": "ERC", "budget": 2400000, "wageBudget": 38000, "reputation": 66, "overall": 65, "colors": ["#3399ff", "#ffffff"], "stadium": "Antonio Candini"},
-      {"id": "gimnasia_lp", "name": "Gimnasia y Esgrima La Plata", "short": "GELP", "budget": 4000000, "wageBudget": 60000, "reputation": 70, "overall": 69, "colors": ["#002060", "#ffffff"], "stadium": "Juan Carmelo Zerillo"},
-      {"id": "gimnasia_mza", "name": "Gimnasia y Esgrima (Mendoza)", "short": "GEM", "budget": 2500000, "wageBudget": 39000, "reputation": 66, "overall": 66, "colors": ["#000000", "#ffffff"], "stadium": "Víctor Antonio Legrotaglie"},
-      {"id": "huracan", "name": "Huracán", "short": "HUR", "budget": 4800000, "wageBudget": 70000, "reputation": 71, "overall": 70, "colors": ["#ffffff", "#cc0000"], "stadium": "Tomás Adolfo Ducó"},
-      {"id": "independiente", "name": "Independiente", "short": "IND", "budget": 9000000, "wageBudget": 120000, "reputation": 77, "overall": 74, "colors": ["#e30613", "#ffffff"], "stadium": "Libertadores de América"},
-      {"id": "ind_rivadavia", "name": "Independiente Rivadavia", "short": "IRI", "budget": 2700000, "wageBudget": 42000, "reputation": 67, "overall": 66, "colors": ["#001a4d", "#ffffff"], "stadium": "Bautista Gargantini"},
-      {"id": "instituto", "name": "Instituto", "short": "INS", "budget": 3300000, "wageBudget": 50000, "reputation": 68, "overall": 68, "colors": ["#cc0000", "#ffffff"], "stadium": "Juan Domingo Perón"},
-      {"id": "lanus", "name": "Lanús", "short": "LAN", "budget": 7500000, "wageBudget": 95000, "reputation": 74, "overall": 73, "colors": ["#6b1426", "#ffffff"], "stadium": "La Fortaleza"},
-      {"id": "newells", "name": "Newell's Old Boys", "short": "NOB", "budget": 6500000, "wageBudget": 90000, "reputation": 74, "overall": 72, "colors": ["#cc0000", "#000000"], "stadium": "Marcelo Bielsa"},
-      {"id": "platense", "name": "Platense", "short": "PLA", "budget": 3500000, "wageBudget": 54000, "reputation": 69, "overall": 68, "colors": ["#8b4513", "#ffffff"], "stadium": "Ciudad de Vicente López"},
-      {"id": "racing", "name": "Racing Club", "short": "RAC", "budget": 14000000, "wageBudget": 160000, "reputation": 78, "overall": 75, "colors": ["#6bbbe8", "#ffffff"], "stadium": "El Cilindro"},
-      {"id": "river", "name": "River Plate", "short": "RIV", "budget": 24000000, "wageBudget": 280000, "reputation": 84, "overall": 78, "colors": ["#ffffff", "#e30613"], "stadium": "MÂS Monumental"},
-      {"id": "rosario_central", "name": "Rosario Central", "short": "ROS", "budget": 7800000, "wageBudget": 100000, "reputation": 75, "overall": 73, "colors": ["#003380", "#ffcc00"], "stadium": "Gigante de Arroyito"},
-      {"id": "san_lorenzo", "name": "San Lorenzo", "short": "SLO", "budget": 8500000, "wageBudget": 110000, "reputation": 76, "overall": 73, "colors": ["#0b2341", "#d81f2a"], "stadium": "Pedro Bidegain"},
-      {"id": "sarmiento", "name": "Sarmiento (Junín)", "short": "SAR", "budget": 2800000, "wageBudget": 45000, "reputation": 67, "overall": 67, "colors": ["#006633", "#ffffff"], "stadium": "Eva Perón"},
-      {"id": "talleres", "name": "Talleres (Córdoba)", "short": "TAL", "budget": 9500000, "wageBudget": 125000, "reputation": 76, "overall": 74, "colors": ["#0a2240", "#ffffff"], "stadium": "Mario Alberto Kempes"},
-      {"id": "tigre", "name": "Tigre", "short": "TIG", "budget": 4000000, "wageBudget": 60000, "reputation": 70, "overall": 69, "colors": ["#003399", "#cc0000"], "stadium": "José Dellagiovanna"},
-      {"id": "union", "name": "Unión (Santa Fe)", "short": "UNI", "budget": 4200000, "wageBudget": 62000, "reputation": 70, "overall": 70, "colors": ["#cc0000", "#ffffff"], "stadium": "15 de Abril"},
-      {"id": "velez", "name": "Vélez Sarsfield", "short": "VEL", "budget": 8000000, "wageBudget": 100000, "reputation": 75, "overall": 73, "colors": ["#003c71", "#ffffff"], "stadium": "José Amalfitani"}
+      {
+        "id": "aldosivi",
+        "name": "Aldosivi",
+        "short": "ALD",
+        "budget": 2600000,
+        "wageBudget": 40000,
+        "reputation": 66,
+        "overall": 66,
+        "colors": [
+          "#006633",
+          "#ffcc00"
+        ],
+        "stadium": "José María Minella"
+      },
+      {
+        "id": "argentinos",
+        "name": "Argentinos Juniors",
+        "short": "ARG",
+        "budget": 6000000,
+        "wageBudget": 85000,
+        "reputation": 73,
+        "overall": 72,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Diego Armando Maradona"
+      },
+      {
+        "id": "atl_tucuman",
+        "name": "Atlético Tucumán",
+        "short": "ATU",
+        "budget": 3600000,
+        "wageBudget": 55000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Monumental José Fierro"
+      },
+      {
+        "id": "banfield",
+        "name": "Banfield",
+        "short": "BAN",
+        "budget": 3800000,
+        "wageBudget": 58000,
+        "reputation": 69,
+        "overall": 69,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Florencio Sola"
+      },
+      {
+        "id": "barracas",
+        "name": "Barracas Central",
+        "short": "BAR",
+        "budget": 3000000,
+        "wageBudget": 48000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Claudio Chiqui Tapia"
+      },
+      {
+        "id": "belgrano",
+        "name": "Belgrano",
+        "short": "BEL",
+        "budget": 5000000,
+        "wageBudget": 72000,
+        "reputation": 71,
+        "overall": 71,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Julio César Villagra"
+      },
+      {
+        "id": "boca",
+        "name": "Boca Juniors",
+        "short": "BOC",
+        "budget": 20000000,
+        "wageBudget": 240000,
+        "reputation": 83,
+        "overall": 77,
+        "colors": [
+          "#002b7a",
+          "#ffcc00"
+        ],
+        "stadium": "La Bombonera"
+      },
+      {
+        "id": "central_cordoba",
+        "name": "Central Córdoba (SdE)",
+        "short": "CCO",
+        "budget": 3200000,
+        "wageBudget": 50000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Madre de Ciudades"
+      },
+      {
+        "id": "defensa",
+        "name": "Defensa y Justicia",
+        "short": "DYJ",
+        "budget": 5500000,
+        "wageBudget": 80000,
+        "reputation": 73,
+        "overall": 71,
+        "colors": [
+          "#006633",
+          "#ffcc00"
+        ],
+        "stadium": "Norberto Tomaghello"
+      },
+      {
+        "id": "riestra",
+        "name": "Deportivo Riestra",
+        "short": "RIE",
+        "budget": 2500000,
+        "wageBudget": 40000,
+        "reputation": 66,
+        "overall": 66,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Guillermo Laza"
+      },
+      {
+        "id": "estudiantes",
+        "name": "Estudiantes de La Plata",
+        "short": "EDLP",
+        "budget": 10000000,
+        "wageBudget": 130000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#e30613",
+          "#ffffff"
+        ],
+        "stadium": "UNO Jorge Luis Hirschi"
+      },
+      {
+        "id": "estudiantes_rc",
+        "name": "Estudiantes (Río Cuarto)",
+        "short": "ERC",
+        "budget": 2400000,
+        "wageBudget": 38000,
+        "reputation": 66,
+        "overall": 65,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Antonio Candini"
+      },
+      {
+        "id": "gimnasia_lp",
+        "name": "Gimnasia y Esgrima La Plata",
+        "short": "GELP",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 70,
+        "overall": 69,
+        "colors": [
+          "#002060",
+          "#ffffff"
+        ],
+        "stadium": "Juan Carmelo Zerillo"
+      },
+      {
+        "id": "gimnasia_mza",
+        "name": "Gimnasia y Esgrima (Mendoza)",
+        "short": "GEM",
+        "budget": 2500000,
+        "wageBudget": 39000,
+        "reputation": 66,
+        "overall": 66,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Víctor Antonio Legrotaglie"
+      },
+      {
+        "id": "huracan",
+        "name": "Huracán",
+        "short": "HUR",
+        "budget": 4800000,
+        "wageBudget": 70000,
+        "reputation": 71,
+        "overall": 70,
+        "colors": [
+          "#ffffff",
+          "#cc0000"
+        ],
+        "stadium": "Tomás Adolfo Ducó"
+      },
+      {
+        "id": "independiente",
+        "name": "Independiente",
+        "short": "IND",
+        "budget": 9000000,
+        "wageBudget": 120000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#e30613",
+          "#ffffff"
+        ],
+        "stadium": "Libertadores de América"
+      },
+      {
+        "id": "ind_rivadavia",
+        "name": "Independiente Rivadavia",
+        "short": "IRI",
+        "budget": 2700000,
+        "wageBudget": 42000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#001a4d",
+          "#ffffff"
+        ],
+        "stadium": "Bautista Gargantini"
+      },
+      {
+        "id": "instituto",
+        "name": "Instituto",
+        "short": "INS",
+        "budget": 3300000,
+        "wageBudget": 50000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Juan Domingo Perón"
+      },
+      {
+        "id": "lanus",
+        "name": "Lanús",
+        "short": "LAN",
+        "budget": 7500000,
+        "wageBudget": 95000,
+        "reputation": 74,
+        "overall": 73,
+        "colors": [
+          "#6b1426",
+          "#ffffff"
+        ],
+        "stadium": "La Fortaleza"
+      },
+      {
+        "id": "newells",
+        "name": "Newell's Old Boys",
+        "short": "NOB",
+        "budget": 6500000,
+        "wageBudget": 90000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Marcelo Bielsa"
+      },
+      {
+        "id": "platense",
+        "name": "Platense",
+        "short": "PLA",
+        "budget": 3500000,
+        "wageBudget": 54000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#8b4513",
+          "#ffffff"
+        ],
+        "stadium": "Ciudad de Vicente López"
+      },
+      {
+        "id": "racing",
+        "name": "Racing Club",
+        "short": "RAC",
+        "budget": 14000000,
+        "wageBudget": 160000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#6bbbe8",
+          "#ffffff"
+        ],
+        "stadium": "El Cilindro"
+      },
+      {
+        "id": "river",
+        "name": "River Plate",
+        "short": "RIV",
+        "budget": 24000000,
+        "wageBudget": 280000,
+        "reputation": 84,
+        "overall": 78,
+        "colors": [
+          "#ffffff",
+          "#e30613"
+        ],
+        "stadium": "MÂS Monumental"
+      },
+      {
+        "id": "rosario_central",
+        "name": "Rosario Central",
+        "short": "ROS",
+        "budget": 7800000,
+        "wageBudget": 100000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#003380",
+          "#ffcc00"
+        ],
+        "stadium": "Gigante de Arroyito"
+      },
+      {
+        "id": "san_lorenzo",
+        "name": "San Lorenzo",
+        "short": "SLO",
+        "budget": 8500000,
+        "wageBudget": 110000,
+        "reputation": 76,
+        "overall": 73,
+        "colors": [
+          "#0b2341",
+          "#d81f2a"
+        ],
+        "stadium": "Pedro Bidegain"
+      },
+      {
+        "id": "sarmiento",
+        "name": "Sarmiento (Junín)",
+        "short": "SAR",
+        "budget": 2800000,
+        "wageBudget": 45000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Eva Perón"
+      },
+      {
+        "id": "talleres",
+        "name": "Talleres (Córdoba)",
+        "short": "TAL",
+        "budget": 9500000,
+        "wageBudget": 125000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#0a2240",
+          "#ffffff"
+        ],
+        "stadium": "Mario Alberto Kempes"
+      },
+      {
+        "id": "tigre",
+        "name": "Tigre",
+        "short": "TIG",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 70,
+        "overall": 69,
+        "colors": [
+          "#003399",
+          "#cc0000"
+        ],
+        "stadium": "José Dellagiovanna"
+      },
+      {
+        "id": "union",
+        "name": "Unión (Santa Fe)",
+        "short": "UNI",
+        "budget": 4200000,
+        "wageBudget": 62000,
+        "reputation": 70,
+        "overall": 70,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "15 de Abril"
+      },
+      {
+        "id": "velez",
+        "name": "Vélez Sarsfield",
+        "short": "VEL",
+        "budget": 8000000,
+        "wageBudget": 100000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#003c71",
+          "#ffffff"
+        ],
+        "stadium": "José Amalfitani"
+      }
     ]
   },
   {
-    "id": "mex_1",
-    "name": "Liga BBVA MX",
-    "country": "México",
-    "region": "Norteamérica",
+    "id": "bra_1",
+    "name": "Brasileirão Betano (Serie A)",
+    "country": "Brasil",
+    "region": "Sudamérica",
     "tier": 1,
-    "reputation": 79,
+    "reputation": 85,
     "teams": [
-      {"id": "america_mex", "name": "Club América", "short": "AME", "budget": 35000000, "wageBudget": 420000, "reputation": 82, "overall": 77, "colors": ["#ffff99", "#002060"], "stadium": "Estadio Azteca"},
-      {"id": "atl_san_luis", "name": "Atlético de San Luis", "short": "ASL", "budget": 16000000, "wageBudget": 240000, "reputation": 76, "overall": 73, "colors": ["#cc0000", "#003399"], "stadium": "Alfonso Lastras Ramírez"},
-      {"id": "atlas", "name": "Atlas FC", "short": "ATL", "budget": 18000000, "wageBudget": 260000, "reputation": 77, "overall": 73, "colors": ["#cc0000", "#000000"], "stadium": "Jalisco"},
-      {"id": "juarez", "name": "FC Juárez (Bravos)", "short": "JUA", "budget": 15000000, "wageBudget": 220000, "reputation": 75, "overall": 72, "colors": ["#006633", "#cc0000"], "stadium": "Olímpico Benito Juárez"},
-      {"id": "cruz_azul", "name": "Cruz Azul", "short": "CAZ", "budget": 25000000, "wageBudget": 320000, "reputation": 79, "overall": 75, "colors": ["#003399", "#ffffff"], "stadium": "Estadio Ciudad de los Deportes"},
-      {"id": "chivas", "name": "Guadalajara (Chivas)", "short": "CHI", "budget": 28000000, "wageBudget": 350000, "reputation": 80, "overall": 75, "colors": ["#cc0000", "#001a4d"], "stadium": "Estadio Akron"},
-      {"id": "leon", "name": "Club León", "short": "LEO", "budget": 20000000, "wageBudget": 280000, "reputation": 78, "overall": 74, "colors": ["#006633", "#ffcc00"], "stadium": "Nou Camp"},
-      {"id": "necaxa", "name": "Club Necaxa", "short": "NEC", "budget": 14000000, "wageBudget": 210000, "reputation": 75, "overall": 72, "colors": ["#cc0000", "#ffffff"], "stadium": "Victoria"},
-      {"id": "pachuca", "name": "CF Pachuca", "short": "PAC", "budget": 22000000, "wageBudget": 300000, "reputation": 78, "overall": 74, "colors": ["#003399", "#ffffff"], "stadium": "Estadio Hidalgo"},
-      {"id": "puebla", "name": "Club Puebla", "short": "PUE", "budget": 13000000, "wageBudget": 200000, "reputation": 74, "overall": 71, "colors": ["#003399", "#ffffff"], "stadium": "Cuauhtémoc"},
-      {"id": "pumas", "name": "Pumas UNAM", "short": "PUM", "budget": 20000000, "wageBudget": 280000, "reputation": 78, "overall": 74, "colors": ["#002060", "#d4af37"], "stadium": "Olímpico Universitario"},
-      {"id": "queretaro", "name": "Querétaro (Gallos Blancos)", "short": "QUE", "budget": 12000000, "wageBudget": 190000, "reputation": 74, "overall": 71, "colors": ["#003399", "#000000"], "stadium": "La Corregidora"},
-      {"id": "monterrey", "name": "CF Monterrey (Rayados)", "short": "MON", "budget": 40000000, "wageBudget": 480000, "reputation": 81, "overall": 77, "colors": ["#001a4d", "#ffffff"], "stadium": "Estadio BBVA"},
-      {"id": "santos_laguna", "name": "Santos Laguna", "short": "SAN", "budget": 18000000, "wageBudget": 260000, "reputation": 77, "overall": 73, "colors": ["#008000", "#ffffff"], "stadium": "Estadio Corona"},
-      {"id": "tigres", "name": "Tigres UANL", "short": "TIG", "budget": 38000000, "wageBudget": 450000, "reputation": 81, "overall": 77, "colors": ["#ffcc00", "#003399"], "stadium": "Estadio Universitario"},
-      {"id": "toluca", "name": "Deportivo Toluca", "short": "TOL", "budget": 24000000, "wageBudget": 310000, "reputation": 79, "overall": 75, "colors": ["#cc0000", "#ffffff"], "stadium": "Nemesio Díez"},
-      {"id": "tijuana", "name": "Tijuana (Xolos)", "short": "TIJ", "budget": 17000000, "wageBudget": 250000, "reputation": 76, "overall": 73, "colors": ["#cc0000", "#000000"], "stadium": "Caliente"},
-      {"id": "atlante", "name": "Atlante FC", "short": "ATL", "budget": 15000000, "wageBudget": 220000, "reputation": 75, "overall": 72, "colors": ["#003399", "#cc0000"], "stadium": "Ciudad de los Deportes"}
+      {
+        "id": "athletico_pr",
+        "name": "Athletico Paranaense",
+        "short": "CAP",
+        "budget": 16000000,
+        "wageBudget": 180000,
+        "reputation": 78,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Ligga Arena"
+      },
+      {
+        "id": "atletico_mg",
+        "name": "Atlético Mineiro",
+        "short": "CAM",
+        "budget": 24000000,
+        "wageBudget": 260000,
+        "reputation": 81,
+        "overall": 77,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Arena MRV"
+      },
+      {
+        "id": "bahia",
+        "name": "Bahia",
+        "short": "BAH",
+        "budget": 14000000,
+        "wageBudget": 160000,
+        "reputation": 76,
+        "overall": 73,
+        "colors": [
+          "#003399",
+          "#cc0000"
+        ],
+        "stadium": "Arena Fonte Nova"
+      },
+      {
+        "id": "botafogo",
+        "name": "Botafogo",
+        "short": "BOT",
+        "budget": 30000000,
+        "wageBudget": 320000,
+        "reputation": 82,
+        "overall": 78,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Nilton Santos"
+      },
+      {
+        "id": "chapecoense",
+        "name": "Chapecoense",
+        "short": "CHA",
+        "budget": 5000000,
+        "wageBudget": 70000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Arena Condá"
+      },
+      {
+        "id": "corinthians",
+        "name": "Corinthians",
+        "short": "COR",
+        "budget": 22000000,
+        "wageBudget": 260000,
+        "reputation": 82,
+        "overall": 76,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Neo Química Arena"
+      },
+      {
+        "id": "coritiba",
+        "name": "Coritiba",
+        "short": "CFC",
+        "budget": 6000000,
+        "wageBudget": 80000,
+        "reputation": 71,
+        "overall": 69,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Couto Pereira"
+      },
+      {
+        "id": "criciuma",
+        "name": "Criciúma",
+        "short": "CRI",
+        "budget": 4800000,
+        "wageBudget": 68000,
+        "reputation": 69,
+        "overall": 69,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Heriberto Hülse"
+      },
+      {
+        "id": "cruzeiro",
+        "name": "Cruzeiro",
+        "short": "CRU",
+        "budget": 18000000,
+        "wageBudget": 200000,
+        "reputation": 79,
+        "overall": 74,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Mineirão"
+      },
+      {
+        "id": "flamengo",
+        "name": "Flamengo",
+        "short": "FLA",
+        "budget": 45000000,
+        "wageBudget": 450000,
+        "reputation": 86,
+        "overall": 80,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Maracanã"
+      },
+      {
+        "id": "fluminense",
+        "name": "Fluminense",
+        "short": "FLU",
+        "budget": 20000000,
+        "wageBudget": 230000,
+        "reputation": 81,
+        "overall": 76,
+        "colors": [
+          "#800020",
+          "#006633"
+        ],
+        "stadium": "Maracanã"
+      },
+      {
+        "id": "gremio",
+        "name": "Grêmio",
+        "short": "GRE",
+        "budget": 18000000,
+        "wageBudget": 210000,
+        "reputation": 80,
+        "overall": 75,
+        "colors": [
+          "#3399ff",
+          "#000000"
+        ],
+        "stadium": "Arena do Grêmio"
+      },
+      {
+        "id": "internacional",
+        "name": "Internacional",
+        "short": "INT",
+        "budget": 17000000,
+        "wageBudget": 200000,
+        "reputation": 80,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Beira-Rio"
+      },
+      {
+        "id": "mirassol",
+        "name": "Mirassol",
+        "short": "MIR",
+        "budget": 4500000,
+        "wageBudget": 65000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#ffcc00",
+          "#006633"
+        ],
+        "stadium": "José Maria de Campos Maia"
+      },
+      {
+        "id": "palmeiras",
+        "name": "Palmeiras",
+        "short": "PAL",
+        "budget": 42000000,
+        "wageBudget": 420000,
+        "reputation": 85,
+        "overall": 80,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Allianz Parque"
+      },
+      {
+        "id": "bragantino",
+        "name": "Red Bull Bragantino",
+        "short": "RBB",
+        "budget": 15000000,
+        "wageBudget": 170000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#ffffff",
+          "#cc0000"
+        ],
+        "stadium": "Nabi Abi Chedid"
+      },
+      {
+        "id": "remo",
+        "name": "Clube do Remo",
+        "short": "REM",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#001a4d",
+          "#ffffff"
+        ],
+        "stadium": "Baenão"
+      },
+      {
+        "id": "santos",
+        "name": "Santos FC",
+        "short": "SAN",
+        "budget": 16000000,
+        "wageBudget": 180000,
+        "reputation": 79,
+        "overall": 74,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Vila Belmiro"
+      },
+      {
+        "id": "sao_paulo",
+        "name": "São Paulo",
+        "short": "SAO",
+        "budget": 25000000,
+        "wageBudget": 280000,
+        "reputation": 82,
+        "overall": 77,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "MorumBIS"
+      },
+      {
+        "id": "vitoria",
+        "name": "Vitória",
+        "short": "VIT",
+        "budget": 5500000,
+        "wageBudget": 75000,
+        "reputation": 70,
+        "overall": 70,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Barradão"
+      }
+    ]
+  },
+  {
+    "id": "col_1",
+    "name": "Liga BetPlay Dimayor",
+    "country": "Colombia",
+    "region": "Sudamérica",
+    "tier": 1,
+    "reputation": 76,
+    "teams": [
+      {
+        "id": "aguilas_doradas",
+        "name": "Águilas Doradas",
+        "short": "AGU",
+        "budget": 3800000,
+        "wageBudget": 55000,
+        "reputation": 71,
+        "overall": 69,
+        "colors": [
+          "#d4af37",
+          "#000000"
+        ],
+        "stadium": "Alberto Grisales"
+      },
+      {
+        "id": "alianza_fc",
+        "name": "Alianza FC",
+        "short": "ALI",
+        "budget": 2700000,
+        "wageBudget": 41000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Armando Maestre Pavajeau"
+      },
+      {
+        "id": "america_cali",
+        "name": "América de Cali",
+        "short": "AME",
+        "budget": 7000000,
+        "wageBudget": 95000,
+        "reputation": 76,
+        "overall": 73,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Pascual Guerrero"
+      },
+      {
+        "id": "bucaramanga",
+        "name": "Atlético Bucaramanga",
+        "short": "BUC",
+        "budget": 4200000,
+        "wageBudget": 62000,
+        "reputation": 73,
+        "overall": 71,
+        "colors": [
+          "#ffcc00",
+          "#006633"
+        ],
+        "stadium": "Américo Montanini"
+      },
+      {
+        "id": "atl_nacional",
+        "name": "Atlético Nacional",
+        "short": "NAL",
+        "budget": 9000000,
+        "wageBudget": 120000,
+        "reputation": 78,
+        "overall": 74,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Atanasio Girardot"
+      },
+      {
+        "id": "chico",
+        "name": "Boyacá Chicó",
+        "short": "CHI",
+        "budget": 2500000,
+        "wageBudget": 38000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "La Independencia"
+      },
+      {
+        "id": "cucuta",
+        "name": "Cúcuta Deportivo",
+        "short": "CUC",
+        "budget": 2800000,
+        "wageBudget": 42000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "General Santander"
+      },
+      {
+        "id": "tolima",
+        "name": "Deportes Tolima",
+        "short": "TOL",
+        "budget": 5500000,
+        "wageBudget": 80000,
+        "reputation": 75,
+        "overall": 72,
+        "colors": [
+          "#800020",
+          "#ffcc00"
+        ],
+        "stadium": "Manuel Murillo Toro"
+      },
+      {
+        "id": "dep_cali",
+        "name": "Deportivo Cali",
+        "short": "CAL",
+        "budget": 5000000,
+        "wageBudget": 75000,
+        "reputation": 74,
+        "overall": 71,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Deportivo Cali"
+      },
+      {
+        "id": "pasto",
+        "name": "Deportivo Pasto",
+        "short": "PAS",
+        "budget": 3200000,
+        "wageBudget": 48000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Departamental Libertad"
+      },
+      {
+        "id": "dep_pereira",
+        "name": "Deportivo Pereira",
+        "short": "PER",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 72,
+        "overall": 70,
+        "colors": [
+          "#ffcc00",
+          "#cc0000"
+        ],
+        "stadium": "Hernán Ramírez Villegas"
+      },
+      {
+        "id": "fortaleza_ceif",
+        "name": "Fortaleza CEIF",
+        "short": "FOR",
+        "budget": 2600000,
+        "wageBudget": 40000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Metropolitano de Techo"
+      },
+      {
+        "id": "indep_medellin",
+        "name": "Independiente Medellín (DIM)",
+        "short": "DIM",
+        "budget": 6000000,
+        "wageBudget": 85000,
+        "reputation": 75,
+        "overall": 72,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Atanasio Girardot"
+      },
+      {
+        "id": "santa_fe",
+        "name": "Independiente Santa Fe",
+        "short": "SFE",
+        "budget": 6500000,
+        "wageBudget": 90000,
+        "reputation": 75,
+        "overall": 72,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Nemesio Camacho El Campín"
+      },
+      {
+        "id": "inter_bogota",
+        "name": "Internacional de Bogotá",
+        "short": "INB",
+        "budget": 2300000,
+        "wageBudget": 35000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Metropolitano de Techo"
+      },
+      {
+        "id": "jaguares",
+        "name": "Jaguares de Córdoba",
+        "short": "JAG",
+        "budget": 2800000,
+        "wageBudget": 42000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#3399ff",
+          "#006633"
+        ],
+        "stadium": "Jaraguay"
+      },
+      {
+        "id": "junior",
+        "name": "Junior de Barranquilla",
+        "short": "JUN",
+        "budget": 8500000,
+        "wageBudget": 115000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Roberto Meléndez"
+      },
+      {
+        "id": "llaneros",
+        "name": "Llaneros",
+        "short": "LLA",
+        "budget": 2200000,
+        "wageBudget": 33000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Bello Horizonte"
+      },
+      {
+        "id": "millonarios",
+        "name": "Millonarios",
+        "short": "MIL",
+        "budget": 7500000,
+        "wageBudget": 100000,
+        "reputation": 77,
+        "overall": 73,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Nemesio Camacho El Campín"
+      },
+      {
+        "id": "once_caldas",
+        "name": "Once Caldas",
+        "short": "ONC",
+        "budget": 4500000,
+        "wageBudget": 68000,
+        "reputation": 73,
+        "overall": 70,
+        "colors": [
+          "#ffffff",
+          "#006633"
+        ],
+        "stadium": "Palogrande"
+      }
+    ]
+  },
+  {
+    "id": "bol_1",
+    "name": "Primera División de Bolivia",
+    "country": "Bolivia",
+    "region": "Sudamérica",
+    "tier": 1,
+    "reputation": 68,
+    "teams": [
+      {
+        "id": "always_ready",
+        "name": "Always Ready",
+        "short": "ALW",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Municipal de El Alto"
+      },
+      {
+        "id": "aurora",
+        "name": "Aurora",
+        "short": "AUR",
+        "budget": 2200000,
+        "wageBudget": 35000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Félix Capriles"
+      },
+      {
+        "id": "blooming",
+        "name": "Blooming",
+        "short": "BLO",
+        "budget": 2800000,
+        "wageBudget": 42000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Ramón Tahuichi Aguilera"
+      },
+      {
+        "id": "bolivar",
+        "name": "Bolívar",
+        "short": "BOL",
+        "budget": 4500000,
+        "wageBudget": 65000,
+        "reputation": 72,
+        "overall": 70,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Hernando Siles"
+      },
+      {
+        "id": "gv_san_jose",
+        "name": "Gualberto Villarroel",
+        "short": "GV",
+        "budget": 1600000,
+        "wageBudget": 25000,
+        "reputation": 65,
+        "overall": 64,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Jesús Bermúdez"
+      },
+      {
+        "id": "guabira",
+        "name": "Guabirá",
+        "short": "GUA",
+        "budget": 1800000,
+        "wageBudget": 28000,
+        "reputation": 66,
+        "overall": 65,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Gilberto Parada"
+      },
+      {
+        "id": "indep_petrolero",
+        "name": "Independiente Petrolero",
+        "short": "IPE",
+        "budget": 1800000,
+        "wageBudget": 28000,
+        "reputation": 66,
+        "overall": 65,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Patria"
+      },
+      {
+        "id": "wilstermann",
+        "name": "Jorge Wilstermann",
+        "short": "WIL",
+        "budget": 3000000,
+        "wageBudget": 45000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Félix Capriles"
+      },
+      {
+        "id": "nacional_potosi",
+        "name": "Nacional Potosí",
+        "short": "NAC",
+        "budget": 2000000,
+        "wageBudget": 30000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Víctor Agustín Ugarte"
+      },
+      {
+        "id": "oriente_petrolero",
+        "name": "Oriente Petrolero",
+        "short": "ORI",
+        "budget": 2700000,
+        "wageBudget": 40000,
+        "reputation": 68,
+        "overall": 66,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Ramón Tahuichi Aguilera"
+      },
+      {
+        "id": "real_santa_cruz",
+        "name": "Real Santa Cruz",
+        "short": "RSC",
+        "budget": 1400000,
+        "wageBudget": 22000,
+        "reputation": 64,
+        "overall": 63,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Real Santa Cruz"
+      },
+      {
+        "id": "real_tomayapo",
+        "name": "Real Tomayapo",
+        "short": "TOM",
+        "budget": 1600000,
+        "wageBudget": 25000,
+        "reputation": 65,
+        "overall": 64,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "IV Centenario"
+      },
+      {
+        "id": "royal_pari",
+        "name": "Royal Pari",
+        "short": "ROY",
+        "budget": 1700000,
+        "wageBudget": 26000,
+        "reputation": 65,
+        "overall": 64,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Ramón Tahuichi Aguilera"
+      },
+      {
+        "id": "san_antonio_bulo",
+        "name": "San Antonio Bulo Bulo",
+        "short": "SAB",
+        "budget": 1900000,
+        "wageBudget": 29000,
+        "reputation": 66,
+        "overall": 65,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Doctor Carlos Villegas"
+      },
+      {
+        "id": "univ_vinto",
+        "name": "Universitario de Vinto",
+        "short": "UNI",
+        "budget": 1500000,
+        "wageBudget": 24000,
+        "reputation": 64,
+        "overall": 64,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Hipólito Lazarte"
+      },
+      {
+        "id": "the_strongest",
+        "name": "The Strongest",
+        "short": "STR",
+        "budget": 4200000,
+        "wageBudget": 60000,
+        "reputation": 72,
+        "overall": 70,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Hernando Siles"
+      }
+    ]
+  },
+  {
+    "id": "chi_1",
+    "name": "Primera División de Chile",
+    "country": "Chile",
+    "region": "Sudamérica",
+    "tier": 1,
+    "reputation": 74,
+    "teams": [
+      {
+        "id": "audax",
+        "name": "Audax Italiano",
+        "short": "AUD",
+        "budget": 2800000,
+        "wageBudget": 42000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Bicentenario de La Florida"
+      },
+      {
+        "id": "cobresal",
+        "name": "Cobresal",
+        "short": "CSL",
+        "budget": 2600000,
+        "wageBudget": 40000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#003399",
+          "#ff6600"
+        ],
+        "stadium": "El Cobre de El Salvador"
+      },
+      {
+        "id": "colo_colo",
+        "name": "Colo-Colo",
+        "short": "CC",
+        "budget": 8000000,
+        "wageBudget": 110000,
+        "reputation": 77,
+        "overall": 73,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Monumental David Arellano"
+      },
+      {
+        "id": "coquimbo",
+        "name": "Coquimbo Unido",
+        "short": "COQ",
+        "budget": 3800000,
+        "wageBudget": 54000,
+        "reputation": 71,
+        "overall": 70,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Francisco Sánchez Rumoroso"
+      },
+      {
+        "id": "cobreloa",
+        "name": "Cobreloa",
+        "short": "COB",
+        "budget": 3000000,
+        "wageBudget": 45000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#ff6600",
+          "#ffffff"
+        ],
+        "stadium": "Zorros del Desierto"
+      },
+      {
+        "id": "copiapo",
+        "name": "Deportes Copiapó",
+        "short": "COP",
+        "budget": 2000000,
+        "wageBudget": 32000,
+        "reputation": 66,
+        "overall": 65,
+        "colors": [
+          "#cc0000",
+          "#006633"
+        ],
+        "stadium": "Luis Valenzuela Hermosilla"
+      },
+      {
+        "id": "iquique",
+        "name": "Deportes Iquique",
+        "short": "DIQ",
+        "budget": 2700000,
+        "wageBudget": 41000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Tierra de Campeones"
+      },
+      {
+        "id": "everton_chi",
+        "name": "Everton",
+        "short": "EVE",
+        "budget": 4000000,
+        "wageBudget": 58000,
+        "reputation": 72,
+        "overall": 70,
+        "colors": [
+          "#003399",
+          "#ffcc00"
+        ],
+        "stadium": "Sausalito"
+      },
+      {
+        "id": "huachipato",
+        "name": "Huachipato",
+        "short": "HUA",
+        "budget": 3400000,
+        "wageBudget": 48000,
+        "reputation": 70,
+        "overall": 69,
+        "colors": [
+          "#003399",
+          "#000000"
+        ],
+        "stadium": "CAP Acero"
+      },
+      {
+        "id": "nublense",
+        "name": "Ñublense",
+        "short": "NUB",
+        "budget": 2500000,
+        "wageBudget": 38000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Nelson Oyarzún Arenas"
+      },
+      {
+        "id": "ohiggins",
+        "name": "O'Higgins",
+        "short": "OHI",
+        "budget": 2900000,
+        "wageBudget": 44000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "El Teniente"
+      },
+      {
+        "id": "palestino",
+        "name": "Palestino",
+        "short": "PAL",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 71,
+        "overall": 69,
+        "colors": [
+          "#006633",
+          "#cc0000"
+        ],
+        "stadium": "Municipal de La Cisterna"
+      },
+      {
+        "id": "union_espanola",
+        "name": "Unión Española",
+        "short": "UE",
+        "budget": 3600000,
+        "wageBudget": 52000,
+        "reputation": 71,
+        "overall": 69,
+        "colors": [
+          "#cc0000",
+          "#ffcc00"
+        ],
+        "stadium": "Santa Laura-Universidad SEK"
+      },
+      {
+        "id": "union_la_calera",
+        "name": "Unión La Calera",
+        "short": "ULC",
+        "budget": 2400000,
+        "wageBudget": 36000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Nicolás Chahuán Nazar"
+      },
+      {
+        "id": "ucatolica",
+        "name": "Universidad Católica",
+        "short": "UC",
+        "budget": 7000000,
+        "wageBudget": 95000,
+        "reputation": 76,
+        "overall": 72,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "San Carlos de Apoquindo"
+      },
+      {
+        "id": "uchile",
+        "name": "Universidad de Chile",
+        "short": "UCH",
+        "budget": 7500000,
+        "wageBudget": 100000,
+        "reputation": 76,
+        "overall": 73,
+        "colors": [
+          "#003399",
+          "#cc0000"
+        ],
+        "stadium": "Nacional Julio Martínez Prádanos"
+      }
+    ]
+  },
+  {
+    "id": "ecu_1",
+    "name": "LigaPro Ecuabet",
+    "country": "Ecuador",
+    "region": "Sudamérica",
+    "tier": 1,
+    "reputation": 75,
+    "teams": [
+      {
+        "id": "aucas",
+        "name": "Aucas",
+        "short": "AUC",
+        "budget": 4200000,
+        "wageBudget": 62000,
+        "reputation": 73,
+        "overall": 70,
+        "colors": [
+          "#ffcc00",
+          "#cc0000"
+        ],
+        "stadium": "Gonzalo Pozo Ripalda"
+      },
+      {
+        "id": "barcelona_sc",
+        "name": "Barcelona SC",
+        "short": "BSC",
+        "budget": 8500000,
+        "wageBudget": 115000,
+        "reputation": 77,
+        "overall": 73,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Banco Pichincha"
+      },
+      {
+        "id": "cumbaya",
+        "name": "Cumbayá",
+        "short": "CUM",
+        "budget": 1800000,
+        "wageBudget": 28000,
+        "reputation": 65,
+        "overall": 64,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Olímpico Atahualpa"
+      },
+      {
+        "id": "delfin",
+        "name": "Delfín",
+        "short": "DEL",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 71,
+        "overall": 69,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Jocay de Manta"
+      },
+      {
+        "id": "dep_cuenca",
+        "name": "Deportivo Cuenca",
+        "short": "CUE",
+        "budget": 3200000,
+        "wageBudget": 48000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Alejandro Serrano Aguilar"
+      },
+      {
+        "id": "el_nacional",
+        "name": "El Nacional",
+        "short": "NAC",
+        "budget": 4500000,
+        "wageBudget": 65000,
+        "reputation": 73,
+        "overall": 70,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Olímpico Atahualpa"
+      },
+      {
+        "id": "imbabura",
+        "name": "Imbabura",
+        "short": "IMB",
+        "budget": 2200000,
+        "wageBudget": 35000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Olímpico de Ibarra"
+      },
+      {
+        "id": "idv",
+        "name": "Independiente del Valle",
+        "short": "IDV",
+        "budget": 10000000,
+        "wageBudget": 130000,
+        "reputation": 79,
+        "overall": 75,
+        "colors": [
+          "#003399",
+          "#000000"
+        ],
+        "stadium": "Banco Guayaquil"
+      },
+      {
+        "id": "libertad_ecu",
+        "name": "Libertad FC",
+        "short": "LIB",
+        "budget": 2000000,
+        "wageBudget": 32000,
+        "reputation": 66,
+        "overall": 65,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Reina del Cisne de Loja"
+      },
+      {
+        "id": "ldu_quito",
+        "name": "Liga de Quito",
+        "short": "LDU",
+        "budget": 9000000,
+        "wageBudget": 120000,
+        "reputation": 78,
+        "overall": 74,
+        "colors": [
+          "#ffffff",
+          "#cc0000"
+        ],
+        "stadium": "Rodrigo Paz Delgado"
+      },
+      {
+        "id": "macara",
+        "name": "Macará",
+        "short": "MAC",
+        "budget": 3000000,
+        "wageBudget": 45000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Bellavista"
+      },
+      {
+        "id": "mushuc_runa",
+        "name": "Mushuc Runa",
+        "short": "MUS",
+        "budget": 2600000,
+        "wageBudget": 40000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#006633",
+          "#cc0000"
+        ],
+        "stadium": "COAC Mushuc Runa"
+      },
+      {
+        "id": "orense",
+        "name": "Orense",
+        "short": "ORE",
+        "budget": 2800000,
+        "wageBudget": 42000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#006633",
+          "#ffcc00"
+        ],
+        "stadium": "9 de Mayo de Machala"
+      },
+      {
+        "id": "tecnico_univ",
+        "name": "Técnico Universitario",
+        "short": "TEC",
+        "budget": 2700000,
+        "wageBudget": 41000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Bellavista"
+      },
+      {
+        "id": "ucatolica_ecu",
+        "name": "Universidad Católica",
+        "short": "UCT",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 72,
+        "overall": 70,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Olímpico Atahualpa"
+      },
+      {
+        "id": "emelec",
+        "name": "Emelec",
+        "short": "EME",
+        "budget": 7500000,
+        "wageBudget": 100000,
+        "reputation": 76,
+        "overall": 72,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "George Capwell"
+      }
+    ]
+  },
+  {
+    "id": "par_1",
+    "name": "Primera División de Paraguay",
+    "country": "Paraguay",
+    "region": "Sudamérica",
+    "tier": 1,
+    "reputation": 74,
+    "teams": [
+      {
+        "id": "dos_de_mayo",
+        "name": "2 de Mayo",
+        "short": "2MAY",
+        "budget": 3200000,
+        "wageBudget": 48000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Río Parapití"
+      },
+      {
+        "id": "cerro_porteno",
+        "name": "Cerro Porteño",
+        "short": "CCP",
+        "budget": 8500000,
+        "wageBudget": 115000,
+        "reputation": 77,
+        "overall": 73,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "General Pablo Rojas (La Nueva Olla)"
+      },
+      {
+        "id": "general_caballero",
+        "name": "General Caballero JLM",
+        "short": "GCJ",
+        "budget": 2700000,
+        "wageBudget": 41000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Ka'arendy"
+      },
+      {
+        "id": "guarani_par",
+        "name": "Guaraní",
+        "short": "GUA",
+        "budget": 4500000,
+        "wageBudget": 65000,
+        "reputation": 73,
+        "overall": 70,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Rogelio Livieres"
+      },
+      {
+        "id": "libertad_par",
+        "name": "Libertad",
+        "short": "LIB",
+        "budget": 9500000,
+        "wageBudget": 125000,
+        "reputation": 78,
+        "overall": 74,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Tigo La Huerta"
+      },
+      {
+        "id": "nacional_par",
+        "name": "Nacional",
+        "short": "NAC",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 72,
+        "overall": 69,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Arsenio Erico"
+      },
+      {
+        "id": "olimpia",
+        "name": "Olimpia",
+        "short": "OLI",
+        "budget": 8000000,
+        "wageBudget": 110000,
+        "reputation": 78,
+        "overall": 74,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Manuel Ferreira"
+      },
+      {
+        "id": "sol_de_america",
+        "name": "Sol de América",
+        "short": "SOL",
+        "budget": 3000000,
+        "wageBudget": 45000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Luis Alfonso Giagni"
+      },
+      {
+        "id": "ameliano",
+        "name": "Sportivo Ameliano",
+        "short": "AME",
+        "budget": 3300000,
+        "wageBudget": 50000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "José Tomás Silva"
+      },
+      {
+        "id": "sportivo_luqueno",
+        "name": "Sportivo Luqueño",
+        "short": "SLU",
+        "budget": 3500000,
+        "wageBudget": 52000,
+        "reputation": 71,
+        "overall": 69,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Feliciano Cáceres"
+      },
+      {
+        "id": "trinidense",
+        "name": "Sportivo Trinidense",
+        "short": "TRI",
+        "budget": 2900000,
+        "wageBudget": 44000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Martín Torres"
+      },
+      {
+        "id": "tacuary",
+        "name": "Tacuary",
+        "short": "TAC",
+        "budget": 2500000,
+        "wageBudget": 38000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Toribio Vargas"
+      }
+    ]
+  },
+  {
+    "id": "per_1",
+    "name": "Liga 1 Te Apuesto",
+    "country": "Perú",
+    "region": "Sudamérica",
+    "tier": 1,
+    "reputation": 71,
+    "teams": [
+      {
+        "id": "adt",
+        "name": "ADT",
+        "short": "ADT",
+        "budget": 2300000,
+        "wageBudget": 35000,
+        "reputation": 68,
+        "overall": 66,
+        "colors": [
+          "#66ccff",
+          "#ffffff"
+        ],
+        "stadium": "Unión Tarma"
+      },
+      {
+        "id": "alianza_atletico",
+        "name": "Alianza Atlético Sullana",
+        "short": "AAT",
+        "budget": 2200000,
+        "wageBudget": 33000,
+        "reputation": 67,
+        "overall": 65,
+        "colors": [
+          "#ffffff",
+          "#001a4d"
+        ],
+        "stadium": "Campeones del 36"
+      },
+      {
+        "id": "alianza_lima",
+        "name": "Alianza Lima",
+        "short": "ALI",
+        "budget": 6000000,
+        "wageBudget": 80000,
+        "reputation": 75,
+        "overall": 71,
+        "colors": [
+          "#001a4d",
+          "#ffffff"
+        ],
+        "stadium": "Alejandro Villanueva"
+      },
+      {
+        "id": "atl_grau",
+        "name": "Atlético Grau",
+        "short": "GRA",
+        "budget": 2400000,
+        "wageBudget": 36000,
+        "reputation": 68,
+        "overall": 66,
+        "colors": [
+          "#ffffff",
+          "#cc0000"
+        ],
+        "stadium": "Campeones del 36"
+      },
+      {
+        "id": "mannucci",
+        "name": "Carlos A. Mannucci",
+        "short": "MAN",
+        "budget": 2300000,
+        "wageBudget": 35000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Mansiche"
+      },
+      {
+        "id": "comerciantes_unidos",
+        "name": "Comerciantes Unidos",
+        "short": "COM",
+        "budget": 2000000,
+        "wageBudget": 30000,
+        "reputation": 66,
+        "overall": 65,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Juan Maldonado Gamarra"
+      },
+      {
+        "id": "cusco_fc",
+        "name": "Cusco FC",
+        "short": "CUS",
+        "budget": 2900000,
+        "wageBudget": 43000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#000000",
+          "#d4af37"
+        ],
+        "stadium": "Garcilaso de la Vega"
+      },
+      {
+        "id": "dep_garcilaso",
+        "name": "Deportivo Garcilaso",
+        "short": "GAR",
+        "budget": 2600000,
+        "wageBudget": 39000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#66ccff",
+          "#ffffff"
+        ],
+        "stadium": "Garcilaso de la Vega"
+      },
+      {
+        "id": "los_chankas",
+        "name": "Los Chankas",
+        "short": "CHA",
+        "budget": 2100000,
+        "wageBudget": 32000,
+        "reputation": 67,
+        "overall": 65,
+        "colors": [
+          "#cc0000",
+          "#ffcc00"
+        ],
+        "stadium": "Los Chankas de Andahuaylas"
+      },
+      {
+        "id": "melgar",
+        "name": "Melgar",
+        "short": "MEL",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 71,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Monumental de la UNSA"
+      },
+      {
+        "id": "sport_boys",
+        "name": "Sport Boys",
+        "short": "SBO",
+        "budget": 2500000,
+        "wageBudget": 38000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#ff99cc",
+          "#000000"
+        ],
+        "stadium": "Miguel Grau"
+      },
+      {
+        "id": "sport_huancayo",
+        "name": "Sport Huancayo",
+        "short": "SHU",
+        "budget": 2800000,
+        "wageBudget": 42000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#006633"
+        ],
+        "stadium": "Huancayo"
+      },
+      {
+        "id": "sporting_cristal",
+        "name": "Sporting Cristal",
+        "short": "SCR",
+        "budget": 5200000,
+        "wageBudget": 72000,
+        "reputation": 74,
+        "overall": 70,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Alberto Gallardo"
+      },
+      {
+        "id": "union_comercio",
+        "name": "Unión Comercio",
+        "short": "UCO",
+        "budget": 1900000,
+        "wageBudget": 29000,
+        "reputation": 66,
+        "overall": 64,
+        "colors": [
+          "#cc0000",
+          "#006633"
+        ],
+        "stadium": "Carlos Vidaurre García"
+      },
+      {
+        "id": "cesar_vallejo",
+        "name": "Universidad César Vallejo",
+        "short": "UCV",
+        "budget": 3600000,
+        "wageBudget": 52000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#001a4d",
+          "#ff6600"
+        ],
+        "stadium": "Mansiche"
+      },
+      {
+        "id": "universitario",
+        "name": "Universitario de Deportes",
+        "short": "UNI",
+        "budget": 5500000,
+        "wageBudget": 75000,
+        "reputation": 74,
+        "overall": 70,
+        "colors": [
+          "#f5f2d0",
+          "#800000"
+        ],
+        "stadium": "Estadio Monumental U"
+      },
+      {
+        "id": "utc",
+        "name": "UTC de Cajamarca",
+        "short": "UTC",
+        "budget": 2200000,
+        "wageBudget": 34000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#d4af37",
+          "#001a4d"
+        ],
+        "stadium": "Héroes de San Ramón"
+      },
+      {
+        "id": "cienciano",
+        "name": "Cienciano",
+        "short": "CIE",
+        "budget": 3200000,
+        "wageBudget": 46000,
+        "reputation": 71,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Garcilaso de la Vega"
+      }
+    ]
+  },
+  {
+    "id": "uru_1",
+    "name": "Campeonato Uruguayo",
+    "country": "Uruguay",
+    "region": "Sudamérica",
+    "tier": 1,
+    "reputation": 75,
+    "teams": [
+      {
+        "id": "boston_river",
+        "name": "Boston River",
+        "short": "BOS",
+        "budget": 3200000,
+        "wageBudget": 48000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#006633"
+        ],
+        "stadium": "Campeones Olímpicos"
+      },
+      {
+        "id": "cerro_uru",
+        "name": "Cerro",
+        "short": "CER",
+        "budget": 2600000,
+        "wageBudget": 40000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Luis Tróccoli"
+      },
+      {
+        "id": "cerro_largo",
+        "name": "Cerro Largo",
+        "short": "CLA",
+        "budget": 2800000,
+        "wageBudget": 42000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Antonio Ubilla"
+      },
+      {
+        "id": "danubio",
+        "name": "Danubio",
+        "short": "DAN",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 72,
+        "overall": 70,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Jardines del Hipódromo"
+      },
+      {
+        "id": "defensor",
+        "name": "Defensor Sporting",
+        "short": "DEF",
+        "budget": 4500000,
+        "wageBudget": 65000,
+        "reputation": 73,
+        "overall": 70,
+        "colors": [
+          "#4b0082",
+          "#ffffff"
+        ],
+        "stadium": "Luis Franzini"
+      },
+      {
+        "id": "dep_maldonado",
+        "name": "Deportivo Maldonado",
+        "short": "MAL",
+        "budget": 2900000,
+        "wageBudget": 43000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#006633"
+        ],
+        "stadium": "Domingo Burgueño Miguel"
+      },
+      {
+        "id": "fenix",
+        "name": "Fénix",
+        "short": "FEN",
+        "budget": 2500000,
+        "wageBudget": 38000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#4b0082",
+          "#ffffff"
+        ],
+        "stadium": "Parque Capurro"
+      },
+      {
+        "id": "liverpool_uru",
+        "name": "Liverpool",
+        "short": "LIV",
+        "budget": 5000000,
+        "wageBudget": 70000,
+        "reputation": 74,
+        "overall": 71,
+        "colors": [
+          "#003399",
+          "#000000"
+        ],
+        "stadium": "Belvedere"
+      },
+      {
+        "id": "miramar",
+        "name": "Miramar Misiones",
+        "short": "MIR",
+        "budget": 2200000,
+        "wageBudget": 34000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Parque Luis Méndez Piana"
+      },
+      {
+        "id": "wanderers",
+        "name": "Montevideo Wanderers",
+        "short": "WAN",
+        "budget": 3500000,
+        "wageBudget": 52000,
+        "reputation": 71,
+        "overall": 69,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Parque Alfredo Víctor Viera"
+      },
+      {
+        "id": "nacional_uru",
+        "name": "Nacional",
+        "short": "NAC",
+        "budget": 8500000,
+        "wageBudget": 115000,
+        "reputation": 78,
+        "overall": 74,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Gran Parque Central"
+      },
+      {
+        "id": "penarol",
+        "name": "Peñarol",
+        "short": "PEN",
+        "budget": 9000000,
+        "wageBudget": 120000,
+        "reputation": 79,
+        "overall": 75,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Campeón del Siglo"
+      },
+      {
+        "id": "progreso",
+        "name": "Progreso",
+        "short": "PRO",
+        "budget": 2700000,
+        "wageBudget": 41000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#ffcc00",
+          "#cc0000"
+        ],
+        "stadium": "Abraham Paladino"
+      },
+      {
+        "id": "racing_mvd",
+        "name": "Racing Club de Montevideo",
+        "short": "RAC",
+        "budget": 3000000,
+        "wageBudget": 45000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Osvaldo Roberto"
+      },
+      {
+        "id": "rampla",
+        "name": "Rampla Juniors",
+        "short": "RAM",
+        "budget": 2300000,
+        "wageBudget": 35000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#cc0000",
+          "#006633"
+        ],
+        "stadium": "Olímpico Pedro Arispe"
+      },
+      {
+        "id": "river_plate_uru",
+        "name": "River Plate",
+        "short": "RIV",
+        "budget": 3300000,
+        "wageBudget": 50000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Parque Federico Omar Saroldi"
+      }
+    ]
+  },
+  {
+    "id": "ven_1",
+    "name": "Liga FUTVE",
+    "country": "Venezuela",
+    "region": "Sudamérica",
+    "tier": 1,
+    "reputation": 69,
+    "teams": [
+      {
+        "id": "puerto_cabello",
+        "name": "Academia Puerto Cabello",
+        "short": "APC",
+        "budget": 3800000,
+        "wageBudget": 55000,
+        "reputation": 71,
+        "overall": 69,
+        "colors": [
+          "#003399",
+          "#ff6600"
+        ],
+        "stadium": "La Bombonerita"
+      },
+      {
+        "id": "angostura",
+        "name": "Angostura FC",
+        "short": "ANG",
+        "budget": 1900000,
+        "wageBudget": 28000,
+        "reputation": 65,
+        "overall": 64,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Ricardo Tulio Maya"
+      },
+      {
+        "id": "carabobo",
+        "name": "Carabobo FC",
+        "short": "CBO",
+        "budget": 2900000,
+        "wageBudget": 43000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#800020",
+          "#ffffff"
+        ],
+        "stadium": "Misael Delgado"
+      },
+      {
+        "id": "caracas_fc",
+        "name": "Caracas FC",
+        "short": "CAR",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 71,
+        "overall": 69,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Olímpico de la UCV"
+      },
+      {
+        "id": "la_guaira",
+        "name": "Deportivo La Guaira",
+        "short": "DLG",
+        "budget": 3000000,
+        "wageBudget": 45000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#ff6600",
+          "#ffffff"
+        ],
+        "stadium": "Olímpico de la UCV"
+      },
+      {
+        "id": "dep_tachira",
+        "name": "Deportivo Táchira",
+        "short": "TAC",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 72,
+        "overall": 70,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Polideportivo de Pueblo Nuevo"
+      },
+      {
+        "id": "estudiantes_merida",
+        "name": "Estudiantes de Mérida",
+        "short": "EMD",
+        "budget": 2600000,
+        "wageBudget": 39000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Guillermo Soto Rosa"
+      },
+      {
+        "id": "inter_barinas",
+        "name": "Inter de Barinas",
+        "short": "INB",
+        "budget": 2000000,
+        "wageBudget": 30000,
+        "reputation": 66,
+        "overall": 65,
+        "colors": [
+          "#003399",
+          "#cc0000"
+        ],
+        "stadium": "Reinaldo Melo"
+      },
+      {
+        "id": "metropolitanos",
+        "name": "Metropolitanos FC",
+        "short": "MET",
+        "budget": 2800000,
+        "wageBudget": 42000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#4b0082",
+          "#ffffff"
+        ],
+        "stadium": "Olímpico de la UCV"
+      },
+      {
+        "id": "monagas",
+        "name": "Monagas SC",
+        "short": "MON",
+        "budget": 2700000,
+        "wageBudget": 40000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#003399",
+          "#cc0000"
+        ],
+        "stadium": "Monumental de Maturín"
+      },
+      {
+        "id": "portuguesa",
+        "name": "Portuguesa FC",
+        "short": "POR",
+        "budget": 2400000,
+        "wageBudget": 36000,
+        "reputation": 68,
+        "overall": 66,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "José Antonio Páez"
+      },
+      {
+        "id": "rayo_zuliano",
+        "name": "Rayo Zuliano",
+        "short": "RAY",
+        "budget": 2200000,
+        "wageBudget": 33000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "José Encarnación Pachencho Romero"
+      },
+      {
+        "id": "ucv_fc",
+        "name": "Universidad Central (UCV FC)",
+        "short": "UCV",
+        "budget": 2500000,
+        "wageBudget": 37000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Olímpico de la UCV"
+      },
+      {
+        "id": "zamora_ven",
+        "name": "Zamora FC",
+        "short": "ZAM",
+        "budget": 2500000,
+        "wageBudget": 38000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Agustín Tovar"
+      }
     ]
   },
   {
@@ -75,36 +2599,688 @@
     "tier": 1,
     "reputation": 80,
     "teams": [
-      {"id": "atlanta", "name": "Atlanta United", "short": "ATL", "budget": 30000000, "wageBudget": 380000, "reputation": 79, "overall": 76, "colors": ["#cc0000", "#000000"], "stadium": "Mercedes-Benz Stadium"},
-      {"id": "charlotte", "name": "Charlotte FC", "short": "CLT", "budget": 24000000, "wageBudget": 300000, "reputation": 77, "overall": 74, "colors": ["#3399ff", "#000000"], "stadium": "Bank of America Stadium"},
-      {"id": "chicago_fire", "name": "Chicago Fire", "short": "CHI", "budget": 22000000, "wageBudget": 280000, "reputation": 76, "overall": 74, "colors": ["#cc0000", "#001a4d"], "stadium": "Soldier Field"},
-      {"id": "columbus_crew", "name": "Columbus Crew", "short": "CLB", "budget": 25000000, "wageBudget": 320000, "reputation": 78, "overall": 76, "colors": ["#ffcc00", "#000000"], "stadium": "Lower.com Field"},
-      {"id": "dc_united", "name": "D.C. United", "short": "DCU", "budget": 20000000, "wageBudget": 260000, "reputation": 76, "overall": 74, "colors": ["#000000", "#cc0000"], "stadium": "Audi Field"},
-      {"id": "cincinnati", "name": "FC Cincinnati", "short": "CIN", "budget": 24000000, "wageBudget": 300000, "reputation": 77, "overall": 75, "colors": ["#ff6600", "#003399"], "stadium": "TQL Stadium"},
-      {"id": "inter_miami", "name": "Inter Miami CF", "short": "MIA", "budget": 50000000, "wageBudget": 700000, "reputation": 85, "overall": 79, "colors": ["#ff99cc", "#000000"], "stadium": "Chase Stadium"},
-      {"id": "montreal", "name": "CF Montréal", "short": "MTL", "budget": 18000000, "wageBudget": 240000, "reputation": 75, "overall": 73, "colors": ["#003399", "#000000"], "stadium": "Stade Saputo"},
-      {"id": "new_england", "name": "New England Revolution", "short": "NER", "budget": 21000000, "wageBudget": 270000, "reputation": 76, "overall": 74, "colors": ["#001a4d", "#cc0000"], "stadium": "Gillette Stadium"},
-      {"id": "ny_city", "name": "New York City FC", "short": "NYC", "budget": 28000000, "wageBudget": 350000, "reputation": 78, "overall": 75, "colors": ["#66ccff", "#001a4d"], "stadium": "Yankee Stadium"},
-      {"id": "ny_red_bulls", "name": "New York Red Bulls", "short": "NYR", "budget": 23000000, "wageBudget": 290000, "reputation": 77, "overall": 74, "colors": ["#cc0000", "#ffffff"], "stadium": "Red Bull Arena"},
-      {"id": "orlando_city", "name": "Orlando City SC", "short": "ORL", "budget": 22000000, "wageBudget": 280000, "reputation": 76, "overall": 74, "colors": ["#4b0082", "#ffffff"], "stadium": "Inter&Co Stadium"},
-      {"id": "philadelphia", "name": "Philadelphia Union", "short": "PHI", "budget": 24000000, "wageBudget": 300000, "reputation": 77, "overall": 75, "colors": ["#001a4d", "#d4af37"], "stadium": "Subaru Park"},
-      {"id": "toronto_fc", "name": "Toronto FC", "short": "TOR", "budget": 26000000, "wageBudget": 320000, "reputation": 77, "overall": 74, "colors": ["#cc0000", "#000000"], "stadium": "BMO Field"},
-      {"id": "nashville", "name": "Nashville SC", "short": "NSH", "budget": 21000000, "wageBudget": 270000, "reputation": 76, "overall": 74, "colors": ["#ffcc00", "#001a4d"], "stadium": "GEODIS Park"},
-      {"id": "austin_fc", "name": "Austin FC", "short": "ATX", "budget": 25000000, "wageBudget": 310000, "reputation": 77, "overall": 74, "colors": ["#006633", "#000000"], "stadium": "Q2 Stadium"},
-      {"id": "colorado", "name": "Colorado Rapids", "short": "COL", "budget": 18000000, "wageBudget": 240000, "reputation": 75, "overall": 73, "colors": ["#800020", "#3399ff"], "stadium": "Dick's Sporting Goods Park"},
-      {"id": "fc_dallas", "name": "FC Dallas", "short": "DAL", "budget": 20000000, "wageBudget": 260000, "reputation": 76, "overall": 74, "colors": ["#cc0000", "#003399"], "stadium": "Toyota Stadium"},
-      {"id": "houston", "name": "Houston Dynamo", "short": "HOU", "budget": 21000000, "wageBudget": 270000, "reputation": 76, "overall": 74, "colors": ["#ff6600", "#000000"], "stadium": "Shell Energy Stadium"},
-      {"id": "lafc", "name": "Los Angeles FC (LAFC)", "short": "LAF", "budget": 35000000, "wageBudget": 420000, "reputation": 81, "overall": 77, "colors": ["#000000", "#d4af37"], "stadium": "BMO Stadium"},
-      {"id": "la_galaxy", "name": "LA Galaxy", "short": "LAG", "budget": 32000000, "wageBudget": 400000, "reputation": 80, "overall": 76, "colors": ["#ffffff", "#00246b"], "stadium": "Dignity Health Sports Park"},
-      {"id": "minnesota", "name": "Minnesota United FC", "short": "MIN", "budget": 19000000, "wageBudget": 250000, "reputation": 75, "overall": 73, "colors": ["#3399ff", "#000000"], "stadium": "Allianz Field"},
-      {"id": "portland", "name": "Portland Timbers", "short": "POR", "budget": 24000000, "wageBudget": 300000, "reputation": 77, "overall": 75, "colors": ["#006633", "#ffcc00"], "stadium": "Providence Park"},
-      {"id": "real_salt_lake", "name": "Real Salt Lake", "short": "RSL", "budget": 22000000, "wageBudget": 280000, "reputation": 76, "overall": 74, "colors": ["#cc0000", "#003399"], "stadium": "America First Field"},
-      {"id": "san_jose", "name": "San Jose Earthquakes", "short": "SJE", "budget": 17000000, "wageBudget": 230000, "reputation": 74, "overall": 72, "colors": ["#003399", "#000000"], "stadium": "PayPal Park"},
-      {"id": "seattle", "name": "Seattle Sounders FC", "short": "SEA", "budget": 28000000, "wageBudget": 350000, "reputation": 79, "overall": 76, "colors": ["#008000", "#3399ff"], "stadium": "Lumen Field"},
-      {"id": "sporting_kc", "name": "Sporting Kansas City", "short": "SKC", "budget": 20000000, "wageBudget": 260000, "reputation": 76, "overall": 74, "colors": ["#3399ff", "#001a4d"], "stadium": "Children's Mercy Park"},
-      {"id": "st_louis", "name": "St. Louis City SC", "short": "STL", "budget": 23000000, "wageBudget": 290000, "reputation": 76, "overall": 74, "colors": ["#cc0000", "#001a4d"], "stadium": "CITYPARK"},
-      {"id": "vancouver_whitecaps", "name": "Vancouver Whitecaps FC", "short": "VAN", "budget": 19000000, "wageBudget": 250000, "reputation": 75, "overall": 73, "colors": ["#ffffff", "#001a4d"], "stadium": "BC Place"},
-      {"id": "san_diego_fc", "name": "San Diego FC", "short": "SAN", "budget": 28000000, "wageBudget": 340000, "reputation": 77, "overall": 75, "colors": ["#000000", "#3399ff"], "stadium": "Snapdragon Stadium"}
+      {
+        "id": "atlanta",
+        "name": "Atlanta United",
+        "short": "ATL",
+        "budget": 30000000,
+        "wageBudget": 380000,
+        "reputation": 79,
+        "overall": 76,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Mercedes-Benz Stadium"
+      },
+      {
+        "id": "charlotte",
+        "name": "Charlotte FC",
+        "short": "CLT",
+        "budget": 24000000,
+        "wageBudget": 300000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#3399ff",
+          "#000000"
+        ],
+        "stadium": "Bank of America Stadium"
+      },
+      {
+        "id": "chicago_fire",
+        "name": "Chicago Fire",
+        "short": "CHI",
+        "budget": 22000000,
+        "wageBudget": 280000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#001a4d"
+        ],
+        "stadium": "Soldier Field"
+      },
+      {
+        "id": "columbus_crew",
+        "name": "Columbus Crew",
+        "short": "CLB",
+        "budget": 25000000,
+        "wageBudget": 320000,
+        "reputation": 78,
+        "overall": 76,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Lower.com Field"
+      },
+      {
+        "id": "dc_united",
+        "name": "D.C. United",
+        "short": "DCU",
+        "budget": 20000000,
+        "wageBudget": 260000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#000000",
+          "#cc0000"
+        ],
+        "stadium": "Audi Field"
+      },
+      {
+        "id": "cincinnati",
+        "name": "FC Cincinnati",
+        "short": "CIN",
+        "budget": 24000000,
+        "wageBudget": 300000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#ff6600",
+          "#003399"
+        ],
+        "stadium": "TQL Stadium"
+      },
+      {
+        "id": "inter_miami",
+        "name": "Inter Miami CF",
+        "short": "MIA",
+        "budget": 50000000,
+        "wageBudget": 700000,
+        "reputation": 85,
+        "overall": 79,
+        "colors": [
+          "#ff99cc",
+          "#000000"
+        ],
+        "stadium": "Chase Stadium"
+      },
+      {
+        "id": "montreal",
+        "name": "CF Montréal",
+        "short": "MTL",
+        "budget": 18000000,
+        "wageBudget": 240000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#003399",
+          "#000000"
+        ],
+        "stadium": "Stade Saputo"
+      },
+      {
+        "id": "new_england",
+        "name": "New England Revolution",
+        "short": "NER",
+        "budget": 21000000,
+        "wageBudget": 270000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#001a4d",
+          "#cc0000"
+        ],
+        "stadium": "Gillette Stadium"
+      },
+      {
+        "id": "ny_city",
+        "name": "New York City FC",
+        "short": "NYC",
+        "budget": 28000000,
+        "wageBudget": 350000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#66ccff",
+          "#001a4d"
+        ],
+        "stadium": "Yankee Stadium"
+      },
+      {
+        "id": "ny_red_bulls",
+        "name": "New York Red Bulls",
+        "short": "NYR",
+        "budget": 23000000,
+        "wageBudget": 290000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Red Bull Arena"
+      },
+      {
+        "id": "orlando_city",
+        "name": "Orlando City SC",
+        "short": "ORL",
+        "budget": 22000000,
+        "wageBudget": 280000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#4b0082",
+          "#ffffff"
+        ],
+        "stadium": "Inter&Co Stadium"
+      },
+      {
+        "id": "philadelphia",
+        "name": "Philadelphia Union",
+        "short": "PHI",
+        "budget": 24000000,
+        "wageBudget": 300000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#001a4d",
+          "#d4af37"
+        ],
+        "stadium": "Subaru Park"
+      },
+      {
+        "id": "toronto_fc",
+        "name": "Toronto FC",
+        "short": "TOR",
+        "budget": 26000000,
+        "wageBudget": 320000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "BMO Field"
+      },
+      {
+        "id": "nashville",
+        "name": "Nashville SC",
+        "short": "NSH",
+        "budget": 21000000,
+        "wageBudget": 270000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#ffcc00",
+          "#001a4d"
+        ],
+        "stadium": "GEODIS Park"
+      },
+      {
+        "id": "austin_fc",
+        "name": "Austin FC",
+        "short": "ATX",
+        "budget": 25000000,
+        "wageBudget": 310000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#006633",
+          "#000000"
+        ],
+        "stadium": "Q2 Stadium"
+      },
+      {
+        "id": "colorado",
+        "name": "Colorado Rapids",
+        "short": "COL",
+        "budget": 18000000,
+        "wageBudget": 240000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#800020",
+          "#3399ff"
+        ],
+        "stadium": "Dick's Sporting Goods Park"
+      },
+      {
+        "id": "fc_dallas",
+        "name": "FC Dallas",
+        "short": "DAL",
+        "budget": 20000000,
+        "wageBudget": 260000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Toyota Stadium"
+      },
+      {
+        "id": "houston",
+        "name": "Houston Dynamo",
+        "short": "HOU",
+        "budget": 21000000,
+        "wageBudget": 270000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#ff6600",
+          "#000000"
+        ],
+        "stadium": "Shell Energy Stadium"
+      },
+      {
+        "id": "lafc",
+        "name": "Los Angeles FC (LAFC)",
+        "short": "LAF",
+        "budget": 35000000,
+        "wageBudget": 420000,
+        "reputation": 81,
+        "overall": 77,
+        "colors": [
+          "#000000",
+          "#d4af37"
+        ],
+        "stadium": "BMO Stadium"
+      },
+      {
+        "id": "la_galaxy",
+        "name": "LA Galaxy",
+        "short": "LAG",
+        "budget": 32000000,
+        "wageBudget": 400000,
+        "reputation": 80,
+        "overall": 76,
+        "colors": [
+          "#ffffff",
+          "#00246b"
+        ],
+        "stadium": "Dignity Health Sports Park"
+      },
+      {
+        "id": "minnesota",
+        "name": "Minnesota United FC",
+        "short": "MIN",
+        "budget": 19000000,
+        "wageBudget": 250000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#3399ff",
+          "#000000"
+        ],
+        "stadium": "Allianz Field"
+      },
+      {
+        "id": "portland",
+        "name": "Portland Timbers",
+        "short": "POR",
+        "budget": 24000000,
+        "wageBudget": 300000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#006633",
+          "#ffcc00"
+        ],
+        "stadium": "Providence Park"
+      },
+      {
+        "id": "real_salt_lake",
+        "name": "Real Salt Lake",
+        "short": "RSL",
+        "budget": 22000000,
+        "wageBudget": 280000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "America First Field"
+      },
+      {
+        "id": "san_jose",
+        "name": "San Jose Earthquakes",
+        "short": "SJE",
+        "budget": 17000000,
+        "wageBudget": 230000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#003399",
+          "#000000"
+        ],
+        "stadium": "PayPal Park"
+      },
+      {
+        "id": "seattle",
+        "name": "Seattle Sounders FC",
+        "short": "SEA",
+        "budget": 28000000,
+        "wageBudget": 350000,
+        "reputation": 79,
+        "overall": 76,
+        "colors": [
+          "#008000",
+          "#3399ff"
+        ],
+        "stadium": "Lumen Field"
+      },
+      {
+        "id": "sporting_kc",
+        "name": "Sporting Kansas City",
+        "short": "SKC",
+        "budget": 20000000,
+        "wageBudget": 260000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#3399ff",
+          "#001a4d"
+        ],
+        "stadium": "Children's Mercy Park"
+      },
+      {
+        "id": "st_louis",
+        "name": "St. Louis City SC",
+        "short": "STL",
+        "budget": 23000000,
+        "wageBudget": 290000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#001a4d"
+        ],
+        "stadium": "CITYPARK"
+      },
+      {
+        "id": "vancouver_whitecaps",
+        "name": "Vancouver Whitecaps FC",
+        "short": "VAN",
+        "budget": 19000000,
+        "wageBudget": 250000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#ffffff",
+          "#001a4d"
+        ],
+        "stadium": "BC Place"
+      },
+      {
+        "id": "san_diego_fc",
+        "name": "San Diego FC",
+        "short": "SAN",
+        "budget": 28000000,
+        "wageBudget": 340000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#000000",
+          "#3399ff"
+        ],
+        "stadium": "Snapdragon Stadium"
+      }
+    ]
+  },
+  {
+    "id": "mex_1",
+    "name": "Liga BBVA MX",
+    "country": "México",
+    "region": "Norteamérica",
+    "tier": 1,
+    "reputation": 79,
+    "teams": [
+      {
+        "id": "america_mex",
+        "name": "Club América",
+        "short": "AME",
+        "budget": 35000000,
+        "wageBudget": 420000,
+        "reputation": 82,
+        "overall": 77,
+        "colors": [
+          "#ffff99",
+          "#002060"
+        ],
+        "stadium": "Estadio Azteca"
+      },
+      {
+        "id": "atl_san_luis",
+        "name": "Atlético de San Luis",
+        "short": "ASL",
+        "budget": 16000000,
+        "wageBudget": 240000,
+        "reputation": 76,
+        "overall": 73,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Alfonso Lastras Ramírez"
+      },
+      {
+        "id": "atlas",
+        "name": "Atlas FC",
+        "short": "ATL",
+        "budget": 18000000,
+        "wageBudget": 260000,
+        "reputation": 77,
+        "overall": 73,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Jalisco"
+      },
+      {
+        "id": "juarez",
+        "name": "FC Juárez (Bravos)",
+        "short": "JUA",
+        "budget": 15000000,
+        "wageBudget": 220000,
+        "reputation": 75,
+        "overall": 72,
+        "colors": [
+          "#006633",
+          "#cc0000"
+        ],
+        "stadium": "Olímpico Benito Juárez"
+      },
+      {
+        "id": "cruz_azul",
+        "name": "Cruz Azul",
+        "short": "CAZ",
+        "budget": 25000000,
+        "wageBudget": 320000,
+        "reputation": 79,
+        "overall": 75,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Estadio Ciudad de los Deportes"
+      },
+      {
+        "id": "chivas",
+        "name": "Guadalajara (Chivas)",
+        "short": "CHI",
+        "budget": 28000000,
+        "wageBudget": 350000,
+        "reputation": 80,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#001a4d"
+        ],
+        "stadium": "Estadio Akron"
+      },
+      {
+        "id": "leon",
+        "name": "Club León",
+        "short": "LEO",
+        "budget": 20000000,
+        "wageBudget": 280000,
+        "reputation": 78,
+        "overall": 74,
+        "colors": [
+          "#006633",
+          "#ffcc00"
+        ],
+        "stadium": "Nou Camp"
+      },
+      {
+        "id": "necaxa",
+        "name": "Club Necaxa",
+        "short": "NEC",
+        "budget": 14000000,
+        "wageBudget": 210000,
+        "reputation": 75,
+        "overall": 72,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Victoria"
+      },
+      {
+        "id": "pachuca",
+        "name": "CF Pachuca",
+        "short": "PAC",
+        "budget": 22000000,
+        "wageBudget": 300000,
+        "reputation": 78,
+        "overall": 74,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Estadio Hidalgo"
+      },
+      {
+        "id": "puebla",
+        "name": "Club Puebla",
+        "short": "PUE",
+        "budget": 13000000,
+        "wageBudget": 200000,
+        "reputation": 74,
+        "overall": 71,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Cuauhtémoc"
+      },
+      {
+        "id": "pumas",
+        "name": "Pumas UNAM",
+        "short": "PUM",
+        "budget": 20000000,
+        "wageBudget": 280000,
+        "reputation": 78,
+        "overall": 74,
+        "colors": [
+          "#002060",
+          "#d4af37"
+        ],
+        "stadium": "Olímpico Universitario"
+      },
+      {
+        "id": "queretaro",
+        "name": "Querétaro (Gallos Blancos)",
+        "short": "QUE",
+        "budget": 12000000,
+        "wageBudget": 190000,
+        "reputation": 74,
+        "overall": 71,
+        "colors": [
+          "#003399",
+          "#000000"
+        ],
+        "stadium": "La Corregidora"
+      },
+      {
+        "id": "monterrey",
+        "name": "CF Monterrey (Rayados)",
+        "short": "MON",
+        "budget": 40000000,
+        "wageBudget": 480000,
+        "reputation": 81,
+        "overall": 77,
+        "colors": [
+          "#001a4d",
+          "#ffffff"
+        ],
+        "stadium": "Estadio BBVA"
+      },
+      {
+        "id": "santos_laguna",
+        "name": "Santos Laguna",
+        "short": "SAN",
+        "budget": 18000000,
+        "wageBudget": 260000,
+        "reputation": 77,
+        "overall": 73,
+        "colors": [
+          "#008000",
+          "#ffffff"
+        ],
+        "stadium": "Estadio Corona"
+      },
+      {
+        "id": "tigres",
+        "name": "Tigres UANL",
+        "short": "TIG",
+        "budget": 38000000,
+        "wageBudget": 450000,
+        "reputation": 81,
+        "overall": 77,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Estadio Universitario"
+      },
+      {
+        "id": "toluca",
+        "name": "Deportivo Toluca",
+        "short": "TOL",
+        "budget": 24000000,
+        "wageBudget": 310000,
+        "reputation": 79,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Nemesio Díez"
+      },
+      {
+        "id": "tijuana",
+        "name": "Tijuana (Xolos)",
+        "short": "TIJ",
+        "budget": 17000000,
+        "wageBudget": 250000,
+        "reputation": 76,
+        "overall": 73,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Caliente"
+      },
+      {
+        "id": "atlante",
+        "name": "Atlante FC",
+        "short": "ATL",
+        "budget": 15000000,
+        "wageBudget": 220000,
+        "reputation": 75,
+        "overall": 72,
+        "colors": [
+          "#003399",
+          "#cc0000"
+        ],
+        "stadium": "Ciudad de los Deportes"
+      }
     ]
   },
   {
@@ -115,14 +3291,4016 @@
     "tier": 1,
     "reputation": 70,
     "teams": [
-      {"id": "atletico_ottawa", "name": "Atlético Ottawa", "short": "ATO", "budget": 3500000, "wageBudget": 50000, "reputation": 71, "overall": 68, "colors": ["#cc0000", "#ffffff"], "stadium": "TD Place Stadium"},
-      {"id": "cavalry_fc", "name": "Cavalry FC", "short": "CAV", "budget": 3800000, "wageBudget": 55000, "reputation": 71, "overall": 69, "colors": ["#cc0000", "#006633"], "stadium": "ATCO Field"},
-      {"id": "forge_fc", "name": "Forge FC", "short": "FOR", "budget": 4000000, "wageBudget": 60000, "reputation": 72, "overall": 69, "colors": ["#ff6600", "#001a4d"], "stadium": "Tim Hortons Field"},
-      {"id": "hfx_wanderers", "name": "HFX Wanderers FC", "short": "HFX", "budget": 2800000, "wageBudget": 42000, "reputation": 69, "overall": 67, "colors": ["#3399ff", "#001a4d"], "stadium": "Wanderers Grounds"},
-      {"id": "pacific_fc", "name": "Pacific FC", "short": "PAC", "budget": 3200000, "wageBudget": 48000, "reputation": 70, "overall": 68, "colors": ["#4b0082", "#3399ff"], "stadium": "Starlight Stadium"},
-      {"id": "vancouver_cpl", "name": "Vancouver FC", "short": "VFC", "budget": 2700000, "wageBudget": 40000, "reputation": 68, "overall": 67, "colors": ["#000000", "#cc0000"], "stadium": "Willoughby Community Park"},
-      {"id": "inter_toronto", "name": "Inter Toronto FC", "short": "INT", "budget": 3000000, "wageBudget": 45000, "reputation": 69, "overall": 67, "colors": ["#001a4d", "#ff6600"], "stadium": "York Lions Stadium"},
-      {"id": "supra_quebec", "name": "FC Supra du Québec", "short": "SUP", "budget": 2900000, "wageBudget": 43000, "reputation": 69, "overall": 67, "colors": ["#003399", "#ffffff"], "stadium": "Complexe Claude-Robillard"}
+      {
+        "id": "atletico_ottawa",
+        "name": "Atlético Ottawa",
+        "short": "ATO",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 71,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "TD Place Stadium"
+      },
+      {
+        "id": "cavalry_fc",
+        "name": "Cavalry FC",
+        "short": "CAV",
+        "budget": 3800000,
+        "wageBudget": 55000,
+        "reputation": 71,
+        "overall": 69,
+        "colors": [
+          "#cc0000",
+          "#006633"
+        ],
+        "stadium": "ATCO Field"
+      },
+      {
+        "id": "forge_fc",
+        "name": "Forge FC",
+        "short": "FOR",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 72,
+        "overall": 69,
+        "colors": [
+          "#ff6600",
+          "#001a4d"
+        ],
+        "stadium": "Tim Hortons Field"
+      },
+      {
+        "id": "hfx_wanderers",
+        "name": "HFX Wanderers FC",
+        "short": "HFX",
+        "budget": 2800000,
+        "wageBudget": 42000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#3399ff",
+          "#001a4d"
+        ],
+        "stadium": "Wanderers Grounds"
+      },
+      {
+        "id": "pacific_fc",
+        "name": "Pacific FC",
+        "short": "PAC",
+        "budget": 3200000,
+        "wageBudget": 48000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#4b0082",
+          "#3399ff"
+        ],
+        "stadium": "Starlight Stadium"
+      },
+      {
+        "id": "vancouver_cpl",
+        "name": "Vancouver FC",
+        "short": "VFC",
+        "budget": 2700000,
+        "wageBudget": 40000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#000000",
+          "#cc0000"
+        ],
+        "stadium": "Willoughby Community Park"
+      },
+      {
+        "id": "inter_toronto",
+        "name": "Inter Toronto FC",
+        "short": "INT",
+        "budget": 3000000,
+        "wageBudget": 45000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#001a4d",
+          "#ff6600"
+        ],
+        "stadium": "York Lions Stadium"
+      },
+      {
+        "id": "supra_quebec",
+        "name": "FC Supra du Québec",
+        "short": "SUP",
+        "budget": 2900000,
+        "wageBudget": 43000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Complexe Claude-Robillard"
+      }
+    ]
+  },
+  {
+    "id": "crc_1",
+    "name": "Liga Promerica",
+    "country": "Costa Rica",
+    "region": "Centroamérica",
+    "tier": 1,
+    "reputation": 72,
+    "teams": [
+      {
+        "id": "saprissa",
+        "name": "Deportivo Saprissa",
+        "short": "SAP",
+        "budget": 4500000,
+        "wageBudget": 65000,
+        "reputation": 73,
+        "overall": 70,
+        "colors": [
+          "#800020",
+          "#ffffff"
+        ],
+        "stadium": "Ricardo Saprissa Aymá"
+      },
+      {
+        "id": "alajuelense",
+        "name": "Liga Deportiva Alajuelense",
+        "short": "LDA",
+        "budget": 4200000,
+        "wageBudget": 60000,
+        "reputation": 73,
+        "overall": 70,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Alejandro Morera Soto"
+      },
+      {
+        "id": "herediano",
+        "name": "CS Herediano",
+        "short": "HER",
+        "budget": 3800000,
+        "wageBudget": 55000,
+        "reputation": 72,
+        "overall": 69,
+        "colors": [
+          "#ffcc00",
+          "#cc0000"
+        ],
+        "stadium": "Eladio Rosabal Cordero"
+      },
+      {
+        "id": "cartagines",
+        "name": "CS Cartaginés",
+        "short": "CSC",
+        "budget": 2800000,
+        "wageBudget": 42000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Fello Meza"
+      },
+      {
+        "id": "san_carlos",
+        "name": "AD San Carlos",
+        "short": "SCA",
+        "budget": 2200000,
+        "wageBudget": 35000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Carlos Ugalde Álvarez"
+      },
+      {
+        "id": "puntarenas",
+        "name": "Puntarenas FC",
+        "short": "PFC",
+        "budget": 2000000,
+        "wageBudget": 30000,
+        "reputation": 67,
+        "overall": 66,
+        "colors": [
+          "#ff6600",
+          "#ffffff"
+        ],
+        "stadium": "Lito Pérez"
+      }
+    ]
+  },
+  {
+    "id": "hon_1",
+    "name": "Liga Nacional de Honduras",
+    "country": "Honduras",
+    "region": "Centroamérica",
+    "tier": 1,
+    "reputation": 71,
+    "teams": [
+      {
+        "id": "olimpia_hon",
+        "name": "CD Olimpia",
+        "short": "OLI",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 73,
+        "overall": 70,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Chelato Uclés"
+      },
+      {
+        "id": "motagua",
+        "name": "FC Motagua",
+        "short": "MOT",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 72,
+        "overall": 69,
+        "colors": [
+          "#001a4d",
+          "#ffffff"
+        ],
+        "stadium": "Chelato Uclés"
+      },
+      {
+        "id": "real_espana",
+        "name": "Real España",
+        "short": "RES",
+        "budget": 3200000,
+        "wageBudget": 48000,
+        "reputation": 71,
+        "overall": 68,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Francisco Morazán"
+      },
+      {
+        "id": "marathon",
+        "name": "CD Marathón",
+        "short": "MAR",
+        "budget": 3000000,
+        "wageBudget": 45000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Yankel Rosenthal"
+      }
+    ]
+  },
+  {
+    "id": "gtm_1",
+    "name": "Liga Nacional de Guatemala",
+    "country": "Guatemala",
+    "region": "Centroamérica",
+    "tier": 1,
+    "reputation": 70,
+    "teams": [
+      {
+        "id": "comunicaciones",
+        "name": "Comunicaciones FC",
+        "short": "COM",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 72,
+        "overall": 69,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Doroteo Guamuch Flores"
+      },
+      {
+        "id": "municipal_gtm",
+        "name": "CSD Municipal",
+        "short": "MUN",
+        "budget": 3400000,
+        "wageBudget": 48000,
+        "reputation": 72,
+        "overall": 69,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "El Trébol"
+      },
+      {
+        "id": "antigua_gfc",
+        "name": "Antigua GFC",
+        "short": "ANT",
+        "budget": 2800000,
+        "wageBudget": 42000,
+        "reputation": 70,
+        "overall": 68,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Pensativo"
+      },
+      {
+        "id": "xelaju",
+        "name": "Xelajú MC",
+        "short": "XEL",
+        "budget": 2600000,
+        "wageBudget": 39000,
+        "reputation": 69,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Mario Camposeco"
+      }
+    ]
+  },
+  {
+    "id": "eng_1",
+    "name": "Premier League",
+    "country": "Inglaterra",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 95,
+    "teams": [
+      {
+        "id": "arsenal",
+        "name": "Arsenal FC",
+        "short": "ARS",
+        "budget": 130000000,
+        "wageBudget": 1400000,
+        "reputation": 91,
+        "overall": 85,
+        "colors": [
+          "#ef0107",
+          "#ffffff"
+        ],
+        "stadium": "Emirates Stadium"
+      },
+      {
+        "id": "aston_villa",
+        "name": "Aston Villa",
+        "short": "AVL",
+        "budget": 75000000,
+        "wageBudget": 850000,
+        "reputation": 84,
+        "overall": 81,
+        "colors": [
+          "#95bfe6",
+          "#670e36"
+        ],
+        "stadium": "Villa Park"
+      },
+      {
+        "id": "bournemouth",
+        "name": "Bournemouth",
+        "short": "BOU",
+        "budget": 45000000,
+        "wageBudget": 550000,
+        "reputation": 79,
+        "overall": 77,
+        "colors": [
+          "#da291c",
+          "#000000"
+        ],
+        "stadium": "Vitality Stadium"
+      },
+      {
+        "id": "brentford",
+        "name": "Brentford",
+        "short": "BRE",
+        "budget": 38000000,
+        "wageBudget": 480000,
+        "reputation": 79,
+        "overall": 76,
+        "colors": [
+          "#e30613",
+          "#ffffff"
+        ],
+        "stadium": "Gtech Community Stadium"
+      },
+      {
+        "id": "brighton",
+        "name": "Brighton & Hove Albion",
+        "short": "BHA",
+        "budget": 60000000,
+        "wageBudget": 700000,
+        "reputation": 82,
+        "overall": 79,
+        "colors": [
+          "#0057b7",
+          "#ffffff"
+        ],
+        "stadium": "AMEX Stadium"
+      },
+      {
+        "id": "chelsea",
+        "name": "Chelsea FC",
+        "short": "CHE",
+        "budget": 140000000,
+        "wageBudget": 1450000,
+        "reputation": 89,
+        "overall": 83,
+        "colors": [
+          "#034694",
+          "#ffffff"
+        ],
+        "stadium": "Stamford Bridge"
+      },
+      {
+        "id": "coventry",
+        "name": "Coventry City",
+        "short": "COV",
+        "budget": 25000000,
+        "wageBudget": 320000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Building Society Arena"
+      },
+      {
+        "id": "crystal_palace",
+        "name": "Crystal Palace",
+        "short": "CRY",
+        "budget": 42000000,
+        "wageBudget": 520000,
+        "reputation": 79,
+        "overall": 77,
+        "colors": [
+          "#1b458f",
+          "#c41230"
+        ],
+        "stadium": "Selhurst Park"
+      },
+      {
+        "id": "everton",
+        "name": "Everton FC",
+        "short": "EVE",
+        "budget": 45000000,
+        "wageBudget": 550000,
+        "reputation": 81,
+        "overall": 77,
+        "colors": [
+          "#00369c",
+          "#ffffff"
+        ],
+        "stadium": "Goodison Park"
+      },
+      {
+        "id": "fulham",
+        "name": "Fulham FC",
+        "short": "FUL",
+        "budget": 40000000,
+        "wageBudget": 500000,
+        "reputation": 79,
+        "overall": 77,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Craven Cottage"
+      },
+      {
+        "id": "hull_city",
+        "name": "Hull City",
+        "short": "HUL",
+        "budget": 22000000,
+        "wageBudget": 280000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "MKM Stadium"
+      },
+      {
+        "id": "ipswich",
+        "name": "Ipswich Town",
+        "short": "IPS",
+        "budget": 30000000,
+        "wageBudget": 380000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Portman Road"
+      },
+      {
+        "id": "leeds",
+        "name": "Leeds United",
+        "short": "LEE",
+        "budget": 35000000,
+        "wageBudget": 420000,
+        "reputation": 78,
+        "overall": 76,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Elland Road"
+      },
+      {
+        "id": "liverpool",
+        "name": "Liverpool FC",
+        "short": "LIV",
+        "budget": 120000000,
+        "wageBudget": 1350000,
+        "reputation": 92,
+        "overall": 85,
+        "colors": [
+          "#c8102e",
+          "#ffffff"
+        ],
+        "stadium": "Anfield"
+      },
+      {
+        "id": "man_city",
+        "name": "Manchester City",
+        "short": "MCI",
+        "budget": 180000000,
+        "wageBudget": 1800000,
+        "reputation": 95,
+        "overall": 87,
+        "colors": [
+          "#6cabdd",
+          "#ffffff"
+        ],
+        "stadium": "Etihad Stadium"
+      },
+      {
+        "id": "man_utd",
+        "name": "Manchester United",
+        "short": "MUN",
+        "budget": 150000000,
+        "wageBudget": 1600000,
+        "reputation": 92,
+        "overall": 83,
+        "colors": [
+          "#da020e",
+          "#ffffff"
+        ],
+        "stadium": "Old Trafford"
+      },
+      {
+        "id": "newcastle",
+        "name": "Newcastle United",
+        "short": "NEW",
+        "budget": 110000000,
+        "wageBudget": 1200000,
+        "reputation": 86,
+        "overall": 82,
+        "colors": [
+          "#241f20",
+          "#ffffff"
+        ],
+        "stadium": "St. James' Park"
+      },
+      {
+        "id": "nottingham",
+        "name": "Nottingham Forest",
+        "short": "NFO",
+        "budget": 42000000,
+        "wageBudget": 520000,
+        "reputation": 79,
+        "overall": 76,
+        "colors": [
+          "#dd0000",
+          "#ffffff"
+        ],
+        "stadium": "City Ground"
+      },
+      {
+        "id": "sunderland",
+        "name": "Sunderland AFC",
+        "short": "SUN",
+        "budget": 28000000,
+        "wageBudget": 350000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Stadium of Light"
+      },
+      {
+        "id": "tottenham",
+        "name": "Tottenham Hotspur",
+        "short": "TOT",
+        "budget": 95000000,
+        "wageBudget": 1100000,
+        "reputation": 88,
+        "overall": 82,
+        "colors": [
+          "#ffffff",
+          "#132257"
+        ],
+        "stadium": "Tottenham Hotspur Stadium"
+      }
+    ]
+  },
+  {
+    "id": "esp_1",
+    "name": "La Liga EA Sports",
+    "country": "España",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 94,
+    "teams": [
+      {
+        "id": "athletic_bilbao",
+        "name": "Athletic Club",
+        "short": "ATH",
+        "budget": 50000000,
+        "wageBudget": 650000,
+        "reputation": 85,
+        "overall": 81,
+        "colors": [
+          "#ee2524",
+          "#ffffff"
+        ],
+        "stadium": "San Mamés"
+      },
+      {
+        "id": "atletico_madrid",
+        "name": "Atlético de Madrid",
+        "short": "ATM",
+        "budget": 90000000,
+        "wageBudget": 1100000,
+        "reputation": 90,
+        "overall": 84,
+        "colors": [
+          "#cb3524",
+          "#ffffff"
+        ],
+        "stadium": "Cívitas Metropolitano"
+      },
+      {
+        "id": "osasuna",
+        "name": "CA Osasuna",
+        "short": "OSA",
+        "budget": 22000000,
+        "wageBudget": 320000,
+        "reputation": 79,
+        "overall": 76,
+        "colors": [
+          "#cc0000",
+          "#002060"
+        ],
+        "stadium": "El Sadar"
+      },
+      {
+        "id": "celta_vigo",
+        "name": "Celta de Vigo",
+        "short": "CEL",
+        "budget": 25000000,
+        "wageBudget": 350000,
+        "reputation": 80,
+        "overall": 76,
+        "colors": [
+          "#66ccff",
+          "#ffffff"
+        ],
+        "stadium": "Abanca-Balaídos"
+      },
+      {
+        "id": "alaves",
+        "name": "Deportivo Alavés",
+        "short": "ALA",
+        "budget": 17000000,
+        "wageBudget": 260000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#005ca9",
+          "#ffffff"
+        ],
+        "stadium": "Mendizorroza"
+      },
+      {
+        "id": "dep_coruna",
+        "name": "Deportivo de La Coruña",
+        "short": "DEP",
+        "budget": 20000000,
+        "wageBudget": 280000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Abanca-Riazor"
+      },
+      {
+        "id": "elche",
+        "name": "Elche CF",
+        "short": "ELC",
+        "budget": 18000000,
+        "wageBudget": 250000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Manuel Martínez Valero"
+      },
+      {
+        "id": "barcelona",
+        "name": "FC Barcelona",
+        "short": "BAR",
+        "budget": 110000000,
+        "wageBudget": 1500000,
+        "reputation": 94,
+        "overall": 86,
+        "colors": [
+          "#004d98",
+          "#a50044"
+        ],
+        "stadium": "Spotify Camp Nou"
+      },
+      {
+        "id": "getafe",
+        "name": "Getafe CF",
+        "short": "GET",
+        "budget": 20000000,
+        "wageBudget": 300000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#005ca9",
+          "#ffffff"
+        ],
+        "stadium": "Coliseum"
+      },
+      {
+        "id": "levante",
+        "name": "Levante UD",
+        "short": "LEV",
+        "budget": 19000000,
+        "wageBudget": 270000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#003399",
+          "#cc0000"
+        ],
+        "stadium": "Ciutat de València"
+      },
+      {
+        "id": "malaga",
+        "name": "Málaga CF",
+        "short": "MCF",
+        "budget": 21000000,
+        "wageBudget": 290000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "La Rosaleda"
+      },
+      {
+        "id": "racing_santander",
+        "name": "Racing de Santander",
+        "short": "RAC",
+        "budget": 18500000,
+        "wageBudget": 260000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "El Sardinero"
+      },
+      {
+        "id": "rayo_vallecano",
+        "name": "Rayo Vallecano",
+        "short": "RAY",
+        "budget": 18000000,
+        "wageBudget": 280000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#ffffff",
+          "#cc0000"
+        ],
+        "stadium": "Estadio de Vallecas"
+      },
+      {
+        "id": "betis",
+        "name": "Real Betis",
+        "short": "BET",
+        "budget": 35000000,
+        "wageBudget": 500000,
+        "reputation": 83,
+        "overall": 79,
+        "colors": [
+          "#00954c",
+          "#ffffff"
+        ],
+        "stadium": "Benito Villamarín"
+      },
+      {
+        "id": "real_madrid",
+        "name": "Real Madrid",
+        "short": "RMA",
+        "budget": 200000000,
+        "wageBudget": 2000000,
+        "reputation": 96,
+        "overall": 88,
+        "colors": [
+          "#ffffff",
+          "#febe10"
+        ],
+        "stadium": "Santiago Bernabéu"
+      },
+      {
+        "id": "real_sociedad",
+        "name": "Real Sociedad",
+        "short": "RSO",
+        "budget": 45000000,
+        "wageBudget": 600000,
+        "reputation": 84,
+        "overall": 81,
+        "colors": [
+          "#005ca9",
+          "#ffffff"
+        ],
+        "stadium": "Reale Arena"
+      },
+      {
+        "id": "sevilla",
+        "name": "Sevilla FC",
+        "short": "SEV",
+        "budget": 40000000,
+        "wageBudget": 550000,
+        "reputation": 84,
+        "overall": 79,
+        "colors": [
+          "#ffffff",
+          "#d4002a"
+        ],
+        "stadium": "Ramón Sánchez-Pizjuán"
+      },
+      {
+        "id": "valencia",
+        "name": "Valencia CF",
+        "short": "VAL",
+        "budget": 28000000,
+        "wageBudget": 380000,
+        "reputation": 81,
+        "overall": 77,
+        "colors": [
+          "#ffffff",
+          "#ff6600"
+        ],
+        "stadium": "Mestalla"
+      },
+      {
+        "id": "villarreal",
+        "name": "Villarreal CF",
+        "short": "VIL",
+        "budget": 38000000,
+        "wageBudget": 520000,
+        "reputation": 83,
+        "overall": 80,
+        "colors": [
+          "#ffe600",
+          "#005ca9"
+        ],
+        "stadium": "Estadio de la Cerámica"
+      },
+      {
+        "id": "espanyol",
+        "name": "RCD Espanyol",
+        "short": "ESP",
+        "budget": 20000000,
+        "wageBudget": 250000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#0074c8",
+          "#ffffff"
+        ],
+        "stadium": "Stage Front Stadium"
+      }
+    ]
+  },
+  {
+    "id": "ita_1",
+    "name": "Serie A",
+    "country": "Italia",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 91,
+    "teams": [
+      {
+        "id": "atalanta",
+        "name": "Atalanta BC",
+        "short": "ATA",
+        "budget": 45000000,
+        "wageBudget": 600000,
+        "reputation": 84,
+        "overall": 81,
+        "colors": [
+          "#003399",
+          "#000000"
+        ],
+        "stadium": "Gewiss Stadium"
+      },
+      {
+        "id": "bologna",
+        "name": "Bologna FC",
+        "short": "BOL",
+        "budget": 35000000,
+        "wageBudget": 450000,
+        "reputation": 82,
+        "overall": 79,
+        "colors": [
+          "#001a4d",
+          "#cc0000"
+        ],
+        "stadium": "Renato Dall'Ara"
+      },
+      {
+        "id": "cagliari",
+        "name": "Cagliari Calcio",
+        "short": "CAG",
+        "budget": 20000000,
+        "wageBudget": 280000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#001a4d"
+        ],
+        "stadium": "Unipol Domus"
+      },
+      {
+        "id": "como",
+        "name": "Como 1907",
+        "short": "COM",
+        "budget": 30000000,
+        "wageBudget": 400000,
+        "reputation": 78,
+        "overall": 76,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Giuseppe Sinigaglia"
+      },
+      {
+        "id": "fiorentina",
+        "name": "ACF Fiorentina",
+        "short": "FIO",
+        "budget": 40000000,
+        "wageBudget": 550000,
+        "reputation": 83,
+        "overall": 80,
+        "colors": [
+          "#4b0082",
+          "#ffffff"
+        ],
+        "stadium": "Artemio Franchi"
+      },
+      {
+        "id": "frosinone",
+        "name": "Frosinone Calcio",
+        "short": "FRO",
+        "budget": 16000000,
+        "wageBudget": 230000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Benito Stirpe"
+      },
+      {
+        "id": "genoa",
+        "name": "Genoa CFC",
+        "short": "GEN",
+        "budget": 22000000,
+        "wageBudget": 300000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#001a4d"
+        ],
+        "stadium": "Luigi Ferraris"
+      },
+      {
+        "id": "inter",
+        "name": "Inter de Milán",
+        "short": "INT",
+        "budget": 110000000,
+        "wageBudget": 1400000,
+        "reputation": 93,
+        "overall": 86,
+        "colors": [
+          "#003399",
+          "#000000"
+        ],
+        "stadium": "San Siro"
+      },
+      {
+        "id": "juventus",
+        "name": "Juventus",
+        "short": "JUV",
+        "budget": 100000000,
+        "wageBudget": 1350000,
+        "reputation": 92,
+        "overall": 85,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Allianz Stadium"
+      },
+      {
+        "id": "lazio",
+        "name": "SS Lazio",
+        "short": "LAZ",
+        "budget": 50000000,
+        "wageBudget": 650000,
+        "reputation": 85,
+        "overall": 81,
+        "colors": [
+          "#66ccff",
+          "#ffffff"
+        ],
+        "stadium": "Stadio Olimpico"
+      },
+      {
+        "id": "lecce",
+        "name": "US Lecce",
+        "short": "LEC",
+        "budget": 18000000,
+        "wageBudget": 250000,
+        "reputation": 76,
+        "overall": 73,
+        "colors": [
+          "#ffcc00",
+          "#cc0000"
+        ],
+        "stadium": "Via del Mare"
+      },
+      {
+        "id": "ac_milan",
+        "name": "AC Milan",
+        "short": "MIL",
+        "budget": 95000000,
+        "wageBudget": 1300000,
+        "reputation": 91,
+        "overall": 84,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "San Siro"
+      },
+      {
+        "id": "monza",
+        "name": "AC Monza",
+        "short": "MON",
+        "budget": 24000000,
+        "wageBudget": 320000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "U-Power Stadium"
+      },
+      {
+        "id": "napoli",
+        "name": "SSC Nápoles",
+        "short": "NAP",
+        "budget": 80000000,
+        "wageBudget": 1000000,
+        "reputation": 88,
+        "overall": 83,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Diego Armando Maradona"
+      },
+      {
+        "id": "parma",
+        "name": "Parma Calcio",
+        "short": "PAR",
+        "budget": 21000000,
+        "wageBudget": 290000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Ennio Tardini"
+      },
+      {
+        "id": "roma",
+        "name": "AS Roma",
+        "short": "ROM",
+        "budget": 60000000,
+        "wageBudget": 800000,
+        "reputation": 86,
+        "overall": 82,
+        "colors": [
+          "#800020",
+          "#ffcc00"
+        ],
+        "stadium": "Stadio Olimpico"
+      },
+      {
+        "id": "sassuolo",
+        "name": "US Sassuolo",
+        "short": "SAS",
+        "budget": 25000000,
+        "wageBudget": 340000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#006633",
+          "#000000"
+        ],
+        "stadium": "Mapei Stadium"
+      },
+      {
+        "id": "torino",
+        "name": "Torino FC",
+        "short": "TOR",
+        "budget": 28000000,
+        "wageBudget": 370000,
+        "reputation": 79,
+        "overall": 76,
+        "colors": [
+          "#800020",
+          "#ffffff"
+        ],
+        "stadium": "Stadio Olimpico Grande Torino"
+      },
+      {
+        "id": "udinese",
+        "name": "Udinese Calcio",
+        "short": "UDI",
+        "budget": 22000000,
+        "wageBudget": 300000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Bluenergy Stadium"
+      },
+      {
+        "id": "venezia",
+        "name": "Venezia FC",
+        "short": "VEN",
+        "budget": 19000000,
+        "wageBudget": 270000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#ff6600",
+          "#006633"
+        ],
+        "stadium": "Pier Luigi Penzo"
+      }
+    ]
+  },
+  {
+    "id": "ger_1",
+    "name": "Bundesliga",
+    "country": "Alemania",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 92,
+    "teams": [
+      {
+        "id": "augsburg",
+        "name": "FC Augsburgo",
+        "short": "FCA",
+        "budget": 20000000,
+        "wageBudget": 280000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#006633"
+        ],
+        "stadium": "WWK Arena"
+      },
+      {
+        "id": "leverkusen",
+        "name": "Bayer Leverkusen",
+        "short": "B04",
+        "budget": 90000000,
+        "wageBudget": 1100000,
+        "reputation": 90,
+        "overall": 85,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "BayArena"
+      },
+      {
+        "id": "bayern",
+        "name": "Bayern Múnich",
+        "short": "FCB",
+        "budget": 170000000,
+        "wageBudget": 1700000,
+        "reputation": 95,
+        "overall": 87,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Allianz Arena"
+      },
+      {
+        "id": "dortmund",
+        "name": "Borussia Dortmund",
+        "short": "BVB",
+        "budget": 100000000,
+        "wageBudget": 1300000,
+        "reputation": 91,
+        "overall": 84,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Signal Iduna Park"
+      },
+      {
+        "id": "mgladbach",
+        "name": "Borussia Mönchengladbach",
+        "short": "BMG",
+        "budget": 35000000,
+        "wageBudget": 480000,
+        "reputation": 81,
+        "overall": 78,
+        "colors": [
+          "#ffffff",
+          "#006633"
+        ],
+        "stadium": "BORUSSIA-PARK"
+      },
+      {
+        "id": "frankfurt",
+        "name": "Eintracht Fráncfort",
+        "short": "SGE",
+        "budget": 45000000,
+        "wageBudget": 600000,
+        "reputation": 84,
+        "overall": 80,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Deutsche Bank Park"
+      },
+      {
+        "id": "koln_1",
+        "name": "FC Colonia",
+        "short": "KOE",
+        "budget": 22000000,
+        "wageBudget": 300000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "RheinEnergieStadion"
+      },
+      {
+        "id": "schalke",
+        "name": "FC Schalke 04",
+        "short": "S04",
+        "budget": 25000000,
+        "wageBudget": 340000,
+        "reputation": 80,
+        "overall": 76,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "VELTINS-Arena"
+      },
+      {
+        "id": "hamburgo_1",
+        "name": "Hamburgo SV",
+        "short": "HSV",
+        "budget": 24000000,
+        "wageBudget": 320000,
+        "reputation": 79,
+        "overall": 75,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Volksparkstadion"
+      },
+      {
+        "id": "hoffenheim",
+        "name": "TSG Hoffenheim",
+        "short": "TSG",
+        "budget": 30000000,
+        "wageBudget": 420000,
+        "reputation": 80,
+        "overall": 77,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "PreZero Arena"
+      },
+      {
+        "id": "mainz",
+        "name": "FSV Mainz 05",
+        "short": "M05",
+        "budget": 21000000,
+        "wageBudget": 290000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "MEWA ARENA"
+      },
+      {
+        "id": "paderborn",
+        "name": "SC Paderborn 07",
+        "short": "SCP",
+        "budget": 18000000,
+        "wageBudget": 250000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#003399",
+          "#000000"
+        ],
+        "stadium": "Home Deluxe Arena"
+      },
+      {
+        "id": "rb_leipzig",
+        "name": "RB Leipzig",
+        "short": "RBL",
+        "budget": 85000000,
+        "wageBudget": 1000000,
+        "reputation": 88,
+        "overall": 83,
+        "colors": [
+          "#ffffff",
+          "#cc0000"
+        ],
+        "stadium": "Red Bull Arena"
+      },
+      {
+        "id": "freiburg",
+        "name": "SC Friburgo",
+        "short": "SCF",
+        "budget": 32000000,
+        "wageBudget": 440000,
+        "reputation": 81,
+        "overall": 78,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Europa-Park Stadion"
+      },
+      {
+        "id": "elversberg",
+        "name": "SV 07 Elversberg",
+        "short": "SVE",
+        "budget": 16000000,
+        "wageBudget": 220000,
+        "reputation": 74,
+        "overall": 73,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "URSAPHARM-Arena"
+      },
+      {
+        "id": "union_berlin",
+        "name": "Union Berlín",
+        "short": "FCU",
+        "budget": 30000000,
+        "wageBudget": 400000,
+        "reputation": 80,
+        "overall": 77,
+        "colors": [
+          "#cc0000",
+          "#ffcc00"
+        ],
+        "stadium": "An der Alten Försterei"
+      },
+      {
+        "id": "stuttgart",
+        "name": "VfB Stuttgart",
+        "short": "VFB",
+        "budget": 50000000,
+        "wageBudget": 650000,
+        "reputation": 85,
+        "overall": 81,
+        "colors": [
+          "#ffffff",
+          "#cc0000"
+        ],
+        "stadium": "MHPArena"
+      },
+      {
+        "id": "werder_bremen",
+        "name": "Werder Bremen",
+        "short": "SVW",
+        "budget": 28000000,
+        "wageBudget": 380000,
+        "reputation": 80,
+        "overall": 76,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Wohninvest WESERSTADION"
+      }
+    ]
+  },
+  {
+    "id": "fra_1",
+    "name": "Ligue 1",
+    "country": "Francia",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 90,
+    "teams": [
+      {
+        "id": "angers",
+        "name": "Angers SCO",
+        "short": "SCO",
+        "budget": 15000000,
+        "wageBudget": 210000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Stade Raymond Kopa"
+      },
+      {
+        "id": "auxerre",
+        "name": "AJ Auxerre",
+        "short": "AJA",
+        "budget": 16000000,
+        "wageBudget": 220000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Stade de l'Abbé-Deschamps"
+      },
+      {
+        "id": "monaco",
+        "name": "AS Mónaco",
+        "short": "ASM",
+        "budget": 65000000,
+        "wageBudget": 850000,
+        "reputation": 86,
+        "overall": 82,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Stade Louis II"
+      },
+      {
+        "id": "brest",
+        "name": "Stade Brestois",
+        "short": "SB29",
+        "budget": 25000000,
+        "wageBudget": 350000,
+        "reputation": 80,
+        "overall": 77,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Stade Francis-Le Blé"
+      },
+      {
+        "id": "le_havre",
+        "name": "Le Havre AC",
+        "short": "HAC",
+        "budget": 14000000,
+        "wageBudget": 200000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#3399ff",
+          "#001a4d"
+        ],
+        "stadium": "Stade Océane"
+      },
+      {
+        "id": "lens",
+        "name": "RC Lens",
+        "short": "RCL",
+        "budget": 40000000,
+        "wageBudget": 550000,
+        "reputation": 83,
+        "overall": 79,
+        "colors": [
+          "#cc0000",
+          "#ffcc00"
+        ],
+        "stadium": "Stade Bollaert-Delelis"
+      },
+      {
+        "id": "lille",
+        "name": "Lille OSC",
+        "short": "LOSC",
+        "budget": 50000000,
+        "wageBudget": 680000,
+        "reputation": 85,
+        "overall": 81,
+        "colors": [
+          "#cc0000",
+          "#001a4d"
+        ],
+        "stadium": "Decathlon Arena Stade Pierre-Mauroy"
+      },
+      {
+        "id": "nice",
+        "name": "OGC Niza",
+        "short": "OGCN",
+        "budget": 45000000,
+        "wageBudget": 600000,
+        "reputation": 84,
+        "overall": 80,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Allianz Riviera"
+      },
+      {
+        "id": "lyon",
+        "name": "Olympique de Lyon",
+        "short": "OL",
+        "budget": 60000000,
+        "wageBudget": 800000,
+        "reputation": 86,
+        "overall": 82,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Groupama Stadium"
+      },
+      {
+        "id": "marseille",
+        "name": "Olympique de Marsella",
+        "short": "OM",
+        "budget": 70000000,
+        "wageBudget": 900000,
+        "reputation": 87,
+        "overall": 83,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Orange Vélodrome"
+      },
+      {
+        "id": "psg",
+        "name": "París Saint-Germain (PSG)",
+        "short": "PSG",
+        "budget": 190000000,
+        "wageBudget": 1900000,
+        "reputation": 96,
+        "overall": 87,
+        "colors": [
+          "#001a4d",
+          "#cc0000"
+        ],
+        "stadium": "Parc des Princes"
+      },
+      {
+        "id": "strasbourg",
+        "name": "Racing de Estrasburgo",
+        "short": "RCSA",
+        "budget": 30000000,
+        "wageBudget": 420000,
+        "reputation": 80,
+        "overall": 77,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Stade de la Meinau"
+      },
+      {
+        "id": "rennes",
+        "name": "Stade Rennais",
+        "short": "SRFC",
+        "budget": 45000000,
+        "wageBudget": 600000,
+        "reputation": 84,
+        "overall": 80,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Roazhon Park"
+      },
+      {
+        "id": "reims_l1",
+        "name": "Stade de Reims",
+        "short": "SDR",
+        "budget": 22000000,
+        "wageBudget": 300000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Stade Auguste-Delaune"
+      },
+      {
+        "id": "toulouse",
+        "name": "Toulouse FC",
+        "short": "TFC",
+        "budget": 24000000,
+        "wageBudget": 320000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#4b0082",
+          "#ffffff"
+        ],
+        "stadium": "Stadium de Toulouse"
+      },
+      {
+        "id": "montpellier_l1",
+        "name": "Montpellier HSC",
+        "short": "MHSC",
+        "budget": 20000000,
+        "wageBudget": 280000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#001a4d",
+          "#ff6600"
+        ],
+        "stadium": "Stade de la Mosson"
+      },
+      {
+        "id": "nantes_l1",
+        "name": "FC Nantes",
+        "short": "FCN",
+        "budget": 21000000,
+        "wageBudget": 290000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#ffcc00",
+          "#006633"
+        ],
+        "stadium": "Stade de la Beaujoire"
+      },
+      {
+        "id": "saint_etienne_l1",
+        "name": "AS Saint-Étienne",
+        "short": "ASSE",
+        "budget": 23000000,
+        "wageBudget": 310000,
+        "reputation": 78,
+        "overall": 76,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Stade Geoffroy-Guichard"
+      }
+    ]
+  },
+  {
+    "id": "eng_2",
+    "name": "EFL Championship",
+    "country": "Inglaterra",
+    "region": "Europa",
+    "tier": 2,
+    "reputation": 81,
+    "teams": [
+      {
+        "id": "birmingham",
+        "name": "Birmingham City",
+        "short": "BIR",
+        "budget": 12000000,
+        "wageBudget": 160000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "St Andrew's"
+      },
+      {
+        "id": "blackburn",
+        "name": "Blackburn Rovers",
+        "short": "BLB",
+        "budget": 9000000,
+        "wageBudget": 130000,
+        "reputation": 73,
+        "overall": 71,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Ewood Park"
+      },
+      {
+        "id": "bolton",
+        "name": "Bolton Wanderers",
+        "short": "BOL",
+        "budget": 7500000,
+        "wageBudget": 110000,
+        "reputation": 72,
+        "overall": 70,
+        "colors": [
+          "#ffffff",
+          "#001a4d"
+        ],
+        "stadium": "Toughsheet Community Stadium"
+      },
+      {
+        "id": "bristol_city",
+        "name": "Bristol City",
+        "short": "BRC",
+        "budget": 8000000,
+        "wageBudget": 120000,
+        "reputation": 72,
+        "overall": 71,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Ashton Gate"
+      },
+      {
+        "id": "burnley",
+        "name": "Burnley",
+        "short": "BUR",
+        "budget": 20000000,
+        "wageBudget": 250000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#800020",
+          "#66ccff"
+        ],
+        "stadium": "Turf Moor"
+      },
+      {
+        "id": "cardiff",
+        "name": "Cardiff City",
+        "short": "CAR",
+        "budget": 8500000,
+        "wageBudget": 125000,
+        "reputation": 73,
+        "overall": 71,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Cardiff City Stadium"
+      },
+      {
+        "id": "charlton",
+        "name": "Charlton Athletic",
+        "short": "CHA",
+        "budget": 6500000,
+        "wageBudget": 95000,
+        "reputation": 71,
+        "overall": 69,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "The Valley"
+      },
+      {
+        "id": "derby",
+        "name": "Derby County",
+        "short": "DER",
+        "budget": 9500000,
+        "wageBudget": 135000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Pride Park Stadium"
+      },
+      {
+        "id": "lincoln",
+        "name": "Lincoln City",
+        "short": "LIN",
+        "budget": 5000000,
+        "wageBudget": 75000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Sincil Bank"
+      },
+      {
+        "id": "middlesbrough",
+        "name": "Middlesbrough",
+        "short": "MID",
+        "budget": 14000000,
+        "wageBudget": 180000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Riverside Stadium"
+      },
+      {
+        "id": "millwall",
+        "name": "Millwall",
+        "short": "MIL",
+        "budget": 7000000,
+        "wageBudget": 105000,
+        "reputation": 72,
+        "overall": 71,
+        "colors": [
+          "#001a4d",
+          "#ffffff"
+        ],
+        "stadium": "The Den"
+      },
+      {
+        "id": "norwich",
+        "name": "Norwich City",
+        "short": "NOR",
+        "budget": 15000000,
+        "wageBudget": 190000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#ffcc00",
+          "#006633"
+        ],
+        "stadium": "Carrow Road"
+      },
+      {
+        "id": "portsmouth",
+        "name": "Portsmouth",
+        "short": "POR",
+        "budget": 7500000,
+        "wageBudget": 110000,
+        "reputation": 72,
+        "overall": 70,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Fratton Park"
+      },
+      {
+        "id": "preston",
+        "name": "Preston North End",
+        "short": "PNE",
+        "budget": 7200000,
+        "wageBudget": 108000,
+        "reputation": 72,
+        "overall": 71,
+        "colors": [
+          "#ffffff",
+          "#001a4d"
+        ],
+        "stadium": "Deepdale"
+      },
+      {
+        "id": "qpr",
+        "name": "Queens Park Rangers",
+        "short": "QPR",
+        "budget": 8000000,
+        "wageBudget": 120000,
+        "reputation": 73,
+        "overall": 71,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Loftus Road"
+      },
+      {
+        "id": "sheffield_utd",
+        "name": "Sheffield United",
+        "short": "SHU",
+        "budget": 18000000,
+        "wageBudget": 230000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Bramall Lane"
+      },
+      {
+        "id": "southampton_ch",
+        "name": "Southampton",
+        "short": "SOU",
+        "budget": 19000000,
+        "wageBudget": 240000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "St Mary's Stadium"
+      },
+      {
+        "id": "stoke",
+        "name": "Stoke City",
+        "short": "STO",
+        "budget": 11000000,
+        "wageBudget": 150000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "bet365 Stadium"
+      },
+      {
+        "id": "swansea",
+        "name": "Swansea City",
+        "short": "SWA",
+        "budget": 10000000,
+        "wageBudget": 140000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Swansea.com Stadium"
+      },
+      {
+        "id": "watford",
+        "name": "Watford",
+        "short": "WAT",
+        "budget": 13000000,
+        "wageBudget": 170000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Vicarage Road"
+      },
+      {
+        "id": "west_brom",
+        "name": "West Bromwich Albion",
+        "short": "WBA",
+        "budget": 14000000,
+        "wageBudget": 180000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#001a4d",
+          "#ffffff"
+        ],
+        "stadium": "The Hawthorns"
+      },
+      {
+        "id": "west_ham_ch",
+        "name": "West Ham United",
+        "short": "WHU",
+        "budget": 22000000,
+        "wageBudget": 260000,
+        "reputation": 78,
+        "overall": 76,
+        "colors": [
+          "#7a263a",
+          "#1bb1e7"
+        ],
+        "stadium": "London Stadium"
+      },
+      {
+        "id": "wolves_ch",
+        "name": "Wolverhampton Wanderers",
+        "short": "WOL",
+        "budget": 20000000,
+        "wageBudget": 250000,
+        "reputation": 77,
+        "overall": 75,
+        "colors": [
+          "#f9a01b",
+          "#231f20"
+        ],
+        "stadium": "Molineux Stadium"
+      },
+      {
+        "id": "wrexham",
+        "name": "Wrexham AFC",
+        "short": "WRE",
+        "budget": 15000000,
+        "wageBudget": 180000,
+        "reputation": 76,
+        "overall": 73,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Racecourse Ground"
+      }
+    ]
+  },
+  {
+    "id": "esp_2",
+    "name": "LALIGA Hypermotion",
+    "country": "España",
+    "region": "Europa",
+    "tier": 2,
+    "reputation": 78,
+    "teams": [
+      {
+        "id": "albacete",
+        "name": "Albacete Balompié",
+        "short": "ALB",
+        "budget": 5000000,
+        "wageBudget": 70000,
+        "reputation": 70,
+        "overall": 70,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Carlos Belmonte"
+      },
+      {
+        "id": "almeria",
+        "name": "UD Almería",
+        "short": "ALM",
+        "budget": 12000000,
+        "wageBudget": 160000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Power Horse Stadium"
+      },
+      {
+        "id": "andorra",
+        "name": "FC Andorra",
+        "short": "AND",
+        "budget": 4500000,
+        "wageBudget": 65000,
+        "reputation": 69,
+        "overall": 69,
+        "colors": [
+          "#003399",
+          "#ffcc00"
+        ],
+        "stadium": "Estadi Nacional"
+      },
+      {
+        "id": "burgos",
+        "name": "Burgos CF",
+        "short": "BUR",
+        "budget": 4800000,
+        "wageBudget": 68000,
+        "reputation": 69,
+        "overall": 69,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "El Plantío"
+      },
+      {
+        "id": "cadiz",
+        "name": "Cádiz CF",
+        "short": "CAD",
+        "budget": 10000000,
+        "wageBudget": 140000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Nuevo Mirandilla"
+      },
+      {
+        "id": "castellon",
+        "name": "CD Castellón",
+        "short": "CAS",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Castalia"
+      },
+      {
+        "id": "celta_b",
+        "name": "Celta Fortuna",
+        "short": "CFOR",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#66ccff",
+          "#ffffff"
+        ],
+        "stadium": "Barreiro"
+      },
+      {
+        "id": "ceuta",
+        "name": "AD Ceuta FC",
+        "short": "CEU",
+        "budget": 3200000,
+        "wageBudget": 48000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Alfonso Murube"
+      },
+      {
+        "id": "cordoba",
+        "name": "Córdoba CF",
+        "short": "COR",
+        "budget": 4200000,
+        "wageBudget": 62000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "El Arcángel"
+      },
+      {
+        "id": "eibar",
+        "name": "SD Eibar",
+        "short": "EIB",
+        "budget": 8500000,
+        "wageBudget": 120000,
+        "reputation": 73,
+        "overall": 72,
+        "colors": [
+          "#003399",
+          "#cc0000"
+        ],
+        "stadium": "Ipurua"
+      },
+      {
+        "id": "eldense",
+        "name": "CD Eldense",
+        "short": "ELD",
+        "budget": 3800000,
+        "wageBudget": 55000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#003399",
+          "#cc0000"
+        ],
+        "stadium": "Nuevo Pepico Amat"
+      },
+      {
+        "id": "girona",
+        "name": "Girona FC",
+        "short": "GIR",
+        "budget": 14000000,
+        "wageBudget": 180000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Montilivi"
+      },
+      {
+        "id": "granada",
+        "name": "Granada CF",
+        "short": "GRA",
+        "budget": 11000000,
+        "wageBudget": 150000,
+        "reputation": 74,
+        "overall": 73,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Nuevo Los Cármenes"
+      },
+      {
+        "id": "las_palmas",
+        "name": "UD Las Palmas",
+        "short": "LPA",
+        "budget": 9500000,
+        "wageBudget": 130000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Gran Canaria"
+      },
+      {
+        "id": "leganes",
+        "name": "CD Leganés",
+        "short": "LEG",
+        "budget": 8000000,
+        "wageBudget": 110000,
+        "reputation": 73,
+        "overall": 71,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Butarque"
+      },
+      {
+        "id": "mallorca",
+        "name": "RCD Mallorca",
+        "short": "MLL",
+        "budget": 9000000,
+        "wageBudget": 125000,
+        "reputation": 73,
+        "overall": 72,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Son Moix"
+      },
+      {
+        "id": "oviedo",
+        "name": "Real Oviedo",
+        "short": "OVI",
+        "budget": 7500000,
+        "wageBudget": 105000,
+        "reputation": 72,
+        "overall": 71,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Carlos Tartiere"
+      },
+      {
+        "id": "real_sociedad_b",
+        "name": "Real Sociedad B",
+        "short": "RSOB",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#005ca9",
+          "#ffffff"
+        ],
+        "stadium": "Zubieta"
+      },
+      {
+        "id": "sabadell",
+        "name": "CE Sabadell",
+        "short": "SAB",
+        "budget": 3000000,
+        "wageBudget": 45000,
+        "reputation": 66,
+        "overall": 66,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Nova Creu Alta"
+      },
+      {
+        "id": "sporting_gijon",
+        "name": "Sporting de Gijón",
+        "short": "SPG",
+        "budget": 7000000,
+        "wageBudget": 100000,
+        "reputation": 72,
+        "overall": 71,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "El Molinón"
+      },
+      {
+        "id": "tenerife",
+        "name": "CD Tenerife",
+        "short": "TEN",
+        "budget": 6500000,
+        "wageBudget": 95000,
+        "reputation": 71,
+        "overall": 70,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Heliodoro Rodríguez López"
+      },
+      {
+        "id": "valladolid",
+        "name": "Real Valladolid",
+        "short": "VLD",
+        "budget": 8500000,
+        "wageBudget": 115000,
+        "reputation": 73,
+        "overall": 72,
+        "colors": [
+          "#4b0082",
+          "#ffffff"
+        ],
+        "stadium": "José Zorrilla"
+      }
+    ]
+  },
+  {
+    "id": "ita_2",
+    "name": "Serie B",
+    "country": "Italia",
+    "region": "Europa",
+    "tier": 2,
+    "reputation": 76,
+    "teams": [
+      {
+        "id": "ascoli",
+        "name": "Ascoli Calcio",
+        "short": "ASC",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Cino e Lillo Del Duca"
+      },
+      {
+        "id": "arezzo",
+        "name": "Arezzo",
+        "short": "ARE",
+        "budget": 3200000,
+        "wageBudget": 48000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#800020",
+          "#ffffff"
+        ],
+        "stadium": "Città di Arezzo"
+      },
+      {
+        "id": "avellino",
+        "name": "Avellino",
+        "short": "AVE",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Partenio-Adriano Lombardi"
+      },
+      {
+        "id": "bari",
+        "name": "SSC Bari",
+        "short": "BAR",
+        "budget": 7500000,
+        "wageBudget": 105000,
+        "reputation": 72,
+        "overall": 71,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "San Nicola"
+      },
+      {
+        "id": "benevento",
+        "name": "Benevento",
+        "short": "BEN",
+        "budget": 6000000,
+        "wageBudget": 90000,
+        "reputation": 71,
+        "overall": 70,
+        "colors": [
+          "#ffcc00",
+          "#cc0000"
+        ],
+        "stadium": "Ciro Vigorito"
+      },
+      {
+        "id": "carrarese",
+        "name": "Carrarese",
+        "short": "CAR",
+        "budget": 3000000,
+        "wageBudget": 45000,
+        "reputation": 66,
+        "overall": 66,
+        "colors": [
+          "#003399",
+          "#ffcc00"
+        ],
+        "stadium": "Dei Marmi"
+      },
+      {
+        "id": "catanzaro",
+        "name": "Catanzaro",
+        "short": "CTZ",
+        "budget": 4500000,
+        "wageBudget": 65000,
+        "reputation": 69,
+        "overall": 69,
+        "colors": [
+          "#ffcc00",
+          "#cc0000"
+        ],
+        "stadium": "Nicola Ceravolo"
+      },
+      {
+        "id": "cesena",
+        "name": "Cesena",
+        "short": "CES",
+        "budget": 4200000,
+        "wageBudget": 62000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Dino Manuzzi"
+      },
+      {
+        "id": "cremonese",
+        "name": "Cremonese",
+        "short": "CRE",
+        "budget": 9000000,
+        "wageBudget": 125000,
+        "reputation": 73,
+        "overall": 72,
+        "colors": [
+          "#cc0000",
+          "#c0c0c0"
+        ],
+        "stadium": "Giovanni Zini"
+      },
+      {
+        "id": "empoli",
+        "name": "Empoli",
+        "short": "EMP",
+        "budget": 10000000,
+        "wageBudget": 140000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Carlo Castellani"
+      },
+      {
+        "id": "hellas_verona",
+        "name": "Hellas Verona",
+        "short": "VER",
+        "budget": 11000000,
+        "wageBudget": 150000,
+        "reputation": 74,
+        "overall": 73,
+        "colors": [
+          "#003399",
+          "#ffcc00"
+        ],
+        "stadium": "Marcantonio Bentegodi"
+      },
+      {
+        "id": "juve_stabia",
+        "name": "Juve Stabia",
+        "short": "JST",
+        "budget": 3300000,
+        "wageBudget": 49000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Romeo Menti"
+      },
+      {
+        "id": "vicenza",
+        "name": "LR Vicenza",
+        "short": "VIC",
+        "budget": 3800000,
+        "wageBudget": 55000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Romeo Menti"
+      },
+      {
+        "id": "mantova",
+        "name": "Mantova",
+        "short": "MAN",
+        "budget": 3100000,
+        "wageBudget": 46000,
+        "reputation": 66,
+        "overall": 66,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Danilo Martelli"
+      },
+      {
+        "id": "modena",
+        "name": "Modena",
+        "short": "MOD",
+        "budget": 4800000,
+        "wageBudget": 68000,
+        "reputation": 69,
+        "overall": 69,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Alberto Braglia"
+      },
+      {
+        "id": "palermo",
+        "name": "Palermo",
+        "short": "PAL",
+        "budget": 12000000,
+        "wageBudget": 160000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#ff99cc",
+          "#000000"
+        ],
+        "stadium": "Renzo Barbera"
+      },
+      {
+        "id": "pisa",
+        "name": "Pisa",
+        "short": "PIS",
+        "budget": 7000000,
+        "wageBudget": 100000,
+        "reputation": 71,
+        "overall": 70,
+        "colors": [
+          "#003399",
+          "#000000"
+        ],
+        "stadium": "Arena Garibaldi"
+      },
+      {
+        "id": "sampdoria",
+        "name": "Sampdoria",
+        "short": "SAM",
+        "budget": 13000000,
+        "wageBudget": 170000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Luigi Ferraris"
+      },
+      {
+        "id": "sudtirol",
+        "name": "FC Südtirol",
+        "short": "SUD",
+        "budget": 3600000,
+        "wageBudget": 52000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#ffffff",
+          "#cc0000"
+        ],
+        "stadium": "Druso"
+      },
+      {
+        "id": "virtus_entella",
+        "name": "Virtus Entella",
+        "short": "ENT",
+        "budget": 3200000,
+        "wageBudget": 48000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Comunale di Chiavari"
+      }
+    ]
+  },
+  {
+    "id": "ger_2",
+    "name": "2. Bundesliga",
+    "country": "Alemania",
+    "region": "Europa",
+    "tier": 2,
+    "reputation": 79,
+    "teams": [
+      {
+        "id": "arminia",
+        "name": "Arminia Bielefeld",
+        "short": "ARM",
+        "budget": 5500000,
+        "wageBudget": 80000,
+        "reputation": 70,
+        "overall": 69,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "SchücoArena"
+      },
+      {
+        "id": "bochum",
+        "name": "VfL Bochum",
+        "short": "BOC",
+        "budget": 11000000,
+        "wageBudget": 150000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Vonovia Ruhrstadion"
+      },
+      {
+        "id": "darmstadt",
+        "name": "Darmstadt 98",
+        "short": "DAR",
+        "budget": 8000000,
+        "wageBudget": 115000,
+        "reputation": 72,
+        "overall": 71,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Merck-Stadion am Böllenfalltor"
+      },
+      {
+        "id": "dinamo_dresden",
+        "name": "Dinamo de Dresden",
+        "short": "SGD",
+        "budget": 4500000,
+        "wageBudget": 65000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "Rudolf-Harbig-Stadion"
+      },
+      {
+        "id": "braunschweig",
+        "name": "Eintracht Braunschweig",
+        "short": "EBS",
+        "budget": 4800000,
+        "wageBudget": 68000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Eintracht-Stadion"
+      },
+      {
+        "id": "cottbus",
+        "name": "Energie Cottbus",
+        "short": "COT",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Stadion der Freundschaft"
+      },
+      {
+        "id": "dusseldorf",
+        "name": "Fortuna Düsseldorf",
+        "short": "DUS",
+        "budget": 12000000,
+        "wageBudget": 160000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Merkur Spiel-Arena"
+      },
+      {
+        "id": "greuther_furth",
+        "name": "Greuther Fürth",
+        "short": "SGF",
+        "budget": 6500000,
+        "wageBudget": 95000,
+        "reputation": 71,
+        "overall": 70,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Sportpark Ronhof Thomas Sommer"
+      },
+      {
+        "id": "hamburgo",
+        "name": "Hamburgo S.V.",
+        "short": "HSV",
+        "budget": 16000000,
+        "wageBudget": 200000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Volksparkstadion"
+      },
+      {
+        "id": "hannover",
+        "name": "Hannover 96",
+        "short": "H96",
+        "budget": 10000000,
+        "wageBudget": 140000,
+        "reputation": 73,
+        "overall": 72,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Heinz von Heiden Arena"
+      },
+      {
+        "id": "hertha",
+        "name": "Hertha Berlín",
+        "short": "BSC",
+        "budget": 15000000,
+        "wageBudget": 190000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Olympiastadion Berlín"
+      },
+      {
+        "id": "heidenheim",
+        "name": "FC Heidenheim",
+        "short": "FCH",
+        "budget": 9500000,
+        "wageBudget": 130000,
+        "reputation": 73,
+        "overall": 72,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Voith-Arena"
+      },
+      {
+        "id": "kaiserslautern",
+        "name": "1. FC Kaiserslautern",
+        "short": "FCK",
+        "budget": 8500000,
+        "wageBudget": 120000,
+        "reputation": 73,
+        "overall": 71,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Fritz-Walter-Stadion"
+      },
+      {
+        "id": "karlsruher",
+        "name": "Karlsruher SC",
+        "short": "KSC",
+        "budget": 7000000,
+        "wageBudget": 100000,
+        "reputation": 71,
+        "overall": 70,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "BBBank Wildpark"
+      },
+      {
+        "id": "koln",
+        "name": "1. FC Köln",
+        "short": "KOE",
+        "budget": 18000000,
+        "wageBudget": 220000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "RheinEnergieStadion"
+      },
+      {
+        "id": "magdeburg",
+        "name": "1. FC Magdeburg",
+        "short": "FCM",
+        "budget": 5000000,
+        "wageBudget": 75000,
+        "reputation": 69,
+        "overall": 69,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "MDCC-Arena"
+      },
+      {
+        "id": "nuremberg",
+        "name": "1. FC Núremberg",
+        "short": "FCN",
+        "budget": 9000000,
+        "wageBudget": 125000,
+        "reputation": 73,
+        "overall": 71,
+        "colors": [
+          "#800020",
+          "#ffffff"
+        ],
+        "stadium": "Max-Morlock-Stadion"
+      },
+      {
+        "id": "osnabruck",
+        "name": "VfL Osnabrück",
+        "short": "OSN",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#4b0082",
+          "#ffffff"
+        ],
+        "stadium": "Bremer Brücke"
+      }
+    ]
+  },
+  {
+    "id": "fra_2",
+    "name": "Ligue 2",
+    "country": "Francia",
+    "region": "Europa",
+    "tier": 2,
+    "reputation": 77,
+    "teams": [
+      {
+        "id": "annecy",
+        "name": "FC Annecy",
+        "short": "ANN",
+        "budget": 3500000,
+        "wageBudget": 50000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Parc des Sports"
+      },
+      {
+        "id": "clermont",
+        "name": "Clermont Foot",
+        "short": "CF63",
+        "budget": 8000000,
+        "wageBudget": 110000,
+        "reputation": 72,
+        "overall": 71,
+        "colors": [
+          "#cc0000",
+          "#001a4d"
+        ],
+        "stadium": "Gabriel-Montpied"
+      },
+      {
+        "id": "dijon",
+        "name": "Dijon FCO",
+        "short": "DFCO",
+        "budget": 4200000,
+        "wageBudget": 62000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Gaston Gérard"
+      },
+      {
+        "id": "guingamp",
+        "name": "EA Guingamp",
+        "short": "EAG",
+        "budget": 6500000,
+        "wageBudget": 95000,
+        "reputation": 71,
+        "overall": 70,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Stade de Roudourou"
+      },
+      {
+        "id": "grenoble",
+        "name": "Grenoble Foot 38",
+        "short": "GF38",
+        "budget": 4500000,
+        "wageBudget": 65000,
+        "reputation": 69,
+        "overall": 68,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Stade des Alpes"
+      },
+      {
+        "id": "metz",
+        "name": "FC Metz",
+        "short": "FCM",
+        "budget": 10000000,
+        "wageBudget": 140000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#800020",
+          "#ffffff"
+        ],
+        "stadium": "Stade Saint-Symphorien"
+      },
+      {
+        "id": "montpellier",
+        "name": "Montpellier HSC",
+        "short": "MHSC",
+        "budget": 12000000,
+        "wageBudget": 160000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#001a4d",
+          "#ff6600"
+        ],
+        "stadium": "Stade de la Mosson"
+      },
+      {
+        "id": "nancy",
+        "name": "AS Nancy-Lorraine",
+        "short": "ASN",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Stade Marcel Picot"
+      },
+      {
+        "id": "nantes",
+        "name": "FC Nantes",
+        "short": "FCN",
+        "budget": 13000000,
+        "wageBudget": 170000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#ffcc00",
+          "#006633"
+        ],
+        "stadium": "Stade de la Beaujoire"
+      },
+      {
+        "id": "pau_fc",
+        "name": "Pau FC",
+        "short": "PAU",
+        "budget": 3800000,
+        "wageBudget": 55000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Nouste Camp"
+      },
+      {
+        "id": "red_star",
+        "name": "Red Star Saint-Ouen",
+        "short": "RED",
+        "budget": 4000000,
+        "wageBudget": 60000,
+        "reputation": 68,
+        "overall": 68,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Stade Bauer"
+      },
+      {
+        "id": "reims",
+        "name": "Stade de Reims",
+        "short": "SDR",
+        "budget": 11000000,
+        "wageBudget": 150000,
+        "reputation": 74,
+        "overall": 73,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Stade Auguste-Delaune"
+      },
+      {
+        "id": "rodez",
+        "name": "Rodez Aveyron Football",
+        "short": "RAF",
+        "budget": 3600000,
+        "wageBudget": 52000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#ffcc00",
+          "#cc0000"
+        ],
+        "stadium": "Stade Paul-Lignon"
+      },
+      {
+        "id": "saint_etienne",
+        "name": "AS Saint-Étienne",
+        "short": "ASSE",
+        "budget": 14000000,
+        "wageBudget": 180000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Stade Geoffroy-Guichard"
+      },
+      {
+        "id": "sochaux",
+        "name": "Sochaux-Montbéliard",
+        "short": "FCSM",
+        "budget": 4800000,
+        "wageBudget": 68000,
+        "reputation": 69,
+        "overall": 69,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Stade Auguste Bonal"
+      },
+      {
+        "id": "laval",
+        "name": "Stade Lavallois",
+        "short": "LAV",
+        "budget": 3900000,
+        "wageBudget": 58000,
+        "reputation": 68,
+        "overall": 67,
+        "colors": [
+          "#ff6600",
+          "#000000"
+        ],
+        "stadium": "Stade Francis Le Basser"
+      },
+      {
+        "id": "boulogne",
+        "name": "US Boulogne",
+        "short": "USB",
+        "budget": 3000000,
+        "wageBudget": 45000,
+        "reputation": 66,
+        "overall": 66,
+        "colors": [
+          "#cc0000",
+          "#003399"
+        ],
+        "stadium": "Stade de la Libération"
+      },
+      {
+        "id": "dunkerque",
+        "name": "USL Dunkerque",
+        "short": "USLD",
+        "budget": 3700000,
+        "wageBudget": 54000,
+        "reputation": 67,
+        "overall": 67,
+        "colors": [
+          "#3399ff",
+          "#ffffff"
+        ],
+        "stadium": "Stade Marcel-Tribut"
+      }
+    ]
+  },
+  {
+    "id": "por_1",
+    "name": "Primeira Liga",
+    "country": "Portugal",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 84,
+    "teams": [
+      {
+        "id": "benfica",
+        "name": "SL Benfica",
+        "short": "SLB",
+        "budget": 40000000,
+        "wageBudget": 500000,
+        "reputation": 86,
+        "overall": 81,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Estádio da Luz"
+      },
+      {
+        "id": "porto",
+        "name": "FC Porto",
+        "short": "FCP",
+        "budget": 35000000,
+        "wageBudget": 450000,
+        "reputation": 85,
+        "overall": 80,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Estádio do Dragão"
+      },
+      {
+        "id": "sporting_lisbon",
+        "name": "Sporting CP",
+        "short": "SCP",
+        "budget": 38000000,
+        "wageBudget": 480000,
+        "reputation": 85,
+        "overall": 81,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Estádio José Alvalade"
+      },
+      {
+        "id": "braga",
+        "name": "Sporting de Braga",
+        "short": "SCB",
+        "budget": 20000000,
+        "wageBudget": 280000,
+        "reputation": 80,
+        "overall": 77,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Estádio Municipal de Braga"
+      },
+      {
+        "id": "vitoria_sc",
+        "name": "Vitória de Guimarães",
+        "short": "VSC",
+        "budget": 12000000,
+        "wageBudget": 180000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Estádio D. Afonso Henriques"
+      }
+    ]
+  },
+  {
+    "id": "ned_1",
+    "name": "Eredivisie",
+    "country": "Países Bajos",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 83,
+    "teams": [
+      {
+        "id": "ajax",
+        "name": "AFC Ajax",
+        "short": "AJX",
+        "budget": 45000000,
+        "wageBudget": 550000,
+        "reputation": 86,
+        "overall": 80,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Johan Cruijff ArenA"
+      },
+      {
+        "id": "psv",
+        "name": "PSV Eindhoven",
+        "short": "PSV",
+        "budget": 40000000,
+        "wageBudget": 500000,
+        "reputation": 85,
+        "overall": 80,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Philips Stadion"
+      },
+      {
+        "id": "feyenoord",
+        "name": "Feyenoord",
+        "short": "FEY",
+        "budget": 35000000,
+        "wageBudget": 450000,
+        "reputation": 84,
+        "overall": 79,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "De Kuip"
+      },
+      {
+        "id": "az_alkmaar",
+        "name": "AZ Alkmaar",
+        "short": "AZ",
+        "budget": 22000000,
+        "wageBudget": 300000,
+        "reputation": 80,
+        "overall": 76,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "AFAS Stadion"
+      },
+      {
+        "id": "twente",
+        "name": "FC Twente",
+        "short": "TWE",
+        "budget": 18000000,
+        "wageBudget": 250000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "De Grolsch Veste"
+      }
+    ]
+  },
+  {
+    "id": "tur_1",
+    "name": "Süper Lig",
+    "country": "Turquía",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 82,
+    "teams": [
+      {
+        "id": "galatasaray",
+        "name": "Galatasaray SK",
+        "short": "GAL",
+        "budget": 40000000,
+        "wageBudget": 500000,
+        "reputation": 84,
+        "overall": 80,
+        "colors": [
+          "#cc0000",
+          "#ffcc00"
+        ],
+        "stadium": "RAMS Park"
+      },
+      {
+        "id": "fenerbahce",
+        "name": "Fenerbahçe SK",
+        "short": "FEN",
+        "budget": 38000000,
+        "wageBudget": 480000,
+        "reputation": 84,
+        "overall": 79,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Ülker Stadyumu"
+      },
+      {
+        "id": "besiktas",
+        "name": "Beşiktaş JK",
+        "short": "BES",
+        "budget": 30000000,
+        "wageBudget": 400000,
+        "reputation": 82,
+        "overall": 78,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Tüpraş Stadyumu"
+      },
+      {
+        "id": "trabzonspor",
+        "name": "Trabzonspor",
+        "short": "TRA",
+        "budget": 20000000,
+        "wageBudget": 280000,
+        "reputation": 79,
+        "overall": 76,
+        "colors": [
+          "#800020",
+          "#3399ff"
+        ],
+        "stadium": "Papara Park"
+      },
+      {
+        "id": "basaksehir",
+        "name": "Istanbul Başakşehir",
+        "short": "IBFK",
+        "budget": 18000000,
+        "wageBudget": 250000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#ff6600",
+          "#001a4d"
+        ],
+        "stadium": "Fatih Terim Stadyumu"
+      }
+    ]
+  },
+  {
+    "id": "sau_1",
+    "name": "Saudi Pro League",
+    "country": "Arabia Saudita",
+    "region": "Asia",
+    "tier": 1,
+    "reputation": 85,
+    "teams": [
+      {
+        "id": "al_hilal",
+        "name": "Al-Hilal SFC",
+        "short": "HIL",
+        "budget": 120000000,
+        "wageBudget": 1500000,
+        "reputation": 88,
+        "overall": 83,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Kingdom Arena"
+      },
+      {
+        "id": "al_nassr",
+        "name": "Al-Nassr FC",
+        "short": "NAS",
+        "budget": 110000000,
+        "wageBudget": 1400000,
+        "reputation": 87,
+        "overall": 82,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Al-Awwal Park"
+      },
+      {
+        "id": "al_ittihad",
+        "name": "Al-Ittihad",
+        "short": "ITT",
+        "budget": 90000000,
+        "wageBudget": 1200000,
+        "reputation": 85,
+        "overall": 80,
+        "colors": [
+          "#ffcc00",
+          "#000000"
+        ],
+        "stadium": "King Abdullah Sports City"
+      },
+      {
+        "id": "al_ahli",
+        "name": "Al-Ahli Saudi FC",
+        "short": "AHL",
+        "budget": 85000000,
+        "wageBudget": 1100000,
+        "reputation": 85,
+        "overall": 80,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "King Abdullah Sports City"
+      },
+      {
+        "id": "al_ettifaq",
+        "name": "Al-Ettifaq",
+        "short": "ETT",
+        "budget": 35000000,
+        "wageBudget": 450000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#006633",
+          "#cc0000"
+        ],
+        "stadium": "Ettifaq Club Stadium"
+      }
+    ]
+  },
+  {
+    "id": "jpn_1",
+    "name": "J1 League",
+    "country": "Japón",
+    "region": "Asia",
+    "tier": 1,
+    "reputation": 78,
+    "teams": [
+      {
+        "id": "vissel_kobe",
+        "name": "Vissel Kobe",
+        "short": "KOB",
+        "budget": 25000000,
+        "wageBudget": 320000,
+        "reputation": 79,
+        "overall": 75,
+        "colors": [
+          "#800020",
+          "#ffffff"
+        ],
+        "stadium": "Noevir Stadium Kobe"
+      },
+      {
+        "id": "yokohama_fm",
+        "name": "Yokohama F. Marinos",
+        "short": "YFM",
+        "budget": 22000000,
+        "wageBudget": 290000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#003399",
+          "#cc0000"
+        ],
+        "stadium": "Nissan Stadium"
+      },
+      {
+        "id": "kawasaki_f",
+        "name": "Kawasaki Frontale",
+        "short": "KWF",
+        "budget": 20000000,
+        "wageBudget": 270000,
+        "reputation": 78,
+        "overall": 74,
+        "colors": [
+          "#3399ff",
+          "#000000"
+        ],
+        "stadium": "U Todoroki Stadium"
+      },
+      {
+        "id": "urawa_reds",
+        "name": "Urawa Red Diamonds",
+        "short": "URA",
+        "budget": 24000000,
+        "wageBudget": 310000,
+        "reputation": 79,
+        "overall": 75,
+        "colors": [
+          "#cc0000",
+          "#000000"
+        ],
+        "stadium": "Saitama Stadium 2002"
+      },
+      {
+        "id": "sanfrecce",
+        "name": "Sanfrecce Hiroshima",
+        "short": "SAN",
+        "budget": 18000000,
+        "wageBudget": 240000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#4b0082",
+          "#ffffff"
+        ],
+        "stadium": "Edion Peace Wing Hiroshima"
+      }
+    ]
+  },
+  {
+    "id": "bel_1",
+    "name": "Pro League",
+    "country": "Bélgica",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 81,
+    "teams": [
+      {
+        "id": "club_brugge",
+        "name": "Club Brujas",
+        "short": "CLB",
+        "budget": 30000000,
+        "wageBudget": 400000,
+        "reputation": 82,
+        "overall": 77,
+        "colors": [
+          "#003399",
+          "#000000"
+        ],
+        "stadium": "Jan Breydel Stadium"
+      },
+      {
+        "id": "anderlecht",
+        "name": "RSC Anderlecht",
+        "short": "AND",
+        "budget": 25000000,
+        "wageBudget": 350000,
+        "reputation": 81,
+        "overall": 76,
+        "colors": [
+          "#4b0082",
+          "#ffffff"
+        ],
+        "stadium": "Lotto Park"
+      },
+      {
+        "id": "genk",
+        "name": "KRC Genk",
+        "short": "GNK",
+        "budget": 22000000,
+        "wageBudget": 300000,
+        "reputation": 79,
+        "overall": 75,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Cegeka Arena"
+      },
+      {
+        "id": "union_sg",
+        "name": "Union Saint-Gilloise",
+        "short": "USG",
+        "budget": 20000000,
+        "wageBudget": 280000,
+        "reputation": 79,
+        "overall": 75,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Stade Joseph Marien"
+      },
+      {
+        "id": "antwerp",
+        "name": "Royal Antwerp FC",
+        "short": "ANT",
+        "budget": 24000000,
+        "wageBudget": 320000,
+        "reputation": 80,
+        "overall": 76,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Bosuilstadion"
+      }
+    ]
+  },
+  {
+    "id": "sco_1",
+    "name": "Scottish Premiership",
+    "country": "Escocia",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 80,
+    "teams": [
+      {
+        "id": "celtic",
+        "name": "Celtic FC",
+        "short": "CEL",
+        "budget": 35000000,
+        "wageBudget": 450000,
+        "reputation": 83,
+        "overall": 78,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Celtic Park"
+      },
+      {
+        "id": "rangers",
+        "name": "Rangers FC",
+        "short": "RAN",
+        "budget": 32000000,
+        "wageBudget": 420000,
+        "reputation": 82,
+        "overall": 77,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Ibrox Stadium"
+      },
+      {
+        "id": "hearts",
+        "name": "Heart of Midlothian",
+        "short": "HEA",
+        "budget": 10000000,
+        "wageBudget": 140000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#800020",
+          "#ffffff"
+        ],
+        "stadium": "Tynecastle Park"
+      },
+      {
+        "id": "aberdeen",
+        "name": "Aberdeen FC",
+        "short": "ABE",
+        "budget": 9000000,
+        "wageBudget": 130000,
+        "reputation": 73,
+        "overall": 71,
+        "colors": [
+          "#cc0000",
+          "#ffffff"
+        ],
+        "stadium": "Pittodrie Stadium"
+      },
+      {
+        "id": "hibernian",
+        "name": "Hibernian FC",
+        "short": "HIB",
+        "budget": 8500000,
+        "wageBudget": 120000,
+        "reputation": 73,
+        "overall": 71,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Easter Road"
+      }
+    ]
+  },
+  {
+    "id": "aut_1",
+    "name": "Bundesliga Austríaca",
+    "country": "Austria",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 79,
+    "teams": [
+      {
+        "id": "salzburg",
+        "name": "Red Bull Salzburgo",
+        "short": "RBS",
+        "budget": 40000000,
+        "wageBudget": 500000,
+        "reputation": 83,
+        "overall": 78,
+        "colors": [
+          "#ffffff",
+          "#cc0000"
+        ],
+        "stadium": "Red Bull Arena"
+      },
+      {
+        "id": "sturm_graz",
+        "name": "Sturm Graz",
+        "short": "STU",
+        "budget": 18000000,
+        "wageBudget": 250000,
+        "reputation": 77,
+        "overall": 74,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Merkur-Arena"
+      },
+      {
+        "id": "rapid_vienna",
+        "name": "Rapid Viena",
+        "short": "RAP",
+        "budget": 15000000,
+        "wageBudget": 210000,
+        "reputation": 76,
+        "overall": 73,
+        "colors": [
+          "#006633",
+          "#ffffff"
+        ],
+        "stadium": "Allianz Stadion"
+      },
+      {
+        "id": "lask",
+        "name": "LASK Linz",
+        "short": "LAK",
+        "budget": 14000000,
+        "wageBudget": 200000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Raiffeisen Arena"
+      },
+      {
+        "id": "austria_vienna",
+        "name": "Austria Viena",
+        "short": "AUS",
+        "budget": 12000000,
+        "wageBudget": 180000,
+        "reputation": 75,
+        "overall": 72,
+        "colors": [
+          "#4b0082",
+          "#ffffff"
+        ],
+        "stadium": "Generali-Arena"
+      }
+    ]
+  },
+  {
+    "id": "den_1",
+    "name": "Superliga Danesa",
+    "country": "Dinamarca",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 78,
+    "teams": [
+      {
+        "id": "copenhagen",
+        "name": "FC Copenhague",
+        "short": "COP",
+        "budget": 30000000,
+        "wageBudget": 400000,
+        "reputation": 81,
+        "overall": 77,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Parken Stadium"
+      },
+      {
+        "id": "midtjylland",
+        "name": "FC Midtjylland",
+        "short": "FCM",
+        "budget": 25000000,
+        "wageBudget": 350000,
+        "reputation": 80,
+        "overall": 76,
+        "colors": [
+          "#000000",
+          "#cc0000"
+        ],
+        "stadium": "MCH Arena"
+      },
+      {
+        "id": "brondby",
+        "name": "Brøndby IF",
+        "short": "BIF",
+        "budget": 20000000,
+        "wageBudget": 280000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#ffcc00",
+          "#003399"
+        ],
+        "stadium": "Brøndby Stadion"
+      },
+      {
+        "id": "nordsjaelland",
+        "name": "FC Nordsjælland",
+        "short": "FCN",
+        "budget": 16000000,
+        "wageBudget": 220000,
+        "reputation": 76,
+        "overall": 74,
+        "colors": [
+          "#cc0000",
+          "#ffcc00"
+        ],
+        "stadium": "Right to Dream Park"
+      },
+      {
+        "id": "aarhus",
+        "name": "Aarhus GF",
+        "short": "AGF",
+        "budget": 12000000,
+        "wageBudget": 180000,
+        "reputation": 74,
+        "overall": 72,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Ceres Park"
+      }
+    ]
+  },
+  {
+    "id": "cro_1",
+    "name": "HNL",
+    "country": "Croacia",
+    "region": "Europa",
+    "tier": 1,
+    "reputation": 77,
+    "teams": [
+      {
+        "id": "dinamo_zagreb",
+        "name": "Dinamo Zagreb",
+        "short": "DIN",
+        "budget": 30000000,
+        "wageBudget": 380000,
+        "reputation": 81,
+        "overall": 77,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Stadion Maksimir"
+      },
+      {
+        "id": "hajduk_split",
+        "name": "Hajduk Split",
+        "short": "HAJ",
+        "budget": 20000000,
+        "wageBudget": 270000,
+        "reputation": 78,
+        "overall": 75,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Stadion Poljud"
+      },
+      {
+        "id": "rijeka",
+        "name": "HNK Rijeka",
+        "short": "RIJ",
+        "budget": 15000000,
+        "wageBudget": 210000,
+        "reputation": 76,
+        "overall": 73,
+        "colors": [
+          "#ffffff",
+          "#3399ff"
+        ],
+        "stadium": "Stadion Rujevica"
+      },
+      {
+        "id": "osijek",
+        "name": "NK Osijek",
+        "short": "OSI",
+        "budget": 14000000,
+        "wageBudget": 200000,
+        "reputation": 75,
+        "overall": 73,
+        "colors": [
+          "#ffffff",
+          "#003399"
+        ],
+        "stadium": "Opus Arena"
+      },
+      {
+        "id": "lokomotiva",
+        "name": "Lokomotiva Zagreb",
+        "short": "LOK",
+        "budget": 8000000,
+        "wageBudget": 120000,
+        "reputation": 72,
+        "overall": 70,
+        "colors": [
+          "#003399",
+          "#ffffff"
+        ],
+        "stadium": "Stadion Kranjčevićeva"
+      }
     ]
   }
 ]

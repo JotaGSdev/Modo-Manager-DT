@@ -99,6 +99,7 @@ class DatabaseManager {
         tacticalBonus: 0,
         penaltyBonus: 0
       },
+      scoutLevel: 1,
       youthAcademy: [],
       eventsLog: [
         { date: '01/08/2026', text: `¡Bienvenido a ${userTeam.name}! El consejo directivo espera luchar por los primeros puestos esta temporada.` }
