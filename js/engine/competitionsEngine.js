@@ -1,69 +1,85 @@
-// Motor de Copas Nacionales y Competiciones Continentales (Champions League, Libertadores, CONCACAF)
+// Motor de Competiciones Continentales (UEFA Champions League, CONMEBOL Libertadores y CONCACAF Champions Cup)
 
 import { db } from '../data/db.js';
-import { ProbabilityEngine } from './probability.js';
+import { sfx } from '../../assets/audio/sfx.js';
 
 export class CompetitionsEngine {
   /**
-   * Obtiene la copa continental correspondiente según la región de la liga
+   * Procesa la fecha de Copa Continental según la región del club usuario (Semanas 6, 12, 18, 24, 30, 36)
    */
-  static getRegionalCupName(region) {
-    if (region === 'Europa') return 'UEFA Champions League';
-    if (region === 'Sudamérica') return 'Copa CONMEBOL Libertadores';
-    if (region === 'Norteamérica') return 'CONCACAF Champions Cup';
-    return 'Copa Continental';
-  }
-
-  /**
-   * Procesa una fecha de Copa Continental o Nacional si la semana actual es de copa (Semanas 6, 12, 18, 24, 30, 36)
-   */
-  static processCupWeek(week) {
+  static processCupWeek(weekNumber) {
     const cupWeeks = [6, 12, 18, 24, 30, 36];
-    if (!cupWeeks.includes(week)) return null;
+    if (!cupWeeks.includes(weekNumber)) return null;
 
     const gameState = db.gameState;
+    if (!gameState) return null;
+
     const userTeam = db.teams[gameState.userTeamId];
-    const userLeague = db.leagues.find(l => l.id === userTeam.leagueId) || { region: 'Europa' };
-    const cupName = this.getRegionalCupName(userLeague.region);
+    if (!userTeam) return null;
 
-    // Determinar rival aleatorio de mayor/menor reputación en la copa
-    const otherLeagues = db.leagues.filter(l => l.region === userLeague.region || l.id !== userLeague.id);
-    let potentialRivals = [];
-    otherLeagues.forEach(l => potentialRivals.push(...l.teams));
-    potentialRivals = potentialRivals.filter(t => t.id !== userTeam.id);
+    const region = userTeam.region || 'Sudamérica';
+    let cupName = 'Copa CONMEBOL Libertadores';
+    let prizePerMatch = 2500000; // €2.5M por victoria en Copa
+    let finalPrize = 25000000;   // €25M por ser Campeón Continental
 
-    const rival = potentialRivals[Math.floor(Math.random() * potentialRivals.length)] || { name: 'Rival Continental FC', overall: 76 };
+    if (region === 'Europa') {
+      cupName = 'UEFA Champions League';
+      prizePerMatch = 3500000;
+      finalPrize = 35000000;
+    } else if (region === 'Norteamérica') {
+      cupName = 'Copa de Campeones de la CONCACAF';
+      prizePerMatch = 1800000;
+      finalPrize = 15000000;
+    } else if (region === 'Centroamérica') {
+      cupName = 'Copa Centroamericana de CONCACAF';
+      prizePerMatch = 1200000;
+      finalPrize = 10000000;
+    }
 
-    // Simular resultado de copa basado en overalls
-    const probs = ProbabilityEngine.calculateMatchProbabilities(userTeam.overall, rival.overall);
-    const isWin = Math.random() * 100 < (probs.homeWinProb + probs.drawProb * 0.5);
+    const roundIndex = cupWeeks.indexOf(weekNumber) + 1;
+    let roundLabel = `Fase de Grupos - Fecha ${roundIndex}`;
+    if (roundIndex === 4) roundLabel = 'Cuartos de Final';
+    else if (roundIndex === 5) roundLabel = 'Semifinal Continental';
+    else if (roundIndex === 6) roundLabel = 'GRAN FINAL CONTINENTAL';
 
-    let prize = 2500000; // €2.5M por partido de copa
-    if (week === 36 && isWin) prize = 25000000; // €25M por ser Campeón de Copa
+    // Simulación de resultado de Copa Continental
+    const isVictory = Math.random() < 0.65;
+    const userGoals = isVictory ? Math.floor(Math.random() * 3) + 1 : Math.floor(Math.random() * 2);
+    const rivalGoals = isVictory ? Math.max(0, userGoals - (Math.floor(Math.random() * 2) + 1)) : userGoals + Math.floor(Math.random() * 2) + 1;
 
-    gameState.budget += prize;
+    let reward = 0;
+    let matchText = '';
 
-    const resultMsg = isWin 
-      ? `🏆 ${cupName}: ¡VICTORIA! ${userTeam.name} superó a ${rival.name}. Premio acumulado: +€${(prize / 1000000).toFixed(1)}M al presupuesto.`
-      : `⚽ ${cupName}: Caída por la mínima ante ${rival.name}. Premio de participación: +€${(prize / 1000000).toFixed(1)}M.`;
+    if (userGoals > rivalGoals) {
+      reward = prizePerMatch;
+      if (roundIndex === 6) reward += finalPrize;
+      gameState.budget += reward;
+
+      matchText = `🏆 ${cupName} (${roundLabel}): ¡VICTORIA! ${userTeam.name} ${userGoals} - ${rivalGoals} Rival Continental (+€${(reward / 1000000).toFixed(1)}M)`;
+      if (roundIndex === 6) {
+        matchText = `🥇 ¡CAMPEÓN CONTINENTAL! ${userTeam.name} conquistó la ${cupName} (+€${(reward / 1000000).toFixed(1)}M)`;
+        gameState.trophies = gameState.trophies || [];
+        gameState.trophies.push({
+          title: `${cupName} - Campeón`,
+          season: `${gameState.season}/${gameState.season + 1}`
+        });
+      }
+    } else {
+      matchText = `🏆 ${cupName} (${roundLabel}): Empate / Derrota ${userTeam.name} ${userGoals} - ${rivalGoals} Rival Continental`;
+    }
 
     gameState.eventsLog.unshift({
-      date: `Semana ${week} (${seasonLabel(gameState.season)})`,
-      text: resultMsg
+      date: `Semana ${weekNumber}`,
+      text: matchText
     });
 
     db.saveGame();
-
     return {
       cupName,
-      rivalName: rival.name,
-      isWin,
-      prize,
-      msg: resultMsg
+      roundLabel,
+      userGoals,
+      rivalGoals,
+      reward
     };
   }
-}
-
-function seasonLabel(year) {
-  return `${year}/${year + 1}`;
 }

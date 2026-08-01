@@ -12,6 +12,16 @@ Puedes jugar directamente desde tu navegador en el siguiente enlace oficial del 
 
 ---
 
+## Colaborar con el Proyecto
+
+Si disfrutas de Entrenador Leyenda y deseas apoyar su desarrollo continuo, mantenimiento e inclusion de nuevas caracteristicas, puedes realizar una contribucion voluntaria en el siguiente enlace:
+
+**[https://ko-fi.com/jotags](https://ko-fi.com/jotags)**
+
+Tu apoyo ayuda a mantener el proyecto activo, libre de publicidad e impulsado por la comunidad.
+
+---
+
 ## Descripcion General del Juego
 
 En Entrenador Leyenda, asumes el rol de un entrenador principal al mando de un club profesional. A lo largo de tu trayectoria deberas gestionar el rendimiento en el terreno de juego, planificar la plantilla a corto y largo plazo, tomar decisiones financieras en el mercado de pases y cumplir con las expectativas planteadas por la directiva del equipo.
@@ -50,6 +60,7 @@ La permanencia en el club y la probabilidad de renovacion de contrato se miden a
   - Ventana de Invierno: Semanas 19 a 22.
 - El mercado permanece cerrado en las demas semanas de la temporada.
 - Negociaciones mediante calculo de probabilidad de aceptacion basado en la oferta de traspaso, salario propuesto, reputacion del club y ofertas de clubes rivales.
+- Mecanica de negociacion por pasos con bloqueo de ofertas rechazadas durante el resto de la ventana activa.
 
 ### 5. Cantera y Desarrollo de Jovenes Promesas
 - Envio de ojeadores a regiones como Sudamerica y Europa con costo deducible del presupuesto del club.
@@ -81,8 +92,9 @@ Las medias generales de los futbolistas se calculan según pesos especificos par
 ## Estructura del Proyecto
 
 ```
-Entrenador leyenda/
+Modo Manager DT/
 ├── index.html                  # Punto de entrada HTML5
+├── README.md                   # Documentacion del proyecto
 ├── css/
 │   ├── main.css                # Estilos base y variables de diseño
 │   ├── components.css          # Tablas, tarjetas y componentes de interfaz
