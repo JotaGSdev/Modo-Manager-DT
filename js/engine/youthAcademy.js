@@ -1,6 +1,7 @@
 // Módulo de Cantera (Youth Academy) y Canteranos Avanzados con Niveles de Ojeador
 
 import { db } from '../data/db.js';
+import { calculatePlayerMarketValue, calculatePlayerSalary } from '../data/teamData.js';
 
 // Diccionario de Nombres y Apellidos por Región del Mundo
 const REGIONAL_NAMES = {
@@ -73,6 +74,9 @@ export class YouthAcademyEngine {
       const potMin = Math.min(96, Math.max(ovr + 5, levelData.minPot + Math.floor(Math.random() * 6)));
       const potMax = Math.min(97, Math.max(potMin + 4, levelData.maxPot - Math.floor(Math.random() * 4)));
 
+      const value = calculatePlayerMarketValue(ovr, age, potMax);
+      const salary = calculatePlayerSalary(value, ovr);
+
       prospects.push({
         id: `youth_${Date.now()}_${i}_${Math.floor(Math.random()*1000)}`,
         name: `${fn} ${ln}`,
@@ -89,8 +93,8 @@ export class YouthAcademyEngine {
         dri: Math.min(99, Math.max(40, ovr + Math.floor((Math.random() - 0.5) * 12))),
         def: Math.min(99, Math.max(40, ovr + Math.floor((Math.random() - 0.5) * 12))),
         phy: Math.min(99, Math.max(40, ovr + Math.floor((Math.random() - 0.5) * 12))),
-        value: Math.round(Math.pow(ovr, 3.15) * 1.5),
-        salary: 1500,
+        value: value,
+        salary: salary,
         promotionCost: Math.round(ovr * 1500 + potMax * 2000)
       });
     }

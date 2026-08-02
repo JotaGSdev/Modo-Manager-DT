@@ -5,6 +5,7 @@ import { MatchEngine } from '../engine/matchEngine.js';
 import { TrophyRoomEngine } from '../engine/trophyRoom.js';
 import { CompetitionsEngine } from '../engine/competitionsEngine.js';
 import { TransferEngine } from '../engine/transfers.js';
+import { EventsEngine } from '../engine/eventsEngine.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
 export function renderDashboard(container, navigateTo) {
@@ -124,9 +125,17 @@ export function renderDashboard(container, navigateTo) {
     </div>
   `;
 
+  // Botón Jugar Partido (Verifica si hay evento narrativo pendiente)
   document.getElementById('btnPlayMatch').addEventListener('click', () => {
     sfx.playWhistle();
-    navigateTo('match', { rival: nextRival, mode: 'live' });
+    const event = EventsEngine.getEventForWeek(gameState.week);
+    if (event) {
+      EventsEngine.renderEventModal(event, () => {
+        navigateTo('match', { rival: nextRival, mode: 'live' });
+      });
+    } else {
+      navigateTo('match', { rival: nextRival, mode: 'live' });
+    }
   });
 
   // Simular bloque de fechas hasta la Semana 19 (Parón Invernal) o Semana 38 (Final)
@@ -134,7 +143,15 @@ export function renderDashboard(container, navigateTo) {
     sfx.playWhistle();
     const targetWeek = gameState.week < 19 ? 19 : gameState.maxWeeks;
 
+    let pendingEvent = null;
+
     while (gameState.week < targetWeek) {
+      // Verificar si hay evento narrativo en esta fecha antes de simular
+      const event = EventsEngine.getEventForWeek(gameState.week);
+      if (event && !pendingEvent) {
+        pendingEvent = event;
+      }
+
       const squad = db.getTeamPlayers(userTeam.id);
       const currentRival = otherTeams[(gameState.week - 1) % otherTeams.length] || nextRival;
       const match = new MatchEngine(userTeam, currentRival, userTeam.overall, currentRival.overall, gameState.matchBonus?.moraleBonus || 0);
@@ -168,23 +185,36 @@ export function renderDashboard(container, navigateTo) {
       // SIMULAR SIMULTÁNEAMENTE TODOS LOS DEMÁS PARTIDOS DE LA JORNADA RIVAL
       MatchEngine.simulateAllRivalMatches(userTeam.id, currentRival.id);
 
-      // PROCESAR COMPETICIÓN CONTINENTAL O COPA NACIONAL (SEMANAS 6, 12, 18, 24, 30, 36)
+      // PROCESAR COMPETICIÓN CONTINENTAL O COPA NACIONAL
       CompetitionsEngine.processCupWeek(gameState.week);
       CompetitionsEngine.processNationalCupWeek(gameState.week);
 
       gameState.week++;
+
+      // Si se detonó un evento narrativo importante, pausar la simulación para presentarlo al DT
+      if (pendingEvent) {
+        break;
+      }
     }
 
     gameState.standings.sort((a, b) => b.points - a.points || b.gd - a.gd);
     db.saveGame();
 
-    if (gameState.week === 19) {
-      TransferEngine.resetWindowLocks();
-      showMidSeasonModal();
-    } else if (gameState.week >= gameState.maxWeeks) {
-      showEndOfSeasonModal();
+    const proceedNextStep = () => {
+      if (gameState.week === 19) {
+        TransferEngine.resetWindowLocks();
+        showMidSeasonModal();
+      } else if (gameState.week >= gameState.maxWeeks) {
+        showEndOfSeasonModal();
+      } else {
+        renderDashboard(container, navigateTo);
+      }
+    };
+
+    if (pendingEvent) {
+      EventsEngine.renderEventModal(pendingEvent, proceedNextStep);
     } else {
-      renderDashboard(container, navigateTo);
+      proceedNextStep();
     }
   });
 

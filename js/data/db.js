@@ -1,6 +1,4 @@
-// Gestor de Base de Datos, Reset de Temporada, Estadísticas, Evolución y Trigger de Actualización Global
-
-import { generateTeamPlayers, calculatePositionOvr } from './teamData.js';
+import { generateTeamPlayers, calculatePositionOvr, calculatePlayerMarketValue, calculatePlayerSalary } from './teamData.js';
 import { TransferEngine } from '../engine/transfers.js';
 
 class DatabaseManager {
@@ -45,6 +43,18 @@ class DatabaseManager {
         this.players[teamId] = [];
       }
     }
+
+    // Actualizar valor de mercado con la nueva curva hiperrealista si el jugador era antiguo
+    if (this.players[teamId]) {
+      this.players[teamId].forEach(p => {
+        const expectedValue = calculatePlayerMarketValue(p.overall, p.age, p.potential || p.overall);
+        if (!p.value || (p.overall >= 80 && p.value < expectedValue * 0.4)) {
+          p.value = expectedValue;
+          p.salary = calculatePlayerSalary(p.value, p.overall);
+        }
+      });
+    }
+
     return this.players[teamId];
   }
 

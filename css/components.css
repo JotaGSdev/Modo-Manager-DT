@@ -1,15 +1,15 @@
-/* Component Stylesheet - Entrenador Leyenda */
+/* Component Stylesheet - Entrenador Leyenda (Flat EA FC Dark Theme - Zero Glow) */
 
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  gap: 28px;
+  gap: 24px;
 }
 
 /* Next Match Card */
 .next-match-card {
   grid-column: span 2;
-  background: linear-gradient(135deg, rgba(24, 34, 56, 0.9), rgba(12, 18, 32, 0.95));
+  background: var(--bg-glass);
 }
 
 @media (max-width: 900px) {
@@ -24,24 +24,24 @@
 }
 
 .badge {
-  background: rgba(0, 255, 179, 0.15);
+  background: #142426;
   border: 1px solid var(--accent-green);
   color: var(--accent-green);
   padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
   font-weight: 800;
 }
 
 .badge-final {
-  background: rgba(255, 42, 109, 0.2);
+  background: #2b1419;
   border-color: var(--accent-red);
   color: var(--accent-red);
 }
 
 .league-name {
   color: var(--text-sub);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
 }
 
@@ -49,53 +49,50 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  margin: 30px 0;
+  margin: 24px 0;
 }
 
 .team-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .team-badge-circle {
-  width: 82px;
-  height: 82px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 900;
   color: #ffffff;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
-  border: 3px solid rgba(255, 255, 255, 0.35);
-  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  border: 2px solid #334155;
 }
 
 .vs-divider {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .vs-text {
-  font-size: 2.6rem;
+  font-size: 2.2rem;
   font-weight: 900;
   color: var(--accent-gold);
-  text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 }
 
 .stadium-subtext {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: var(--text-sub);
 }
 
 .match-actions {
   display: flex;
-  gap: 18px;
+  gap: 14px;
   justify-content: center;
 }
 
@@ -103,35 +100,35 @@
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .data-table th, .data-table td {
-  padding: 12px 16px;
+  padding: 11px 14px;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .data-table th {
   color: var(--text-sub);
-  font-size: 0.82rem;
+  font-size: 0.80rem;
   text-transform: uppercase;
   font-weight: 800;
   letter-spacing: 0.5px;
 }
 
 .highlight-row {
-  background: rgba(0, 255, 179, 0.14) !important;
+  background: #192438 !important;
+  border-left: 3px solid var(--accent-green);
   font-weight: 700;
 }
 
 .stat-ovr {
-  background: linear-gradient(135deg, #00d2ff, #00ffb3);
+  background: var(--accent-green);
   color: #040810;
-  padding: 4px 12px;
-  border-radius: 8px;
+  padding: 3px 10px;
+  border-radius: 6px;
   font-weight: 900;
-  box-shadow: 0 2px 8px rgba(0, 255, 179, 0.3);
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -142,8 +139,8 @@
 /* Transfers Market Cards */
 .transfers-header {
   display: flex;
-  gap: 30px;
-  margin-bottom: 24px;
+  gap: 24px;
+  margin-bottom: 20px;
 }
 
 .budget-box {
@@ -153,54 +150,53 @@
 
 .filters-bar {
   display: flex;
-  gap: 18px;
-  margin-bottom: 24px;
+  gap: 14px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
 .market-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .player-market-card {
-  background: linear-gradient(145deg, rgba(20, 27, 44, 0.85), rgba(12, 17, 28, 0.9));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 16px 24px;
-  border-radius: 14px;
+  background: #141d2e;
+  border: 1px solid var(--border-color);
+  padding: 14px 20px;
+  border-radius: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.15s ease;
 }
 
 .player-market-card:hover {
-  border-color: rgba(0, 210, 255, 0.3);
-  transform: translateY(-2px);
+  border-color: #334155;
 }
 
 .player-card-left {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
 }
 
 .pos-tag {
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 5px 10px;
+  border-radius: 6px;
   font-weight: 900;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   letter-spacing: 0.5px;
 }
-.pos-POR { background: #e67e22; color: #fff; }
-.pos-DFC, .pos-LI, .pos-LD { background: #2980b9; color: #fff; }
-.pos-MC, .pos-MCD, .pos-MCO, .pos-MI, .pos-MD { background: #00e5a3; color: #040810; }
-.pos-DC, .pos-EI, .pos-ED { background: #e63946; color: #fff; }
+.pos-POR { background: #d97706; color: #fff; }
+.pos-DFC, .pos-LI, .pos-LD { background: #2563eb; color: #fff; }
+.pos-MC, .pos-MCD, .pos-MCO, .pos-MI, .pos-MD { background: var(--accent-green); color: #040810; }
+.pos-DC, .pos-EI, .pos-ED { background: var(--accent-red); color: #fff; }
 
 .player-card-stats {
   display: flex;
-  gap: 24px;
+  gap: 20px;
 }
 
 .stat-box {
@@ -208,56 +204,48 @@
   flex-direction: column;
   align-items: center;
 }
-.stat-box .lbl { font-size: 0.75rem; color: var(--text-sub); font-weight: 700; }
-.stat-box .val { font-weight: 800; font-size: 1.05rem; }
+.stat-box .lbl { font-size: 0.72rem; color: var(--text-sub); font-weight: 700; }
+.stat-box .val { font-weight: 800; font-size: 1rem; }
 
 /* Modal de Negociación por Pasos Estilo EA FC */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(5, 8, 14, 0.92);
-  backdrop-filter: blur(12px);
+  background: rgba(6, 9, 15, 0.90);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 500;
-  animation: fadeInModal 0.25s ease forwards;
-}
-
-@keyframes fadeInModal {
-  from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
 }
 
 .modal-card {
   width: 92%;
-  max-width: 580px;
-  background: linear-gradient(145deg, rgba(22, 30, 48, 0.95), rgba(12, 18, 30, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-  padding: 26px;
-  border-radius: 18px;
+  max-width: 560px;
+  background: #141d2e;
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  border-radius: 14px;
 }
 
-/* Barra de Probabilidad sin Recortes */
+/* Barra de Probabilidad */
 .prob-container {
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
 .prob-bar-track {
-  height: 30px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 15px;
+  height: 28px;
+  background: #0b0f19;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
   overflow: hidden;
-  margin-top: 8px;
+  margin-top: 6px;
   position: relative;
 }
 
 .prob-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
-  transition: width 0.35s ease;
+  background: var(--accent-green);
+  transition: width 0.3s ease;
 }
 
 .prob-bar-text {
@@ -267,7 +255,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: #ffffff;
   pointer-events: none;
 }
@@ -277,259 +265,161 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 28px;
-  margin-bottom: 28px;
-  background: linear-gradient(135deg, rgba(18, 26, 44, 0.95), rgba(10, 15, 26, 0.95));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 24px;
+  background: #141d2e;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
 }
 
 .score-display {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
   position: relative;
 }
 
 .score-num {
-  font-size: 3.8rem;
+  font-size: 3.5rem;
   font-weight: 900;
   color: var(--accent-green);
 }
 
-/* --- OVERLAYS CINEMATOGRÁFICOS DE RESULTADO --- */
-.cinematic-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(4, 7, 12, 0.94);
-  backdrop-filter: blur(14px);
-  animation: cinematicFadeIn 0.4s ease forwards;
-}
-
-@keyframes cinematicFadeIn {
-  from { opacity: 0; transform: scale(1.05); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.cinematic-card {
-  width: 90%;
-  max-width: 600px;
-  background: linear-gradient(145deg, rgba(24, 32, 52, 0.98), rgba(12, 17, 28, 0.98));
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  border-radius: 22px;
-  padding: 40px 30px;
-  text-align: center;
-  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9);
-  position: relative;
-  overflow: hidden;
-}
-
-.cinematic-card.win {
-  border-color: var(--accent-green);
-}
-.cinematic-card.loss {
-  border-color: var(--accent-red);
-}
-.cinematic-card.draw {
-  border-color: var(--accent-cyan);
-}
-
-.cinematic-title {
-  font-size: 2.2rem;
-  font-weight: 900;
-  margin-bottom: 8px;
-  letter-spacing: 1px;
-}
-.win .cinematic-title { color: var(--accent-green); }
-.loss .cinematic-title { color: var(--accent-red); }
-.draw .cinematic-title { color: var(--accent-cyan); }
-
-.cinematic-score {
-  font-size: 3.5rem;
-  font-weight: 900;
-  margin: 16px 0;
-  color: #ffffff;
-}
-
-.cinematic-subtitle {
-  font-size: 1.1rem;
-  color: var(--text-sub);
-  margin-bottom: 24px;
-}
-
-#cinematicCanvas {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 1;
-}
-
-
-.score-colon { font-size: 3.2rem; color: var(--text-sub); }
+.score-colon { font-size: 3rem; color: var(--text-sub); }
 
 .match-time-badge {
   position: absolute;
-  bottom: -24px;
+  bottom: -22px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--accent-red);
-  padding: 3px 14px;
-  border-radius: 12px;
-  font-size: 0.88rem;
+  padding: 3px 12px;
+  border-radius: 6px;
+  font-size: 0.84rem;
   font-weight: 900;
-  box-shadow: 0 2px 10px rgba(255, 42, 109, 0.5);
 }
 
 .commentary-log {
-  height: 260px;
+  height: 250px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .log-entry {
-  padding: 10px 14px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  font-size: 0.92rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 9px 12px;
+  border-radius: 6px;
+  background: #141d2e;
+  font-size: 0.88rem;
+  border: 1px solid var(--border-color);
 }
 
 .log-goal_home, .log-goal_away {
-  background: rgba(0, 255, 179, 0.18);
-  border-left: 4px solid var(--accent-green);
+  background: #182a26;
+  border-left: 3px solid var(--accent-green);
 }
 
-/* Botón de Apoyo y Propinas Voluntarias al Finalizar Carrera */
+/* Botón de Apoyo y Propinas Voluntarias */
 .support-tip-btn {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 20px;
+  right: 20px;
   z-index: 999;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(0, 255, 179, 0.25));
-  border: 1px solid var(--accent-gold);
-  color: #ffffff;
-  padding: 12px 22px;
-  border-radius: 28px;
+  background: var(--accent-gold);
+  color: #000000;
+  padding: 10px 18px;
+  border-radius: 20px;
   font-weight: 800;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 10px;
-  box-shadow: 0 6px 25px rgba(255, 215, 0, 0.35);
-  backdrop-filter: blur(14px);
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
-  animation: fadeInTip 0.5s ease;
+  gap: 8px;
 }
 
 .support-tip-btn:hover {
-  transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 10px 30px rgba(255, 215, 0, 0.55);
-  border-color: #ffffff;
+  background: #f5b731;
 }
 
-@keyframes fadeInTip {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 600px) {
-  .support-tip-btn {
-    bottom: 16px;
-    right: 16px;
-    padding: 10px 16px;
-    font-size: 0.82rem;
-  }
-}
-
-/* --- ESTILOS DE CANTERA Y CAZATALENTOS --- */
+/* Estilos de Cantera y Cazatalentos */
 .scout-status-panel {
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 14px 20px;
-  border-radius: 14px;
-  border: 1px solid rgba(0, 255, 179, 0.2);
+  gap: 14px;
+  background: #141d2e;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
   flex-wrap: wrap;
 }
 
 .scout-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .scout-badge {
   font-weight: 900;
-  font-size: 1.05rem;
+  font-size: 1rem;
   color: var(--accent-green);
 }
 
 .scout-meta {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   color: var(--text-sub);
 }
 
 .btn-upgrade {
-  background: linear-gradient(135deg, var(--accent-gold), #ff8800);
+  background: var(--accent-gold);
   color: #000000;
   font-weight: 900;
-  padding: 10px 18px;
-  border-radius: 10px;
+  padding: 9px 16px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s ease;
 }
 .btn-upgrade:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(255, 136, 0, 0.4);
+  background: #f5b731;
 }
 
 .region-buttons-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
   margin-top: 10px;
 }
 
 .btn-region {
-  background: linear-gradient(145deg, rgba(20, 30, 48, 0.9), rgba(12, 18, 30, 0.9));
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #141d2e;
+  border: 1px solid var(--border-color);
   color: #ffffff;
-  padding: 12px 16px;
-  border-radius: 12px;
+  padding: 11px 14px;
+  border-radius: 8px;
   font-weight: 800;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   cursor: pointer;
-  transition: all 0.2s ease;
   text-align: center;
+  transition: background 0.15s ease;
 }
 
 .btn-region:hover {
-  border-color: var(--accent-cyan);
-  background: rgba(0, 255, 179, 0.15);
-  transform: translateY(-2px);
+  background: #1e2b42;
+  border-color: #334155;
 }
 
 .youth-card-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .btn-dismiss {
-  background: rgba(255, 42, 109, 0.2);
+  background: transparent;
   border: 1px solid var(--accent-red);
   color: var(--accent-red);
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
   font-weight: 800;
   cursor: pointer;
 }
@@ -537,4 +427,3 @@
   background: var(--accent-red);
   color: #ffffff;
 }
-

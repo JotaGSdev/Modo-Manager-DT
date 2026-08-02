@@ -1,7 +1,8 @@
-// Vista de Alineación, Plantilla y Tácticas con Drag and Drop 2D
+// Vista de Alineación, Plantilla y Tácticas con Drag and Drop 2D, Auto-Alineación e Inspector Estilo EA FC
 
 import { db } from '../data/db.js';
 import { TacticsEngine, FORMATIONS } from '../engine/tactics.js';
+import { openPlayerInspectorModal } from './playerInspectorUI.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
 export function renderSquad(container) {
@@ -18,7 +19,7 @@ export function renderSquad(container) {
       <!-- Cancha 2D interactiva con Drag and Drop -->
       <div class="pitch-container glass-panel">
         <div class="pitch-header">
-          <h3>⚽ Formación Táctica: ${currentFormation} (Arrastra para intercambiar)</h3>
+          <h3>⚽ Formación Táctica: ${currentFormation} (Arrastra o haz clic para inspeccionar/vender/renovar)</h3>
           <span class="ovr-badge stat-ovr">Nivel Táctico: ${effectiveOvr}</span>
         </div>
         
@@ -46,9 +47,14 @@ export function renderSquad(container) {
 
       <!-- Panel de Ajustes Tácticos y Banca de Suplentes -->
       <div class="tactics-panel glass-panel">
+        <!-- BOTÓN DE AJUSTE AUTOMÁTICO DE MEJORES 11 -->
+        <button id="btnAutoXI" class="btn-primary mb-3" style="width: 100%; font-size: 1rem; padding: 14px;">
+          ⚡ AUTO-ALINEACIÓN (MEJORES 11 TITULARES)
+        </button>
+
         <h3>⚙️ Estrategia y Roles</h3>
         
-        <div class="form-group">
+        <div class="form-group mb-3">
           <label>Formación Táctica:</label>
           <select id="selectFormation" class="input-select">
             ${Object.keys(FORMATIONS).map(fKey => `
@@ -57,7 +63,7 @@ export function renderSquad(container) {
           </select>
         </div>
 
-        <div class="form-group">
+        <div class="form-group mb-3">
           <label>Estilo de Juego:</label>
           <select id="selectStyle" class="input-select">
             <option value="Tiki-Taka" ${gameState.tactics.style === 'Tiki-Taka' ? 'selected' : ''}>Tiki-Taka (Posesión)</option>
@@ -67,7 +73,7 @@ export function renderSquad(container) {
           </select>
         </div>
 
-        <h3>📋 Suplentes (Arrastra hacia la Cancha)</h3>
+        <h3>📋 Suplentes (Haz clic para Inspeccionar/Vender)</h3>
         <div class="squad-table-container">
           <table class="data-table">
             <thead>
@@ -80,7 +86,7 @@ export function renderSquad(container) {
             </thead>
             <tbody>
               ${substitutes.map(p => `
-                <tr class="draggable-sub-row" draggable="true" data-id="${p.id}">
+                <tr class="draggable-sub-row" draggable="true" data-id="${p.id}" style="cursor: pointer;">
                   <td><span class="pos-tag pos-${p.pos}">${p.pos}</span></td>
                   <td><strong>${p.name}</strong></td>
                   <td><span class="stat-ovr">${p.overall}</span></td>
@@ -94,7 +100,24 @@ export function renderSquad(container) {
     </div>
   `;
 
-  // Configurar Drag and Drop API
+  // BOTÓN AUTO-ALINEACIÓN
+  document.getElementById('btnAutoXI').addEventListener('click', () => {
+    sfx.playClick();
+    const { startingXI: bestXI, substitutes: bestSubs } = TacticsEngine.getBestStartingXI(squad, currentFormation);
+    
+    const newOrder = [
+      ...bestXI.map(item => item.player),
+      ...bestSubs
+    ];
+
+    squad.length = 0;
+    squad.push(...newOrder);
+
+    db.saveGame();
+    renderSquad(container);
+  });
+
+  // Configurar Drag and Drop API y Clics de Inspección
   const pitchCards = document.querySelectorAll('.player-pitch-card');
   const subRows = document.querySelectorAll('.draggable-sub-row');
 
@@ -110,6 +133,18 @@ export function renderSquad(container) {
   };
 
   pitchCards.forEach(card => {
+    card.addEventListener('click', (e) => {
+      // Evitar conflicto con drag
+      if (!card.classList.contains('dragging')) {
+        const playerId = card.dataset.id;
+        const player = squad.find(p => p.id === playerId);
+        if (player) {
+          sfx.playClick();
+          openPlayerInspectorModal(player, () => renderSquad(container));
+        }
+      }
+    });
+
     card.addEventListener('dragstart', handleDragStart);
     card.addEventListener('dragend', handleDragEnd);
 
@@ -128,14 +163,15 @@ export function renderSquad(container) {
       const targetId = card.dataset.id;
 
       if (draggedPlayerId && targetId && draggedPlayerId !== targetId) {
-        // Intercambiar posiciones en el squad
         const p1 = squad.find(p => p.id === draggedPlayerId);
         const p2 = squad.find(p => p.id === targetId);
 
         if (p1 && p2) {
-          const tempOvr = p1.overall;
-          p1.overall = p2.overall;
-          p2.overall = tempOvr;
+          const idx1 = squad.indexOf(p1);
+          const idx2 = squad.indexOf(p2);
+          squad[idx1] = p2;
+          squad[idx2] = p1;
+
           sfx.playClick();
           db.saveGame();
           renderSquad(container);
@@ -145,6 +181,15 @@ export function renderSquad(container) {
   });
 
   subRows.forEach(row => {
+    row.addEventListener('click', () => {
+      const playerId = row.dataset.id;
+      const player = squad.find(p => p.id === playerId);
+      if (player) {
+        sfx.playClick();
+        openPlayerInspectorModal(player, () => renderSquad(container));
+      }
+    });
+
     row.addEventListener('dragstart', handleDragStart);
     row.addEventListener('dragend', handleDragEnd);
   });

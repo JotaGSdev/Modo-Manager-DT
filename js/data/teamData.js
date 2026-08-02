@@ -1,4 +1,4 @@
-// Generador dinámico de plantillas con medias ponderadas por posición
+// Generador dinámico de plantillas con medias ponderadas y curva de valoración de mercado hiperrealista EA FC 25
 
 export function calculatePositionOvr(pos, pac, sho, pas, dri, def, phy) {
   let ovr = 70;
@@ -24,26 +24,87 @@ export function calculatePositionOvr(pos, pac, sho, pas, dri, def, phy) {
   return Math.max(50, Math.min(99, Math.round(ovr)));
 }
 
+/**
+ * Calcula el valor de mercado hiperrealista en Euros acorde al fútbol moderno (EA FC 25 / Transfermarkt)
+ * Un jugador OVR 94-95 se valora en €250M - €300M+.
+ */
+export function calculatePlayerMarketValue(ovr, age, pot = ovr) {
+  const keypoints = [
+    { ovr: 50, val: 300000 },
+    { ovr: 60, val: 1200000 },
+    { ovr: 68, val: 4500000 },
+    { ovr: 74, val: 12000000 },
+    { ovr: 78, val: 24000000 },
+    { ovr: 82, val: 45000000 },
+    { ovr: 86, val: 85000000 },
+    { ovr: 89, val: 130000000 },
+    { ovr: 91, val: 165000000 },
+    { ovr: 93, val: 215000000 },
+    { ovr: 94, val: 250000000 }, // ¡Un jugador de 94 vale €250M!
+    { ovr: 95, val: 280000000 }, // ¡Un jugador de 95 vale €280M!
+    { ovr: 96, val: 310000000 },
+    { ovr: 99, val: 400000000 }
+  ];
+
+  let baseValue = 300000;
+  if (ovr <= keypoints[0].ovr) {
+    baseValue = keypoints[0].val;
+  } else if (ovr >= keypoints[keypoints.length - 1].ovr) {
+    baseValue = keypoints[keypoints.length - 1].val;
+  } else {
+    for (let i = 0; i < keypoints.length - 1; i++) {
+      const p1 = keypoints[i];
+      const p2 = keypoints[i + 1];
+      if (ovr >= p1.ovr && ovr <= p2.ovr) {
+        const ratio = (ovr - p1.ovr) / (p2.ovr - p1.ovr);
+        baseValue = p1.val + ratio * (p2.val - p1.val);
+        break;
+      }
+    }
+  }
+
+  // Factor de Edad (Jugadores <23 valen más por proyección, >29 caen progresivamente)
+  let ageFactor = 1.0;
+  if (age <= 20) ageFactor = 1.25;
+  else if (age <= 23) ageFactor = 1.15;
+  else if (age <= 27) ageFactor = 1.0;
+  else if (age <= 30) ageFactor = 0.85;
+  else if (age <= 33) ageFactor = 0.60;
+  else if (age <= 35) ageFactor = 0.40;
+  else ageFactor = 0.25;
+
+  const potBonus = 1 + Math.max(0, pot - ovr) * 0.03;
+  return Math.max(300000, Math.round(baseValue * ageFactor * potBonus));
+}
+
+/**
+ * Calcula el salario semanal correspondiente al valor y media del futbolista
+ */
+export function calculatePlayerSalary(value, ovr) {
+  const weeklyWage = Math.round(value * 0.0018 + Math.pow(Math.max(0, ovr - 70), 2.2) * 150);
+  return Math.max(1500, weeklyWage);
+}
+
 const STAR_PLAYERS = [
-  { teamId: 'real_madrid', name: 'Vinícius Júnior', pos: 'EI', age: 24, pot: 94, pac: 95, sho: 84, pas: 81, dri: 92, def: 29, phy: 69, val: 180000000, sal: 350000 },
-  { teamId: 'real_madrid', name: 'Kylian Mbappé', pos: 'DC', age: 25, pot: 95, pac: 97, sho: 90, pas: 80, dri: 92, def: 36, phy: 78, val: 190000000, sal: 400000 },
-  { teamId: 'real_madrid', name: 'Jude Bellingham', pos: 'MC', age: 21, pot: 95, pac: 80, sho: 86, pas: 85, dri: 88, def: 78, phy: 84, val: 180000000, sal: 340000 },
-  { teamId: 'real_madrid', name: 'Thibaut Courtois', pos: 'POR', age: 32, pot: 89, pac: 46, sho: 15, pas: 30, dri: 20, def: 90, phy: 86, val: 60000000, sal: 250000 },
+  { teamId: 'real_madrid', name: 'Vinícius Júnior', pos: 'EI', age: 24, pot: 94, pac: 95, sho: 84, pas: 81, dri: 92, def: 29, phy: 69, val: 240000000, sal: 450000 },
+  { teamId: 'real_madrid', name: 'Kylian Mbappé', pos: 'DC', age: 25, pot: 95, pac: 97, sho: 90, pas: 80, dri: 92, def: 36, phy: 78, val: 280000000, sal: 500000 },
+  { teamId: 'real_madrid', name: 'Jude Bellingham', pos: 'MC', age: 21, pot: 95, pac: 80, sho: 86, pas: 85, dri: 88, def: 78, phy: 84, val: 310000000, sal: 480000 },
+  { teamId: 'real_madrid', name: 'Thibaut Courtois', pos: 'POR', age: 32, pot: 89, pac: 46, sho: 15, pas: 30, dri: 20, def: 90, phy: 86, val: 75000000, sal: 280000 },
 
-  { teamId: 'barcelona', name: 'Lamine Yamal', pos: 'ED', age: 17, pot: 95, pac: 89, sho: 78, pas: 82, dri: 89, def: 32, phy: 60, val: 120000000, sal: 120000 },
-  { teamId: 'barcelona', name: 'Robert Lewandowski', pos: 'DC', age: 36, pot: 88, pac: 72, sho: 90, pas: 79, dri: 83, def: 42, phy: 80, val: 30000000, sal: 300000 },
-  { teamId: 'barcelona', name: 'Pedri', pos: 'MC', age: 21, pot: 92, pac: 76, sho: 72, pas: 87, dri: 88, def: 68, phy: 66, val: 90000000, sal: 200000 },
+  { teamId: 'barcelona', name: 'Lamine Yamal', pos: 'ED', age: 17, pot: 95, pac: 89, sho: 78, pas: 82, dri: 89, def: 32, phy: 60, val: 180000000, sal: 220000 },
+  { teamId: 'barcelona', name: 'Robert Lewandowski', pos: 'DC', age: 36, pot: 88, pac: 72, sho: 90, pas: 79, dri: 83, def: 42, phy: 80, val: 40000000, sal: 320000 },
+  { teamId: 'barcelona', name: 'Pedri', pos: 'MC', age: 21, pot: 92, pac: 76, sho: 72, pas: 87, dri: 88, def: 68, phy: 66, val: 140000000, sal: 260000 },
 
-  { teamId: 'man_city', name: 'Erling Haaland', pos: 'DC', age: 24, pot: 94, pac: 89, sho: 92, pas: 65, dri: 80, def: 45, phy: 88, val: 185000000, sal: 380000 },
-  { teamId: 'man_city', name: 'Kevin De Bruyne', pos: 'MC', age: 33, pot: 90, pac: 72, sho: 87, pas: 94, dri: 86, def: 65, phy: 74, val: 50000000, sal: 350000 },
+  { teamId: 'man_city', name: 'Erling Haaland', pos: 'DC', age: 24, pot: 94, pac: 89, sho: 92, pas: 65, dri: 80, def: 45, phy: 88, val: 260000000, sal: 460000 },
+  { teamId: 'man_city', name: 'Kevin De Bruyne', pos: 'MC', age: 33, pot: 90, pac: 72, sho: 87, pas: 94, dri: 86, def: 65, phy: 74, val: 70000000, sal: 380000 },
 
-  { teamId: 'inter_miami', name: 'Lionel Messi', pos: 'ED', age: 37, pot: 88, pac: 78, sho: 89, pas: 90, dri: 91, def: 33, phy: 64, val: 30000000, sal: 500000 },
-  { teamId: 'al_nassr', name: 'Cristiano Ronaldo', pos: 'DC', age: 39, pot: 86, pac: 77, sho: 88, pas: 75, dri: 80, def: 34, phy: 77, val: 15000000, sal: 1000000 },
+  { teamId: 'inter_miami', name: 'Lionel Messi', pos: 'ED', age: 37, pot: 88, pac: 78, sho: 89, pas: 90, dri: 91, def: 33, phy: 64, val: 45000000, sal: 500000 },
+  { teamId: 'al_nassr', name: 'Cristiano Ronaldo', pos: 'DC', age: 39, pot: 86, pac: 77, sho: 88, pas: 75, dri: 80, def: 34, phy: 77, val: 25000000, sal: 1000000 },
 
-  { teamId: 'boca', name: 'Edinson Cavani', pos: 'DC', age: 37, pot: 79, pac: 70, sho: 82, pas: 68, dri: 74, def: 48, phy: 76, val: 3000000, sal: 40000 },
-  { teamId: 'boca', name: 'Kevin Zenón', pos: 'MI', age: 23, pot: 83, pac: 81, sho: 74, pas: 76, dri: 78, def: 60, phy: 71, val: 10000000, sal: 25000 },
-  { teamId: 'river', name: 'Franco Armani', pos: 'POR', age: 37, pot: 78, pac: 45, sho: 15, pas: 30, dri: 20, def: 80, phy: 75, val: 2000000, sal: 35000 },
-  { teamId: 'river', name: 'Claudio Echeverri', pos: 'MCO', age: 18, pot: 88, pac: 83, sho: 71, pas: 75, dri: 82, def: 42, phy: 58, val: 15000000, sal: 20000 }
+  { teamId: 'boca', name: 'Edinson Cavani', pos: 'DC', age: 37, pot: 79, pac: 70, sho: 82, pas: 68, dri: 74, def: 48, phy: 76, val: 4000000, sal: 40000 },
+  { teamId: 'boca', name: 'Kevin Zenón', pos: 'MI', age: 23, pot: 83, pac: 81, sho: 74, pas: 76, dri: 78, def: 60, phy: 71, val: 14000000, sal: 28000 },
+  { teamId: 'river', name: 'Franco Armani', pos: 'POR', age: 37, pot: 78, pac: 45, sho: 15, pas: 30, dri: 20, def: 80, phy: 75, val: 3000000, sal: 35000 },
+  { teamId: 'river', name: 'Claudio Echeverri', pos: 'MCO', age: 18, pot: 88, pac: 83, sho: 71, pas: 75, dri: 82, def: 42, phy: 58, val: 22000000, sal: 30000 }
 ];
 
 const FIRST_NAMES = ['Carlos', 'Mateo', 'Lucas', 'Gonzalo', 'Santiago', 'Nicolás', 'Joaquín', 'Enzo', 'Gabriel', 'Thiago', 'Felipe', 'Rodrigo', 'Lautaro', 'Julian', 'Alejandro', 'Diego', 'Sebastian', 'Marco', 'Bruno', 'Leo', 'Alex', 'David'];
@@ -56,6 +117,8 @@ export function generateTeamPlayers(team) {
   const stars = STAR_PLAYERS.filter(p => p.teamId === team.id);
   stars.forEach((star, index) => {
     const ovr = calculatePositionOvr(star.pos, star.pac, star.sho, star.pas, star.dri, star.def, star.phy);
+    const val = calculatePlayerMarketValue(ovr, star.age, star.pot);
+    const sal = calculatePlayerSalary(val, ovr);
     players.push({
       id: `${team.id}_star_${index}`,
       name: star.name,
@@ -69,8 +132,8 @@ export function generateTeamPlayers(team) {
       dri: star.dri,
       def: star.def,
       phy: star.phy,
-      value: star.val,
-      salary: star.sal,
+      value: val,
+      salary: sal,
       morale: 85 + Math.floor(Math.random() * 15),
       form: 75 + Math.floor(Math.random() * 20),
       appearances: 0,
@@ -87,7 +150,7 @@ export function generateTeamPlayers(team) {
     const pos = positionsNeeded[i % positionsNeeded.length];
     const age = 18 + Math.floor(Math.random() * 16);
     const ovrOffset = Math.floor((Math.random() - 0.5) * 8);
-    const baseTarget = Math.min(92, Math.max(58, targetOvr + ovrOffset));
+    const baseTarget = Math.min(96, Math.max(58, targetOvr + ovrOffset));
 
     let pac, sho, pas, dri, def, phy;
     if (pos === 'POR') {
@@ -100,32 +163,32 @@ export function generateTeamPlayers(team) {
       sho = 40 + Math.floor(Math.random() * 20);
       pas = baseTarget - 15 + Math.floor(Math.random() * 10);
       dri = baseTarget - 15 + Math.floor(Math.random() * 10);
-      def = Math.min(94, baseTarget + 6 + Math.floor(Math.random() * 5));
-      phy = Math.min(94, baseTarget + 5 + Math.floor(Math.random() * 5));
+      def = Math.min(96, baseTarget + 6 + Math.floor(Math.random() * 5));
+      phy = Math.min(96, baseTarget + 5 + Math.floor(Math.random() * 5));
     } else if (pos === 'DC' || pos === 'EI' || pos === 'ED') {
-      pac = Math.min(96, baseTarget + 8);
-      sho = Math.min(94, baseTarget + 6);
+      pac = Math.min(98, baseTarget + 8);
+      sho = Math.min(97, baseTarget + 6);
       pas = baseTarget - 10 + Math.floor(Math.random() * 10);
-      dri = Math.min(95, baseTarget + 6);
+      dri = Math.min(97, baseTarget + 6);
       def = 30 + Math.floor(Math.random() * 20);
       phy = baseTarget - 5 + Math.floor(Math.random() * 10);
     } else {
       pac = baseTarget - 5 + Math.floor(Math.random() * 10);
       sho = baseTarget - 8 + Math.floor(Math.random() * 10);
-      pas = Math.min(94, baseTarget + 6);
-      dri = Math.min(93, baseTarget + 5);
+      pas = Math.min(96, baseTarget + 6);
+      dri = Math.min(96, baseTarget + 5);
       def = baseTarget - 10 + Math.floor(Math.random() * 15);
       phy = baseTarget - 5 + Math.floor(Math.random() * 10);
     }
 
     const ovr = calculatePositionOvr(pos, pac, sho, pas, dri, def, phy);
-    const pot = Math.min(95, Math.max(ovr, ovr + Math.floor((34 - age) / 2) + Math.floor(Math.random() * 4)));
+    const pot = Math.min(97, Math.max(ovr, ovr + Math.floor((34 - age) / 2) + Math.floor(Math.random() * 4)));
     
     const fName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
     const lName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
 
-    const value = Math.round((Math.pow(ovr, 3.2) * (1 + (34 - age) * 0.04)) * 1.8);
-    const salary = Math.round(value * 0.002);
+    const value = calculatePlayerMarketValue(ovr, age, pot);
+    const salary = calculatePlayerSalary(value, ovr);
 
     players.push({
       id: `${team.id}_gen_${i}`,
