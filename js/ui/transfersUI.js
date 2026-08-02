@@ -1,4 +1,4 @@
-// Interfaz de Mercado de Fichajes con Negociación por Pasos Estilo EA FC y Bloqueo de Ventana
+// Interfaz de Mercado de Fichajes con Negociación por Pasos e Indicadores Presupuestarios en Tiempo Real (EA FC Style)
 
 import { db } from '../data/db.js';
 import { TransferEngine, isTransferWindowOpen } from '../engine/transfers.js';
@@ -59,14 +59,15 @@ export function renderTransfers(container) {
 
   container.innerHTML = `
     <div class="transfers-layout">
+      <!-- Encabezado de Presupuesto Disponible -->
       <div class="transfers-header glass-panel">
         <div class="budget-box">
-          <span class="lbl">Presupuesto de Traspasos:</span>
-          <span class="val text-highlight">€${(gameState.budget / 1000000).toFixed(1)}M</span>
+          <span class="lbl">Presupuesto para Fichajes (Traspasos):</span>
+          <span class="val text-highlight" style="font-size: 1.3rem;">€${(gameState.budget / 1000000).toFixed(2)}M</span>
         </div>
         <div class="budget-box">
-          <span class="lbl">Presupuesto Salarial:</span>
-          <span class="val">€${(gameState.wageBudget / 1000).toFixed(0)}K /sem</span>
+          <span class="lbl">Presupuesto Salarial Disponible:</span>
+          <span class="val" style="color: var(--accent-gold); font-size: 1.3rem;">€${(gameState.wageBudget / 1000).toFixed(0)}K /sem</span>
         </div>
         <div class="budget-box" style="margin-left: auto;">
           <span class="lbl">Estado del Mercado:</span>
@@ -117,14 +118,13 @@ export function renderTransfers(container) {
   renderMarketList();
 
   /**
-   * Wizard de Negociación por Pasos al estilo EA FC / FIFA
+   * Wizard de Negociación por Pasos al estilo EA FC / FIFA con Indicadores Presupuestarios Visibles
    */
   function openEAFCNegotiationWizard(player) {
     const modal = document.getElementById('negotiationModal');
     const content = document.getElementById('modalContent');
     modal.classList.remove('hidden');
 
-    let currentStep = 1; // 1: Club, 2: Jugador/Representante
     let agreedFee = Math.round(player.value * 1.05);
 
     const renderStep1 = () => {
@@ -132,6 +132,12 @@ export function renderTransfers(container) {
         <h3>📝 Negociación de Traspaso (Paso 1 de 2: Con el Club)</h3>
         <p class="text-sub">Jugador: <strong>${player.name}</strong> (${player.pos}) | OVR: ${player.overall} | Valor de Mercado: <strong>€${(player.value / 1000000).toFixed(1)}M</strong></p>
         <p class="text-sub">Club Propietario: <strong>${db.teams[player.teamId]?.name || 'Club'}</strong></p>
+
+        <!-- BANNER DE PRESUPUESTO DE FICHAJES PARA PASO 1 -->
+        <div style="background: #0f172a; border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 8px; margin: 12px 0; display: flex; justify-content: space-between; align-items: center;">
+          <span class="text-sub" style="font-size: 0.85rem; font-weight: 700;">PRESUPUESTO DISPONIBLE PARA FICHAJES:</span>
+          <strong style="color: var(--accent-green); font-size: 1.15rem;">€${(gameState.budget / 1000000).toFixed(2)}M</strong>
+        </div>
 
         <div class="form-group mt-3">
           <label>Oferta de Traspaso (€):</label>
@@ -189,6 +195,11 @@ export function renderTransfers(container) {
         const fee = parseFloat(document.getElementById('inputClubFee').value);
         const sellOn = parseFloat(document.getElementById('selectSellOn').value);
 
+        if (fee > gameState.budget) {
+          alert(`Presupuesto insuficiente. Tu oferta de €${(fee/1e6).toFixed(2)}M supera tu presupuesto de fichajes disponible de €${(gameState.budget/1e6).toFixed(2)}M.`);
+          return;
+        }
+
         const res = TransferEngine.evaluateClubOffer(player, fee, sellOn);
         const resEl = document.getElementById('step1Result');
 
@@ -213,11 +224,23 @@ export function renderTransfers(container) {
     };
 
     const renderStep2 = () => {
-      const defaultWage = Math.round(player.salary * 1.15);
+      const defaultWage = Math.round(player.salary * 1.10);
 
       content.innerHTML = `
         <h3>✍️ Negociación de Contrato (Paso 2 de 2: Con el Jugador)</h3>
         <p class="text-sub">Jugador: <strong>${player.name}</strong> | Rol Deseado: <strong>${player.overall >= 80 ? 'Crucial / Titular' : 'Rotación'}</strong></p>
+
+        <!-- BANNER DE PRESUPUESTO SALARIAL Y PRIMAS PARA PASO 2 -->
+        <div style="background: #0f172a; border: 1px solid var(--border-color); padding: 12px 14px; border-radius: 8px; margin: 12px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: center;">
+          <div>
+            <span class="text-sub" style="font-size: 0.78rem; font-weight: 700; display: block;">PRESUPUESTO SALARIAL DISPONIBLE:</span>
+            <strong style="color: var(--accent-gold); font-size: 1.15rem;">€${(gameState.wageBudget / 1000).toFixed(0)}K / sem</strong>
+          </div>
+          <div>
+            <span class="text-sub" style="font-size: 0.78rem; font-weight: 700; display: block;">DISPONIBLE PARA PRIMAS / TRASPASO:</span>
+            <strong style="color: var(--accent-green); font-size: 1.15rem;">€${((gameState.budget - agreedFee) / 1000000).toFixed(2)}M</strong>
+          </div>
+        </div>
 
         <div class="form-group mt-3">
           <label>Rol Ofrecido en el Equipo:</label>
@@ -240,13 +263,15 @@ export function renderTransfers(container) {
 
         <div class="form-group">
           <label>Salario Semanal (€):</label>
-          <input type="number" id="inputPlayerWage" class="input-text" value="${defaultWage}" step="5000" />
+          <input type="number" id="inputPlayerWage" class="input-text" value="${defaultWage}" step="2000" />
         </div>
 
         <div class="form-group">
           <label>Prima de Fichaje (€):</label>
-          <input type="number" id="inputSigningBonus" class="input-text" value="0" step="100000" />
+          <input type="number" id="inputSigningBonus" class="input-text" value="0" step="50000" />
         </div>
+
+        <div id="wageValidationInfo" class="text-sub mb-2" style="font-size: 0.84rem;"></div>
 
         <div id="step2Result" class="mt-3"></div>
 
@@ -255,6 +280,27 @@ export function renderTransfers(container) {
           <button id="btnCloseWizard2" class="btn-secondary">Rechazar Contrato</button>
         </div>
       `;
+
+      const validateStep2Budgets = () => {
+        const wage = parseFloat(document.getElementById('inputPlayerWage').value) || 0;
+        const bonus = parseFloat(document.getElementById('inputSigningBonus').value) || 0;
+        const remainingBudgetForBonus = gameState.budget - agreedFee;
+        const infoEl = document.getElementById('wageValidationInfo');
+
+        if (!infoEl) return;
+
+        if (wage > gameState.wageBudget) {
+          infoEl.innerHTML = `<span style="color: var(--accent-red); font-weight: 700;">⚠️ Presupuesto salarial insuficiente. Tu oferta de €${(wage/1000).toFixed(0)}K/sem supera tus €${(gameState.wageBudget/1000).toFixed(0)}K/sem disponibles.</span>`;
+        } else if (bonus > remainingBudgetForBonus) {
+          infoEl.innerHTML = `<span style="color: var(--accent-red); font-weight: 700;">⚠️ Presupuesto de fichajes insuficiente para la prima. Te quedan €${(remainingBudgetForBonus/1e6).toFixed(2)}M tras el traspaso.</span>`;
+        } else {
+          infoEl.innerHTML = `<span style="color: var(--accent-green);">✓ Oferta salarial dentro del presupuesto disponible de tu club.</span>`;
+        }
+      };
+
+      document.getElementById('inputPlayerWage').addEventListener('input', validateStep2Budgets);
+      document.getElementById('inputSigningBonus').addEventListener('input', validateStep2Budgets);
+      validateStep2Budgets();
 
       document.getElementById('btnCloseWizard2').addEventListener('click', () => {
         TransferEngine.lockPlayerForCurrentWindow(player.id);

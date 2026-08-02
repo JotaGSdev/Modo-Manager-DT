@@ -1,4 +1,4 @@
-// Inspector de Jugador Estilo EA FC / FIFA: Estadísticas de Temporada, Rol Táctico Individual, Ventas, Renovaciones e Intercambios
+// Inspector de Jugador Estilo EA FC / FIFA: Edad Dinámica, Contrato en Años y Meses Restantes, Ventas y Renovaciones
 
 import { db } from '../data/db.js';
 import { sfx } from '../../assets/audio/sfx.js';
@@ -33,9 +33,14 @@ export function openPlayerInspectorModal(player, onUpdate) {
   const appearances = player.appearances || 0;
   const goals = player.seasonGoals || 0;
   const ratingAvg = (6.8 + (player.overall * 0.015) + (Math.random() * 0.4)).toFixed(1);
-  const contractYears = player.contractYears || 3;
-  const currentInstruction = player.individualInstruction || (TACTICAL_ROLES_BY_POS[player.pos]?.[0] || 'Rol Estándar');
 
+  // Cálculo Dinámico de Años y Meses de Contrato Restantes
+  const contractYears = player.contractYears !== undefined ? player.contractYears : 3;
+  const maxWeeks = gameState.maxWeeks || 38;
+  const currentWeek = gameState.week || 1;
+  const monthsRemaining = Math.max(1, (contractYears * 12) - Math.floor((currentWeek / maxWeeks) * 12));
+
+  const currentInstruction = player.individualInstruction || (TACTICAL_ROLES_BY_POS[player.pos]?.[0] || 'Rol Estándar');
   const availableRoles = TACTICAL_ROLES_BY_POS[player.pos] || ['Rol Estándar'];
 
   modal.innerHTML = `
@@ -46,7 +51,7 @@ export function openPlayerInspectorModal(player, onUpdate) {
           <span class="pos-tag pos-${player.pos}" style="font-size: 1.1rem; padding: 8px 16px;">${player.pos}</span>
           <div>
             <h2 style="margin: 0; font-size: 1.6rem;">${player.name}</h2>
-            <span class="text-sub">Edad: ${player.age} años | Morale: <strong>${player.morale || 90}%</strong> | Forma: <strong>${player.form || 85}%</strong></span>
+            <span class="text-sub">Edad Actual: <strong>${player.age} años</strong> | Morale: <strong>${player.morale || 90}%</strong> | Forma: <strong>${player.form || 85}%</strong></span>
           </div>
         </div>
         <button id="btnCloseInspector" class="btn-secondary btn-sm" style="font-size: 1.2rem;">✖</button>
@@ -96,14 +101,14 @@ export function openPlayerInspectorModal(player, onUpdate) {
         </div>
       ` : ''}
 
-      <!-- Estadísticas de Rendimiento en la Temporada -->
+      <!-- Estadísticas de Rendimiento y Vínculo contractual Actualizado -->
       <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; margin-bottom: 20px;">
-        <h4 style="margin-bottom: 10px; color: var(--accent-green);">📊 Rendimiento Deportivo de la Temporada</h4>
+        <h4 style="margin-bottom: 10px; color: var(--accent-green);">📊 Rendimiento Deportivo & Estado del Contrato</h4>
         <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 0.9rem;">
           <span>Partidos Jugados (PJ): <strong>${appearances}</strong></span>
           <span>Goles Marcados: <strong>${goals} ⚽</strong></span>
           <span>Promedio de Calificación: <strong>${ratingAvg} ⭐</strong></span>
-          <span>Contrato Restante: <strong>${contractYears} años</strong></span>
+          <span>Vínculo contractual: <strong style="color: ${contractYears <= 1 ? 'var(--accent-red)' : 'var(--accent-gold)'}">${contractYears} Años (${monthsRemaining} Meses restantes)</strong></span>
         </div>
       </div>
 
@@ -114,7 +119,7 @@ export function openPlayerInspectorModal(player, onUpdate) {
             💰 VENDER JUGADOR (Aceptar Oferta de Mercado)
           </button>
           <button id="btnRenewContract" class="btn-primary" style="background: var(--accent-gold); color: #000;">
-            📝 RENOVAR CONTRATO (Extender Años)
+            📝 RENOVAR CONTRATO (+2 AÑOS)
           </button>
           <button id="btnSwapPlayer" class="btn-secondary">
             🔄 PROPONER TRUEQUE / INTERCAMBIO
@@ -189,8 +194,8 @@ export function openPlayerInspectorModal(player, onUpdate) {
     // 2. RENOVAR CONTRATO
     document.getElementById('btnRenewContract').addEventListener('click', () => {
       sfx.playClick();
-      const newWage = Math.round(player.salary * 1.15);
-      const newYears = Math.min(5, (player.contractYears || 3) + 2);
+      const newWage = Math.round(player.salary * 1.10);
+      const newYears = Math.min(5, (player.contractYears || 2) + 2);
 
       if (confirm(`📝 NEGOCIACIÓN DE RENOVACIÓN:\n\n¿Ofrecer a ${player.name} una extensión de ${newYears} años de contrato con un salario ajustado de €${(newWage / 1000).toFixed(0)}K/sem?`)) {
         player.contractYears = newYears;

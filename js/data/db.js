@@ -144,33 +144,53 @@ class DatabaseManager {
       return;
     }
 
-    // 1. Evolución de jugadores según minutos y edad
-    for (const teamId in this.players) {
-      const roster = this.players[teamId];
-      roster.forEach(p => {
-        const appearances = p.appearances || 0;
-        let deltaOvr = 0;
+    // 1. EVOLUCIÓN, ENVEJECIMIENTO (+1 AÑO) Y DECREMENTO DE CONTRATOS (-1 AÑO) EN TODOS LOS EQUIPOS
+    for (const tId in this.players) {
+      const roster = this.players[tId];
+      if (Array.isArray(roster)) {
+        roster.forEach(p => {
+          const appearances = p.appearances || 0;
+          let deltaOvr = 0;
 
-        if (p.age < 23) {
-          if (appearances >= 12) deltaOvr = 3 + Math.floor(Math.random() * 3);
-          else deltaOvr = 1 + Math.floor(Math.random() * 2);
-        } else if (p.age >= 23 && p.age <= 28) {
-          if (appearances >= 15 && p.overall < p.potential) deltaOvr = 1 + Math.floor(Math.random() * 2);
-        } else if (p.age >= 29 && p.age <= 32) {
-          deltaOvr = -1;
-          p.pac = Math.max(40, p.pac - 2);
-          p.phy = Math.max(40, p.phy - 1);
-        } else if (p.age >= 33) {
-          deltaOvr = - (2 + Math.floor(Math.random() * 3));
-          p.pac = Math.max(35, p.pac - 3);
-          p.phy = Math.max(35, p.phy - 3);
-        }
+          if (p.age < 23) {
+            if (appearances >= 12) deltaOvr = 3 + Math.floor(Math.random() * 3);
+            else deltaOvr = 1 + Math.floor(Math.random() * 2);
+          } else if (p.age >= 23 && p.age <= 28) {
+            if (appearances >= 15 && p.overall < p.potential) deltaOvr = 1 + Math.floor(Math.random() * 2);
+          } else if (p.age >= 29 && p.age <= 32) {
+            deltaOvr = -1;
+            p.pac = Math.max(40, p.pac - 2);
+            p.phy = Math.max(40, p.phy - 1);
+          } else if (p.age >= 33) {
+            deltaOvr = - (2 + Math.floor(Math.random() * 3));
+            p.pac = Math.max(35, p.pac - 3);
+            p.phy = Math.max(35, p.phy - 3);
+          }
 
-        p.overall = calculatePositionOvr(p.pos, p.pac, p.sho, p.pas, p.dri, p.def, p.phy);
-        p.age++;
-        p.appearances = 0;
-        p.seasonGoals = 0;
-      });
+          p.overall = calculatePositionOvr(p.pos, p.pac, p.sho, p.pas, p.dri, p.def, p.phy);
+          
+          // ACTUALIZAR EDAD Y RESTAR UN AÑO DE CONTRATO VINCULANTE
+          p.age++;
+          const currentContract = p.contractYears !== undefined ? p.contractYears : 3;
+          p.contractYears = Math.max(0, currentContract - 1);
+
+          p.appearances = 0;
+          p.seasonGoals = 0;
+
+          // Alerta si el contrato en tu club caduca
+          if (p.contractYears === 0 && tId === userTeamId) {
+            this.gameState.eventsLog.unshift({
+              date: `Temporada ${this.gameState.season + 1}`,
+              text: `⚠️ ALERTA DE CONTRATO: El contrato de ${p.name} ha vencido (0 años restantes). ¡Renueva su vínculo en el Inspector de Jugador!`
+            });
+          }
+        });
+      }
+    }
+
+    // AUMENTAR EDAD DE CANTERANOS TAMBIÉN EN LA ACADEMIA
+    if (this.gameState.youthAcademy) {
+      this.gameState.youthAcademy.forEach(y => y.age++);
     }
 
     // 2. REINICIAR TABLA DE POSICIONES PARA LA NUEVA TEMPORADA

@@ -162,6 +162,7 @@ export function generateTeamPlayers(team) {
       phy: star.phy,
       value: val,
       salary: sal,
+      contractYears: 3 + Math.floor(Math.random() * 3), // 3 a 5 años de contrato
       morale: 85 + Math.floor(Math.random() * 15),
       form: 75 + Math.floor(Math.random() * 20),
       appearances: 0,
@@ -228,6 +229,7 @@ export function generateTeamPlayers(team) {
       pac, sho, pas, dri, def, phy,
       value: value,
       salary: salary,
+      contractYears: 2 + Math.floor(Math.random() * 4), // 2 a 5 años de contrato
       morale: 80 + Math.floor(Math.random() * 20),
       form: 70 + Math.floor(Math.random() * 25),
       appearances: 0,

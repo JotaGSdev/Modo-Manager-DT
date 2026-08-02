@@ -42,7 +42,10 @@ export function renderSquad(container) {
       <tr><td colspan="9" class="text-sub text-center py-4">No se encontraron futbolistas con los filtros seleccionados.</td></tr>
     ` : filtered.map(p => {
       const roleText = p.individualInstruction || 'Estándar';
-      const contractYears = p.contractYears || 3;
+      const contractYears = p.contractYears !== undefined ? p.contractYears : 3;
+      const maxWeeks = gameState.maxWeeks || 38;
+      const currentWeek = gameState.week || 1;
+      const monthsLeft = Math.max(1, (contractYears * 12) - Math.floor((currentWeek / maxWeeks) * 12));
 
       return `
         <tr class="player-squad-row" data-id="${p.id}" style="cursor: pointer;">
@@ -51,13 +54,13 @@ export function renderSquad(container) {
             <strong>${p.name}</strong><br>
             <span class="text-sub" style="font-size: 0.75rem;">Rol: ${roleText}</span>
           </td>
-          <td>${p.age}a</td>
+          <td><strong>${p.age}a</strong></td>
           <td><span class="stat-ovr">${p.overall}</span></td>
           <td><span class="text-highlight">${p.potential || p.overall}</span></td>
           <td>€${(p.value / 1000000).toFixed(1)}M</td>
           <td style="color: var(--accent-gold);">€${(p.salary / 1000).toFixed(0)}K/s</td>
-          <td>${contractYears}a</td>
-          <td text-center">
+          <td style="color: ${contractYears <= 1 ? 'var(--accent-red)' : 'inherit'}; font-weight: 700;">${contractYears}a (${monthsLeft}m)</td>
+          <td class="text-center">
             <button class="btn-primary btn-sm btn-inspect-player" data-id="${p.id}">🔍 Gestionar / Vender</button>
           </td>
         </tr>

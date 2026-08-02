@@ -133,7 +133,7 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
     logEl.prepend(item);
   };
 
-  const showMatchCinematicOverlay = (userGoals, rivalGoals, totalTicketRevenue) => {
+  const showMatchCinematicOverlay = (userGoals, rivalGoals, totalTicketRevenue, weeklySalaryExpenses, weeklyAdminExpenses) => {
     const modalEl = document.getElementById('matchCinematicModal');
     const cardEl = document.getElementById('cinematicCard');
     const titleEl = document.getElementById('cinematicTitle');
@@ -148,12 +148,24 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
     // Distribución Financiera Directiva Estilo EA FC
     const transferAllocation = Math.round(totalTicketRevenue * 0.25);
     const operatingExpenses = totalTicketRevenue - transferAllocation;
+    const totalWeeklyDeduction = weeklySalaryExpenses + weeklyAdminExpenses;
 
     scoreEl.innerText = `${userGoals} - ${rivalGoals}`;
     ticketEl.innerHTML = `
-      🎟️ <strong>Taquilla del Estadio:</strong> €${(totalTicketRevenue / 1000000).toFixed(2)}M Recaudados<br>
-      <span class="text-highlight" style="font-size: 0.86rem;">+€${(transferAllocation / 1000000).toFixed(2)}M asignados a Fichajes (25%)</span> | 
-      <span class="text-sub" style="font-size: 0.82rem;">€${(operatingExpenses / 1000000).toFixed(2)}M a Gastos Operativos y Salarios (75%)</span>
+      <div style="background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 14px; text-align: left; font-size: 0.85rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>🎟️ Taquilla del Estadio:</span>
+          <strong style="color: var(--accent-green);">+€${(totalTicketRevenue / 1000000).toFixed(2)}M (+€${(transferAllocation / 1000000).toFixed(2)}M a Fichajes)</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>👥 Salarios de Plantilla (-):</span>
+          <strong style="color: var(--accent-red);">-€${(weeklySalaryExpenses / 1000).toFixed(0)}K /sem</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>🏢 Gastos Administrativos (-):</span>
+          <strong style="color: var(--accent-red);">-€${(weeklyAdminExpenses / 1000).toFixed(0)}K /sem</strong>
+        </div>
+      </div>
     `;
 
     let outcomeClass = 'draw';
@@ -184,12 +196,20 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
   };
 
   const finishMatchSession = () => {
-    // Recaudación de Taquilla del Estadio (€600K a €2.5M)
+    // 1. Recaudación de Taquilla del Estadio (€600K a €2.5M)
     const totalTicketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
     
     // Distribución Financiera EA FC: 25% Presupuesto de Traspasos | 75% Gastos Operativos / Salarios
     const transferAllocation = Math.round(totalTicketRevenue * 0.25);
     gameState.budget += transferAllocation;
+
+    // 2. DEDUCCIÓN SEMANAL REALISTA DE SALARIOS Y GASTOS ADMINISTRATIVOS
+    const squad = db.getTeamPlayers(userTeam.id);
+    const weeklySalaryExpenses = squad.reduce((sum, p) => sum + (p.salary || 5000), 0);
+    const weeklyAdminExpenses = Math.round(userTeam.overall * 2000 + squad.length * 1500);
+    const totalWeeklyDeduction = weeklySalaryExpenses + weeklyAdminExpenses;
+
+    gameState.budget = Math.max(0, gameState.budget - totalWeeklyDeduction);
 
     // Actualizar la tabla de posiciones para el usuario y su rival
     const userStanding = gameState.standings.find(s => s.teamId === userTeam.id);
@@ -223,8 +243,8 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
     gameState.standings.sort((a, b) => b.points - a.points || b.gd - a.gd);
     db.saveGame();
 
-    // Lanzar cinemática con distribución realista de taquilla
-    showMatchCinematicOverlay(engine.homeScore, engine.awayScore, totalTicketRevenue);
+    // Lanzar cinemática con desglose de taquilla, salarios y gastos operativos
+    showMatchCinematicOverlay(engine.homeScore, engine.awayScore, totalTicketRevenue, weeklySalaryExpenses, weeklyAdminExpenses);
   };
 
   // Temporizador de simulación en vivo

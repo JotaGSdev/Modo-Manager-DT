@@ -194,6 +194,11 @@ export function renderDashboard(container, navigateTo) {
       const transferAllocation = Math.round(totalTicketRevenue * 0.25);
       gameState.budget += transferAllocation;
 
+      // Deducción semanal de salarios de jugadores y gastos administrativos del club
+      const weeklySalaryExpenses = squad.reduce((sum, p) => sum + (p.salary || 5000), 0);
+      const weeklyAdminExpenses = Math.round(userTeam.overall * 2000 + squad.length * 1500);
+      gameState.budget = Math.max(0, gameState.budget - (weeklySalaryExpenses + weeklyAdminExpenses));
+
       const userStanding = gameState.standings.find(s => s.teamId === userTeam.id);
       const rivalStanding = gameState.standings.find(s => s.teamId === currentRival.id);
 
