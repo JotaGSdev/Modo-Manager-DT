@@ -3,30 +3,39 @@
 import { db } from '../data/db.js';
 import { MatchEngine } from '../engine/matchEngine.js';
 import { CompetitionsEngine } from '../engine/competitionsEngine.js';
+import { renderTeamBadgeSVG } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
 /**
- * Lanza partículas de confeti en el canvas cuando hay victoria
+ * Lanza partículas avanzadas en canvas según el resultado del encuentro (Victoria, Derrota o Empate)
  */
-function launchConfetti(canvas) {
+function launchOutcomeParticles(canvas, outcome) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  canvas.width = canvas.offsetWidth || 600;
-  canvas.height = canvas.offsetHeight || 400;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
   const particles = [];
-  const colors = ['#00e5a3', '#00b4d8', '#ffc107', '#ffffff', '#e67e22'];
+  let colors = ['#00c885', '#0096c7', '#e5a93c', '#ffffff'];
+  let particleCount = 120;
 
-  for (let i = 0; i < 80; i++) {
+  if (outcome === 'loss') {
+    colors = ['#d90429', '#64748b', '#334155'];
+    particleCount = 65;
+  } else if (outcome === 'draw') {
+    colors = ['#0096c7', '#94a3b8', '#3b82f6'];
+    particleCount = 60;
+  }
+
+  for (let i = 0; i < particleCount; i++) {
     particles.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height - canvas.height,
-      r: Math.random() * 6 + 3,
-      d: Math.random() * 80,
+      r: Math.random() * 5 + 3,
+      speedY: outcome === 'loss' ? Math.random() * 4 + 2 : Math.random() * 3 + 2,
+      speedX: outcome === 'draw' ? (Math.random() - 0.5) * 4 : (Math.random() - 0.5) * 2,
       color: colors[Math.floor(Math.random() * colors.length)],
-      tilt: Math.floor(Math.random() * 10) - 10,
-      tiltAngleIncremental: Math.random() * 0.07 + 0.05,
-      tiltAngle: 0
+      tilt: Math.random() * 10 - 5
     });
   }
 
@@ -35,18 +44,24 @@ function launchConfetti(canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach(p => {
       ctx.beginPath();
-      ctx.lineWidth = p.r;
-      ctx.strokeStyle = p.color;
-      ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
-      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
-      ctx.stroke();
+      if (outcome === 'loss') {
+        // Lluvia tenue en derrota
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 2;
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x, p.y + 12);
+        ctx.stroke();
+      } else {
+        // Confeti de victoria / ráfagas de empate
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x + p.tilt, p.y, p.r, p.r * 1.4);
+      }
 
-      p.tiltAngle += p.tiltAngleIncremental;
-      p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
-      p.tilt = Math.sin(p.tiltAngle) * 15;
+      p.y += p.speedY;
+      p.x += p.speedX;
 
       if (p.y > canvas.height) {
-        p.y = -10;
+        p.y = -15;
         p.x = Math.random() * canvas.width;
       }
     });
@@ -56,6 +71,7 @@ function launchConfetti(canvas) {
 
   setTimeout(() => {
     cancelAnimationFrame(animationFrame);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   }, 4500);
 }
 
@@ -69,8 +85,8 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
       <!-- Panel de Marcador Principal -->
       <div class="scoreboard-panel glass-panel">
         <div class="team-box text-center">
-          <div class="team-badge-circle" style="background: linear-gradient(135deg, ${userTeam.colors[0]}, ${userTeam.colors[1]}); width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; margin: 0 auto 8px auto;">${userTeam.short}</div>
-          <h3>${userTeam.name}</h3>
+          ${renderTeamBadgeSVG(userTeam, 64)}
+          <h3 class="mt-2">${userTeam.name}</h3>
         </div>
 
         <div class="score-display">
@@ -81,8 +97,8 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
         </div>
 
         <div class="team-box text-center">
-          <div class="team-badge-circle" style="background: linear-gradient(135deg, ${rival.colors[0]}, ${rival.colors[1]}); width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; margin: 0 auto 8px auto;">${rival.short}</div>
-          <h3>${rival.name}</h3>
+          ${renderTeamBadgeSVG(rival, 64)}
+          <h3 class="mt-2">${rival.name}</h3>
         </div>
       </div>
 
@@ -95,15 +111,13 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
 
     <!-- Modal Cinemático de Final de Partido -->
     <div id="matchCinematicModal" class="cinematic-overlay hidden">
+      <canvas id="cinematicCanvas"></canvas>
       <div id="cinematicCard" class="cinematic-card">
-        <canvas id="cinematicCanvas"></canvas>
-        <div style="position: relative; z-index: 2;">
-          <h2 id="cinematicTitle" class="cinematic-title">¡PARTIDO FINALIZADO!</h2>
-          <p id="cinematicSubtitle" class="cinematic-subtitle">Rendimiento deportivo en la jornada</p>
-          <div id="cinematicScore" class="cinematic-score">0 - 0</div>
-          <p id="cinematicTicketText" class="text-sub mb-4">Ingresos por Taquilla: +€0M</p>
-          <button id="btnFinishMatch" class="btn-primary btn-large">CONTINUAR AL DASHBOARD ⚽</button>
-        </div>
+        <h2 id="cinematicTitle" class="cinematic-title">¡PARTIDO FINALIZADO!</h2>
+        <p id="cinematicSubtitle" class="cinematic-subtitle">Rendimiento deportivo en la jornada</p>
+        <div id="cinematicScore" class="cinematic-score">0 - 0</div>
+        <p id="cinematicTicketText" class="text-sub mb-4">Ingresos por Taquilla: +€0M</p>
+        <button id="btnFinishMatch" class="btn-primary btn-large" style="width: 100%;">CONTINUAR AL DASHBOARD ⚽</button>
       </div>
     </div>
   `;
@@ -139,22 +153,23 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
     let outcomeClass = 'draw';
     if (userGoals > rivalGoals) {
       outcomeClass = 'win';
-      titleEl.innerText = '¡VICTORIA TRIUNFAL!';
+      titleEl.innerText = '🏆 ¡VICTORIA TRIUNFAL!';
       subEl.innerText = `¡Espectacular rendimiento de ${userTeam.name}! Tres puntos clave para la tabla.`;
       sfx.playGoal();
-      setTimeout(() => launchConfetti(canvasEl), 100);
     } else if (userGoals < rivalGoals) {
       outcomeClass = 'loss';
-      titleEl.innerText = 'DERROTA DOLOROSA';
+      titleEl.innerText = '💔 DERROTA DOLOROSA';
       subEl.innerText = `Caída en la jornada. El equipo deberá corregir errores tácticos para el próximo encuentro.`;
     } else {
       outcomeClass = 'draw';
-      titleEl.innerText = 'EMPATE LUCHADO';
+      titleEl.innerText = '⚖️ EMPATE LUCHADO';
       subEl.innerText = `Reparto de puntos tras una intensa batalla sobre el terreno de juego.`;
     }
 
     cardEl.className = `cinematic-card ${outcomeClass}`;
     modalEl.classList.remove('hidden');
+
+    setTimeout(() => launchOutcomeParticles(canvasEl, outcomeClass), 100);
 
     btnFinish.addEventListener('click', () => {
       sfx.playClick();
@@ -188,7 +203,7 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
       }
     }
 
-    // 3. SIMULAR LA JORNADA SIMULTÁNEA PARA TODOS LOS DEMÁS EQUIPOS RIVALES DE LA LIGA
+    // 3. SIMULAR LA JORNADA SIMULTÁNEA PARA TODOS LOS DEMÁS EQUIPOS RIVALES DE LIGA
     MatchEngine.simulateAllRivalMatches(userTeam.id, rival.id);
 
     // 4. PROCESAR COMPETICIÓN CONTINENTAL O COPA NACIONAL

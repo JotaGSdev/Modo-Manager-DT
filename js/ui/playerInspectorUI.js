@@ -1,8 +1,21 @@
-// Inspector de Jugador Estilo EA FC / FIFA: Estadísticas de Temporada, Ventas, Renovaciones e Intercambios
+// Inspector de Jugador Estilo EA FC / FIFA: Estadísticas de Temporada, Rol Táctico Individual, Ventas, Renovaciones e Intercambios
 
 import { db } from '../data/db.js';
 import { sfx } from '../../assets/audio/sfx.js';
 import { calculatePlayerMarketValue, calculatePlayerSalary } from '../data/teamData.js';
+
+const TACTICAL_ROLES_BY_POS = {
+  'POR': ['Portero Líbero (Sale a Cortar)', 'Portero Tradicional (Bajo el Arco)'],
+  'DFC': ['Defensa Marcador Físico', 'Defensa de Salida Limpia / Toque'],
+  'LI': ['Lateral de Recorrido Profundo', 'Lateral Invertido (Apoyo a MCO)', 'Defensa Lateral Cerrado'],
+  'LD': ['Lateral de Recorrido Profundo', 'Lateral Invertido (Apoyo a MCO)', 'Defensa Lateral Cerrado'],
+  'MCD': ['Organizador Profundo', 'Destructor Físico de Juego', 'Pivote de Presión Alta'],
+  'MC': ['Box-to-Box (Área a Área)', 'Creador de Juego Ritmo', 'Interior Ofensivo'],
+  'MCO': ['Mediapunta Libre Creativo', 'Falso 9 Retrasado', 'Enganche de Pase Filtrado'],
+  'EI': ['Extremo Invertido (Corte al Centro)', 'Extremo Puro de Banda', 'Delantero Interior'],
+  'ED': ['Extremo Invertido (Corte al Centro)', 'Extremo Puro de Banda', 'Delantero Interior'],
+  'DC': ['Delantero Centro Avanzado', 'Falso 9 Táctico', 'Hombre Objetivo / Pivote de Área']
+};
 
 export function openPlayerInspectorModal(player, onUpdate) {
   const gameState = db.gameState;
@@ -21,6 +34,9 @@ export function openPlayerInspectorModal(player, onUpdate) {
   const goals = player.seasonGoals || 0;
   const ratingAvg = (6.8 + (player.overall * 0.015) + (Math.random() * 0.4)).toFixed(1);
   const contractYears = player.contractYears || 3;
+  const currentInstruction = player.individualInstruction || (TACTICAL_ROLES_BY_POS[player.pos]?.[0] || 'Rol Estándar');
+
+  const availableRoles = TACTICAL_ROLES_BY_POS[player.pos] || ['Rol Estándar'];
 
   modal.innerHTML = `
     <div class="modal-card glass-panel" style="max-width: 650px;">
@@ -66,6 +82,20 @@ export function openPlayerInspectorModal(player, onUpdate) {
         <div><span class="text-sub" style="font-size: 0.75rem;">PHY</span><br><strong>${player.phy || 75}</strong></div>
       </div>
 
+      <!-- Instrucciones Tácticas Individuales Estilo EA FC -->
+      ${isOwnPlayer ? `
+        <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 14px; border-radius: 10px; margin-bottom: 20px;">
+          <label style="font-size: 0.88rem; font-weight: 800; color: var(--accent-cyan); display: block; margin-bottom: 6px;">
+            ⚙️ Rol Táctico e Instrucción Individual en Cancha:
+          </label>
+          <select id="selectIndividualRole" class="input-select" style="width: 100%;">
+            ${availableRoles.map(r => `
+              <option value="${r}" ${r === currentInstruction ? 'selected' : ''}>${r}</option>
+            `).join('')}
+          </select>
+        </div>
+      ` : ''}
+
       <!-- Estadísticas de Rendimiento en la Temporada -->
       <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; margin-bottom: 20px;">
         <h4 style="margin-bottom: 10px; color: var(--accent-green);">📊 Rendimiento Deportivo de la Temporada</h4>
@@ -110,17 +140,28 @@ export function openPlayerInspectorModal(player, onUpdate) {
   });
 
   if (isOwnPlayer) {
+    const roleSelect = document.getElementById('selectIndividualRole');
+    if (roleSelect) {
+      roleSelect.addEventListener('change', (e) => {
+        player.individualInstruction = e.target.value;
+        db.saveGame();
+        sfx.playClick();
+        feedbackEl.innerText = `¡Rol Táctico guardado: "${e.target.value}"!`;
+        feedbackEl.classList.remove('hidden');
+        setTimeout(() => feedbackEl.classList.add('hidden'), 2000);
+      });
+    }
+
     // 1. VENDER JUGADOR
     document.getElementById('btnSellPlayer').addEventListener('click', () => {
       sfx.playClick();
       const availableTeams = Object.values(db.teams).filter(t => t.id !== userTeamId);
       const buyerTeam = availableTeams[Math.floor(Math.random() * availableTeams.length)];
       
-      const offerMultiplier = 1.05 + Math.random() * 0.20; // 105% a 125% de su valor
+      const offerMultiplier = 1.05 + Math.random() * 0.20;
       const offerFee = Math.round(player.value * offerMultiplier);
 
       if (confirm(`💰 OFERTA DE COMPRA DE ${buyerTeam.name.toUpperCase()}:\n\n¿Deseas aceptar la oferta de transferencia por €${(offerFee / 1000000).toFixed(1)}M por ${player.name}?`)) {
-        // Ejecutar venta
         gameState.budget += offerFee;
         gameState.wageBudget += player.salary;
 
@@ -148,7 +189,7 @@ export function openPlayerInspectorModal(player, onUpdate) {
     // 2. RENOVAR CONTRATO
     document.getElementById('btnRenewContract').addEventListener('click', () => {
       sfx.playClick();
-      const newWage = Math.round(player.salary * 1.15); // 15% de aumento
+      const newWage = Math.round(player.salary * 1.15);
       const newYears = Math.min(5, (player.contractYears || 3) + 2);
 
       if (confirm(`📝 NEGOCIACIÓN DE RENOVACIÓN:\n\n¿Ofrecer a ${player.name} una extensión de ${newYears} años de contrato con un salario ajustado de €${(newWage / 1000).toFixed(0)}K/sem?`)) {
@@ -181,7 +222,6 @@ export function openPlayerInspectorModal(player, onUpdate) {
 
       if (suitableTarget) {
         if (confirm(`🔄 PROPUESTA DE TRUEQUE CON ${targetTeam.name.toUpperCase()}:\n\n¿Ofrecer a ${player.name} (OVR ${player.overall}) a cambio de ${suitableTarget.name} (${suitableTarget.pos}, OVR ${suitableTarget.overall})?`)) {
-          // Intercambiar jugadores en las plantillas
           const userSquad = db.getTeamPlayers(userTeamId);
           const rivalSquad = db.getTeamPlayers(targetTeam.id);
 

@@ -117,14 +117,30 @@ export function renderYouth(container) {
       </div>
 
       <!-- Lista de Canteranos -->
-      <div class="youth-prospects-header mt-4">
+      <div class="youth-prospects-header mt-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <h3>📋 Jugadores en la Cantera del Club (${academy.length})</h3>
+        <button id="btnRunYouthTournament" class="btn-primary" style="background: var(--accent-gold); color: #000; font-weight: 800;">
+          🏆 SIMULAR JORNADA TORNEO CANTERA SUB-19 (+1 A +3 OVR)
+        </button>
       </div>
       <div id="youthProspectsList" class="youth-list mt-2"></div>
     </div>
   `;
 
   renderProspects();
+
+  // Evento de Torneo Juvenil Sub-19
+  document.getElementById('btnRunYouthTournament')?.addEventListener('click', () => {
+    sfx.playClick();
+    const res = YouthAcademyEngine.runYouthTournamentMatch();
+    if (res.success) {
+      sfx.playGoal();
+      alert(res.message);
+      renderYouth(container);
+    } else {
+      alert(res.reason);
+    }
+  });
 
   // Evento de Mejorar Ojeador
   const btnUpgrade = document.getElementById('btnUpgradeScout');

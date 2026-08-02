@@ -1,4 +1,4 @@
-// Vista de Evaluación de Contrato y Selección de Ofertas de Clubes
+// Vista de Evaluación de Contrato y Selección de Ofertas de Clubes Estilo EA FC
 
 import { db } from '../data/db.js';
 import { ContractEngine } from '../engine/contracts.js';
@@ -16,56 +16,71 @@ export function renderContractView(container, navigateTo) {
 
   container.innerHTML = `
     <div class="contract-layout">
-      <div class="glass-panel text-center mb-4">
-        <h2>📜 Informe de Evaluación de Contrato & Directiva</h2>
-        <p class="text-sub">Duración del Vinculo: <strong>${contract.yearsRemaining} de ${contract.duration} Años Restantes</strong></p>
+      <!-- Encabezado Directivo -->
+      <div class="glass-panel mb-4" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h2>📜 Evaluación del Vínculo contractual y Junta Directiva</h2>
+          <p class="text-sub">Club Actual: <strong>${team.name}</strong> | Período: <strong>${contract.yearsRemaining} de ${contract.duration} Años Restantes</strong></p>
+        </div>
+        <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px; text-align: center;">
+          <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">OBJETIVO DE LA TEMPORADA</span>
+          <h4 style="margin: 0; color: var(--accent-gold);">Quedar entre los Top ${contract.targetPosition}</h4>
+        </div>
       </div>
 
-      <!-- KPIs del Contrato -->
+      <!-- KPIs del Contrato con Barras de Progreso -->
       <div class="dashboard-grid">
         <div class="card glass-panel">
           <h3>🏆 Resultados Deportivos</h3>
-          <p class="text-sub">Objetivo de la Directiva: <strong>Top ${contract.targetPosition}</strong></p>
-          <div class="stat-box mt-3">
-            <span class="lbl">PUNTUACIÓN DEPORTIVA</span>
-            <span class="val stat-ovr">${contract.sportingScore} / 100</span>
+          <p class="text-sub">Puntuación en Liga y Competiciones</p>
+          <div class="prob-container">
+            <div class="prob-bar-track">
+              <div class="prob-bar-fill" style="width: ${contract.sportingScore}%;"></div>
+              <div class="prob-bar-text">${contract.sportingScore} / 100 PTS</div>
+            </div>
           </div>
         </div>
 
         <div class="card glass-panel">
-          <h3>📣 Satisfacción de la Afición</h3>
-          <p class="text-sub">Respaldo de los Hinchas en el Estadio</p>
-          <div class="stat-box mt-3">
-            <span class="lbl">APROBACIÓN</span>
-            <span class="val stat-ovr">${contract.fanSatisfaction}%</span>
+          <h3>📣 Aprobación de la Hinchada</h3>
+          <p class="text-sub">Respaldo popular en el estadio</p>
+          <div class="prob-container">
+            <div class="prob-bar-track">
+              <div class="prob-bar-fill" style="width: ${contract.fanSatisfaction}%; background: var(--accent-cyan);"></div>
+              <div class="prob-bar-text">${contract.fanSatisfaction}% Aprobación</div>
+            </div>
           </div>
         </div>
 
         <div class="card glass-panel">
           <h3>💰 Balance Económico</h3>
-          <p class="text-sub">Gestión del Presupuesto Salarial</p>
-          <div class="stat-box mt-3">
-            <span class="lbl">SALUD FINANCIERA</span>
-            <span class="val stat-ovr">${contract.financialBalance} / 100</span>
+          <p class="text-sub">Salud financiera y presupuesto salarial</p>
+          <div class="prob-container">
+            <div class="prob-bar-track">
+              <div class="prob-bar-fill" style="width: ${contract.financialBalance}%; background: var(--accent-gold);"></div>
+              <div class="prob-bar-text">${contract.financialBalance} / 100 Salud</div>
+            </div>
           </div>
         </div>
 
         <div class="card glass-panel">
           <h3>👔 Confianza de la Directiva</h3>
-          <p class="text-sub">Probabilidad de Renovación</p>
-          <div class="stat-box mt-3">
-            <span class="lbl">PROBABILIDAD RENOVACIÓN</span>
-            <span class="val text-highlight" style="font-size: 1.4rem;">${contract.renewalChance}%</span>
+          <p class="text-sub">Probabilidad de renovación automática</p>
+          <div class="prob-container">
+            <div class="prob-bar-track">
+              <div class="prob-bar-fill" style="width: ${contract.renewalChance}%;"></div>
+              <div class="prob-bar-text">${contract.renewalChance}% Probabilidad</div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Acciones de Contrato -->
-      <div class="glass-panel text-center mt-4">
+      <div class="glass-panel text-center mt-4" style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
         <button id="btnRenewContract" class="btn-primary btn-large" ${contract.renewalChance < 60 ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
           ✍️ SOLICITAR RENOVACIÓN DE CONTRATO (3 AÑOS MÁS)
         </button>
-        <button id="btnSearchJobOffers" class="btn-secondary btn-large ml-3">💼 EXPLORAR OFERTAS DE OTROS CLUBES</button>
+        <button id="btnSearchJobOffers" class="btn-secondary btn-large">💼 EXPLORAR OFERTAS DE OTROS CLUBES</button>
       </div>
 
       <div id="jobOffersContainer" class="mt-4 hidden"></div>

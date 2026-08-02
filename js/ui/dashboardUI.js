@@ -6,6 +6,7 @@ import { TrophyRoomEngine } from '../engine/trophyRoom.js';
 import { CompetitionsEngine } from '../engine/competitionsEngine.js';
 import { TransferEngine } from '../engine/transfers.js';
 import { EventsEngine } from '../engine/eventsEngine.js';
+import { renderTeamBadgeSVG } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
 export function renderDashboard(container, navigateTo) {
@@ -22,7 +23,42 @@ export function renderDashboard(container, navigateTo) {
   const topScorers = gameState.topScorers || [];
   const seasonLabel = `${gameState.season}/${gameState.season + 1}`;
 
+  const userStanding = (gameState.standings || []).find(s => s.teamId === userTeam.id);
+  const userRank = (gameState.standings || []).findIndex(s => s.teamId === userTeam.id) + 1;
+  const userPosLabel = userRank > 0 ? `#${userRank} lugar` : 'Competidor';
+
+  const squad = db.getTeamPlayers(userTeam.id);
+  const topClubScorer = [...squad].sort((a, b) => (b.seasonGoals || 0) - (a.seasonGoals || 0))[0] || { name: 'Sin registros', seasonGoals: 0 };
+  const topClubAssister = squad[1] || squad[0] || { name: 'Sin registros', overall: 75 };
+
   container.innerHTML = `
+    <!-- PANEL SUPERIOR DE KPIs DEL CLUB Y TORNEOS EN COMPETICIÓN -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+      <div class="glass-panel text-center py-3">
+        <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">PARTIDOS EN TEMPORADA</span>
+        <h3 style="margin-top: 4px; font-size: 1.6rem; color: var(--accent-green);">${userStanding ? userStanding.played : 0} PJ</h3>
+        <span class="text-sub" style="font-size: 0.78rem;">Jornada ${gameState.week} de ${gameState.maxWeeks}</span>
+      </div>
+
+      <div class="glass-panel text-center py-3">
+        <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">MÁXIMO GOLEADOR</span>
+        <h3 style="margin-top: 4px; font-size: 1.2rem; color: #ffffff; font-weight: 800;">${topClubScorer.name}</h3>
+        <span class="stat-ovr mt-1" style="font-size: 0.78rem;">${topClubScorer.seasonGoals || 0} Goles ⚽</span>
+      </div>
+
+      <div class="glass-panel text-center py-3">
+        <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">LÍDER DE ASISTENCIAS</span>
+        <h3 style="margin-top: 4px; font-size: 1.2rem; color: #ffffff; font-weight: 800;">${topClubAssister.name}</h3>
+        <span class="text-highlight mt-1" style="font-size: 0.82rem;">${Math.floor((topClubAssister.overall - 65) / 4) + 1} Asistencias 👟</span>
+      </div>
+
+      <div class="glass-panel text-center py-3">
+        <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">ESTADO DE TORNEOS</span>
+        <h3 style="margin-top: 4px; font-size: 1.1rem; color: var(--accent-gold); font-weight: 800;">${userPosLabel}</h3>
+        <span class="text-sub" style="font-size: 0.78rem;">Copa Nacional / Continental 🏆</span>
+      </div>
+    </div>
+
     <div class="dashboard-grid">
       <!-- Tarjeta de Partido y Avance de Temporada -->
       <div class="card next-match-card glass-panel">
@@ -35,10 +71,8 @@ export function renderDashboard(container, navigateTo) {
 
         <div class="match-vs-container">
           <div class="team-box text-center">
-            <div class="team-badge-circle" style="background: linear-gradient(135deg, ${userTeam.colors[0]}, ${userTeam.colors[1]}); width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; margin: 0 auto 6px auto;">
-              ${userTeam.short}
-            </div>
-            <h4>${userTeam.name}</h4>
+            ${renderTeamBadgeSVG(userTeam, 64)}
+            <h4 class="mt-2">${userTeam.name}</h4>
             <span class="team-ovr text-sub">OVR: ${userTeam.overall}</span>
           </div>
 
@@ -48,10 +82,8 @@ export function renderDashboard(container, navigateTo) {
           </div>
 
           <div class="team-box text-center">
-            <div class="team-badge-circle" style="background: linear-gradient(135deg, ${nextRival.colors[0]}, ${nextRival.colors[1]}); width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; margin: 0 auto 6px auto;">
-              ${nextRival.short}
-            </div>
-            <h4>${nextRival.name}</h4>
+            ${renderTeamBadgeSVG(nextRival, 64)}
+            <h4 class="mt-2">${nextRival.name}</h4>
             <span class="team-ovr text-sub">OVR: ${nextRival.overall}</span>
           </div>
         </div>

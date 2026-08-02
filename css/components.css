@@ -211,7 +211,7 @@
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(6, 9, 15, 0.90);
+  background: rgba(6, 9, 15, 0.92);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -318,6 +318,115 @@
 .log-goal_home, .log-goal_away {
   background: #182a26;
   border-left: 3px solid var(--accent-green);
+}
+
+/* --- OVERLAYS Y ANIMACIONES CINEMATOGRÁFICAS DE RESULTADO --- */
+.cinematic-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(6, 10, 18, 0.96);
+  animation: cinematicFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cinematicFadeIn {
+  from { opacity: 0; transform: scale(1.04); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.cinematic-card {
+  width: 90%;
+  max-width: 580px;
+  background: #141d2e;
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+  padding: 36px 28px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  position: relative;
+  z-index: 10002;
+}
+
+/* 🏆 Victoria Bounce Animation */
+.cinematic-card.win {
+  border-color: var(--accent-green);
+  animation: victoryBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes victoryBounce {
+  0% { transform: scale(0.85); opacity: 0; }
+  60% { transform: scale(1.06); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.win .cinematic-title {
+  color: var(--accent-green);
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+/* 💔 Derrota Shake Animation */
+.cinematic-card.loss {
+  border-color: var(--accent-red);
+  animation: defeatShake 0.5s ease-in-out;
+}
+
+@keyframes defeatShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.loss .cinematic-title {
+  color: var(--accent-red);
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+/* ⚖️ Empate Slide Animation */
+.cinematic-card.draw {
+  border-color: var(--accent-cyan);
+  animation: drawSlide 0.5s ease-out;
+}
+
+@keyframes drawSlide {
+  from { transform: translateY(25px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.draw .cinematic-title {
+  color: var(--accent-cyan);
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.cinematic-score {
+  font-size: 3.6rem;
+  font-weight: 900;
+  margin: 16px 0;
+  color: #ffffff;
+  letter-spacing: 2px;
+}
+
+.cinematic-subtitle {
+  font-size: 1rem;
+  color: var(--text-sub);
+  margin-bottom: 20px;
+}
+
+#cinematicCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 10001;
 }
 
 /* Botón de Apoyo y Propinas Voluntarias */

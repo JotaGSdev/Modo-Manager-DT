@@ -59,7 +59,6 @@ class App {
           <a class="nav-item" data-view="squad">📋 Plantilla & Tácticas</a>
           <a class="nav-item" data-view="transfers">📝 Mercado Fichajes</a>
           <a class="nav-item" data-view="youth">🌱 Cantera</a>
-          <a class="nav-item" data-view="training">🧠 Preparación Táctica</a>
           <a class="nav-item" data-view="trophies">🏆 Palmarés</a>
           <a class="nav-item mt-4" id="btnResetCareer" style="color: var(--accent-red);">🔄 Nueva Carrera</a>
         </aside>

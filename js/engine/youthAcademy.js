@@ -189,4 +189,28 @@ export class YouthAcademyEngine {
       message: `¡${youthPlayer.name} (${youthPlayer.pos}, OVR: ${youthPlayer.overall}, Pot: ${youthPlayer.potential}) ha firmado su contrato profesional y fue promovido al primer equipo!` 
     };
   }
+
+  /**
+   * Simula una jornada del Torneo de Cantera Sub-19 para evolucionar a los juveniles (+1 a +3 OVR)
+   */
+  static runYouthTournamentMatch() {
+    const gameState = db.gameState;
+    const academy = gameState.youthAcademy || [];
+    if (academy.length === 0) {
+      return { success: false, reason: 'No tienes canteranos en la academia para disputar el Torneo Sub-19.' };
+    }
+
+    academy.forEach(p => {
+      const gain = Math.floor(Math.random() * 3) + 1;
+      p.overall = Math.min(p.potential || 90, p.overall + gain);
+      p.value = calculatePlayerMarketValue(p.overall, p.age, p.potential);
+      p.salary = calculatePlayerSalary(p.value, p.overall);
+    });
+
+    db.saveGame();
+    return {
+      success: true,
+      message: `🏆 ¡JORNADA DE COPA SUB-19 COMPLETADA! Tus ${academy.length} canteranos disputaron el encuentro juvenil y mejoraron su rendimiento (+1 a +3 OVR).`
+    };
+  }
 }
