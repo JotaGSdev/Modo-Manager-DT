@@ -190,16 +190,23 @@ class DatabaseManager {
   }
 
   saveGame() {
-    if (!this.gameState) return;
-    const saveObj = {
-      gameState: this.gameState,
-      players: this.players
-    };
-    localStorage.setItem('entrenador_leyenda_save', JSON.stringify(saveObj));
+    if (!this.gameState || this.isSaving) return;
+    this.isSaving = true;
+    try {
+      const saveObj = {
+        gameState: this.gameState,
+        players: this.players
+      };
+      localStorage.setItem('entrenador_leyenda_save', JSON.stringify(saveObj));
 
-    // Disparar sincronización instantánea de la interfaz superior si existe el actualizador
-    if (typeof window !== 'undefined' && typeof window.updateGlobalUI === 'function') {
-      window.updateGlobalUI();
+      // Disparar sincronización instantánea de la interfaz superior si existe el actualizador
+      if (typeof window !== 'undefined' && typeof window.updateGlobalUI === 'function') {
+        window.updateGlobalUI();
+      }
+    } catch (e) {
+      console.error('Error al guardar partida:', e);
+    } finally {
+      this.isSaving = false;
     }
   }
 

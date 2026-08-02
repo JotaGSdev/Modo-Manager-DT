@@ -41,7 +41,7 @@ export class ContractEngine {
   /**
    * Evalúa los 4 KPIs de rendimiento del DT periódicamente
    */
-  static evaluatePerformance() {
+  static evaluatePerformance(shouldSave = false) {
     const gameState = db.gameState;
     const contract = gameState.contract;
     if (!contract) return null;
@@ -80,7 +80,9 @@ export class ContractEngine {
       contract.status = 'ACTIVO';
     }
 
-    db.saveGame();
+    if (shouldSave) {
+      db.saveGame();
+    }
     return contract;
   }
 
