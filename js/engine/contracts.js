@@ -55,7 +55,8 @@ export class ContractEngine {
 
     // 2. KPI Satisfacción de la Afición
     const winRatio = (standings.find(s => s.teamId === gameState.userTeamId)?.won || 0) / Math.max(1, gameState.week);
-    contract.fanSatisfaction = Math.max(30, Math.min(100, Math.round(50 + winRatio * 60 + gameState.matchBonus.moraleBonus)));
+    const moraleBonus = (gameState.matchBonus && typeof gameState.matchBonus.moraleBonus === 'number') ? gameState.matchBonus.moraleBonus : 0;
+    contract.fanSatisfaction = Math.max(30, Math.min(100, Math.round(50 + winRatio * 60 + moraleBonus)));
 
     // 3. KPI Balance Económico
     const initialBudget = db.teams[gameState.userTeamId]?.budget || 10000000;

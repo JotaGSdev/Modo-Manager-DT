@@ -21,7 +21,12 @@ class DatabaseManager {
       
       this.leagues.forEach(league => {
         league.teams.forEach(team => {
-          this.teams[team.id] = { ...team, leagueId: league.id };
+          this.teams[team.id] = { 
+            ...team, 
+            leagueId: league.id,
+            country: league.country,
+            region: league.region 
+          };
         });
       });
 
@@ -204,7 +209,31 @@ class DatabaseManager {
     try {
       const parsed = JSON.parse(dataStr);
       this.gameState = parsed.gameState;
-      this.players = parsed.players;
+      this.players = parsed.players || {};
+
+      if (this.gameState) {
+        if (!this.gameState.standings) this.gameState.standings = [];
+        if (!this.gameState.topScorers) this.gameState.topScorers = [];
+        if (!this.gameState.trophies) this.gameState.trophies = [];
+        if (!this.gameState.youthAcademy) this.gameState.youthAcademy = [];
+        if (!this.gameState.eventsLog) this.gameState.eventsLog = [];
+        if (!this.gameState.scoutLevel) this.gameState.scoutLevel = 1;
+        if (!this.gameState.matchBonus) this.gameState.matchBonus = { moraleBonus: 0, tacticalBonus: 0, penaltyBonus: 0 };
+        if (!this.gameState.tactics) this.gameState.tactics = { formation: '4-3-3', mentality: 'Ofensiva', style: 'Tiki-Taka', defensiveLine: 'Alta', passingStyle: 'Corto' };
+
+        // Si la tabla de posiciones está vacía por un guardado anterior, reconstruirla
+        const userTeam = this.teams[this.gameState.userTeamId];
+        if (userTeam && this.gameState.standings.length === 0) {
+          const userLeague = this.leagues.find(l => l.id === userTeam.leagueId);
+          if (userLeague && userLeague.teams) {
+            this.gameState.standings = userLeague.teams.map(t => ({
+              teamId: t.id,
+              name: t.name,
+              played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, points: 0
+            }));
+          }
+        }
+      }
       return true;
     } catch (e) {
       console.error('Error al cargar partida guardada:', e);

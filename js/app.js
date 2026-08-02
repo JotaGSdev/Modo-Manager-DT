@@ -162,22 +162,52 @@ class App {
     this.updateTopStatusBar();
     this.checkSupportTipVisibility();
 
-    if (viewName === 'dashboard') {
-      renderDashboard(this.mainContainer, (v, p) => this.navigateTo(v, p));
-    } else if (viewName === 'contract') {
-      renderContractView(this.mainContainer, (v, p) => this.navigateTo(v, p));
-    } else if (viewName === 'squad') {
-      renderSquad(this.mainContainer);
-    } else if (viewName === 'transfers') {
-      renderTransfers(this.mainContainer);
-    } else if (viewName === 'youth') {
-      renderYouth(this.mainContainer);
-    } else if (viewName === 'training') {
-      renderTraining(this.mainContainer, (v, p) => this.navigateTo(v, p));
-    } else if (viewName === 'trophies') {
-      renderTrophyRoom(this.mainContainer);
-    } else if (viewName === 'match') {
-      renderMatch(this.mainContainer, params.rival, params.mode, (v, p) => this.navigateTo(v, p));
+    try {
+      if (viewName === 'dashboard') {
+        renderDashboard(this.mainContainer, (v, p) => this.navigateTo(v, p));
+      } else if (viewName === 'contract') {
+        renderContractView(this.mainContainer, (v, p) => this.navigateTo(v, p));
+      } else if (viewName === 'squad') {
+        renderSquad(this.mainContainer);
+      } else if (viewName === 'transfers') {
+        renderTransfers(this.mainContainer);
+      } else if (viewName === 'youth') {
+        renderYouth(this.mainContainer);
+      } else if (viewName === 'training') {
+        renderTraining(this.mainContainer, (v, p) => this.navigateTo(v, p));
+      } else if (viewName === 'trophies') {
+        renderTrophyRoom(this.mainContainer);
+      } else if (viewName === 'match') {
+        renderMatch(this.mainContainer, params.rival, params.mode, (v, p) => this.navigateTo(v, p));
+      }
+    } catch (err) {
+      console.error(`Error al renderizar vista '${viewName}':`, err);
+      this.mainContainer.innerHTML = `
+        <div class="glass-panel text-center py-5">
+          <h2>⚠️ Restauración de Datos de Carrera</h2>
+          <p class="text-sub mt-2">La partida actual ha sido sanitizada y protegida automáticamente.</p>
+          <div class="mt-4" style="display: flex; gap: 14px; justify-content: center;">
+            <button id="btnRecoverDashboard" class="btn-primary">🏠 Cargar Dashboard</button>
+            <button id="btnResetDataModal" class="btn-secondary">🔄 Nueva Carrera</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('btnRecoverDashboard')?.addEventListener('click', () => {
+        if (db.gameState && db.gameState.userTeamId) {
+          const userTeam = db.teams[db.gameState.userTeamId];
+          const userLeague = db.leagues.find(l => l.id === userTeam?.leagueId);
+          if (userLeague && (!db.gameState.standings || db.gameState.standings.length === 0)) {
+            db.gameState.standings = userLeague.teams.map(t => ({
+              teamId: t.id, name: t.name, played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, points: 0
+            }));
+          }
+        }
+        location.reload();
+      });
+      document.getElementById('btnResetDataModal')?.addEventListener('click', () => {
+        localStorage.removeItem('entrenador_leyenda_save');
+        location.reload();
+      });
     }
   }
 }
