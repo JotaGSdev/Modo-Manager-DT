@@ -333,21 +333,124 @@ export function renderDashboard(container, navigateTo) {
       return;
     }
 
-    content.innerHTML = `
-      <h2>🏁 Final de la Temporada ${seasonLabel}</h2>
-      <p class="text-sub mt-2">${isChampion ? '🏆 ¡FELICIDADES! ¡ERES EL CAMPEÓN OFICIAL DE LA LIGA!' : `Campeón de la liga: <strong>${champion.name}</strong>`}</p>
-      
-      <div class="mt-3">
-        <p class="text-highlight">💰 Premio por posición (#${userRank}): +€${(prizeMoney / 1000000).toFixed(1)}M ingresados al presupuesto.</p>
-        <p class="text-sub mt-1">Al avanzar a la temporada ${gameState.season + 1}/${gameState.season + 2}, las medias de tus jugadores evolucionarán según su edad y partidos disputados.</p>
-      </div>
+    const contract = ContractEngine.evaluatePerformance();
+    const isContractExpired = (contract.yearsRemaining || 0) <= 0;
 
-      <div class="modal-actions mt-4">
-        <button id="btnAdvanceSeason" class="btn-primary btn-large">🚀 EVOLUCIONAR PLANTILLA & TEMPORADA ${gameState.season + 1}/${gameState.season + 2}</button>
+    // 1. Obtener MVP del Club de la Temporada
+    const squad = db.getTeamPlayers(userTeam.id);
+    const topScorer = [...squad].sort((a, b) => (b.seasonGoals || 0) - (a.seasonGoals || 0))[0] || squad[0];
+    const mvpName = topScorer ? `${topScorer.name} (${topScorer.pos}, ${topScorer.seasonGoals || 0} Goles)` : 'Sin destacar';
+
+    // 2. Calcular Nota de la Temporada (1.0 a 10.0)
+    const seasonGrade = (Math.min(10, Math.max(1, (10 - userRank * 0.4) + (isChampion ? 2.5 : 0)))).toFixed(1);
+
+    // 3. Titular de Periódico Impactante
+    let headline = 'EL RIVAL LE PASÓ EL TRAPO';
+    let headlineColor = 'var(--accent-red)';
+    if (isChampion) {
+      headline = '🏆 CAMPEONES DE GLORIA: TEMPORADA LEGENDARIA';
+      headlineColor = 'var(--accent-gold)';
+    } else if (userRank <= 4) {
+      headline = '🔥 CAMPAÑA EXTRAORDINARIA EN LA ZONA ALTA';
+      headlineColor = 'var(--accent-green)';
+    } else if (userRank <= 8) {
+      headline = '⚽ BALANCE REGULAR Y PROTAGONISMO TÁCTICO';
+      headlineColor = 'var(--accent-cyan)';
+    }
+
+    content.innerHTML = `
+      <div style="text-align: left;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 12px;">
+          <span style="font-weight: 900; letter-spacing: 1px; color: var(--text-sub); font-size: 0.85rem;">POTRERO DEPORTIVO</span>
+          <span class="text-sub" style="font-size: 0.8rem;">TEMPORADA ${seasonLabel}</span>
+        </div>
+
+        <h1 style="font-size: 1.8rem; font-weight: 900; color: ${headlineColor}; margin-bottom: 6px;">${headline}</h1>
+        <p class="text-sub mb-3" style="font-size: 0.88rem;">${userTeam.name} concluyó la temporada regular en el <strong>Puesto #${userRank}</strong> de la tabla general.</p>
+
+        <!-- NOTA DE LA TEMPORADA -->
+        <div style="background: #0f172a; border: 1px solid var(--border-color); padding: 12px 18px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <span style="font-weight: 800; font-size: 0.95rem; color: #fff;">NOTA DE LA TEMPORADA</span>
+          <strong style="font-size: 2.2rem; color: ${seasonGrade >= 7 ? 'var(--accent-green)' : 'var(--accent-gold)'}; font-weight: 900;">${seasonGrade}</strong>
+        </div>
+
+        <!-- HIGHLIGHTS DE RENDIMIENTO -->
+        <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 14px; border-radius: 10px; margin-bottom: 16px; font-size: 0.85rem;">
+          <p style="margin-bottom: 6px;">🌟 <strong>MVP del Club:</strong> ${mvpName}</p>
+          <p style="margin-bottom: 6px;">🏆 <strong>Posición Final:</strong> Puesto #${userRank} (${userStanding ? userStanding.points : 0} Pts | ${userStanding ? userStanding.won : 0} Victorias)</p>
+          <p style="margin-bottom: 6px;">💰 <strong>Premio por Posición:</strong> <strong class="text-highlight">+€${(prizeMoney / 1000000).toFixed(1)}M</strong></p>
+          <p style="margin-bottom: 0;">🔥 <strong>Racha de Victorias:</strong> Racha de victorias consecutivas mantenida durante el torneo.</p>
+        </div>
+
+        <!-- RUEDA DE PRENSA ESTILO MOURINHO -->
+        <div style="background: #0f172a; border: 1px solid var(--accent-cyan); padding: 14px; border-radius: 10px; margin-bottom: 16px;">
+          <h4 style="color: var(--accent-cyan); font-size: 0.9rem; margin-bottom: 6px;">🎤 Rueda de Prensa de Cierre (Estilo José Mourinho)</h4>
+          <p style="font-size: 0.82rem;" class="text-sub mb-3">La prensa internacional te pregunta: <em>"¿Cuál es su respuesta a las críticas tras esta campaña?"</em></p>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn-secondary btn-mourinho-answer" data-bonus="board" style="text-align: left; font-size: 0.78rem; padding: 10px;">
+              👉 "Respeto, respeto y más respeto. Soy el Special One y los números hablan solos." (+5% Confianza Directiva)
+            </button>
+            <button class="btn-secondary btn-mourinho-answer" data-bonus="morale" style="text-align: left; font-size: 0.78rem; padding: 10px;">
+              👉 "Si hablo de los arbitrajes y del presupuesto rival, me sancionan. No tengo nada que decir." (+5% Moral Plantilla)
+            </button>
+          </div>
+          <div id="mourinhoFeedback" class="mt-2 text-highlight hidden" style="font-size: 0.8rem; text-align: center;"></div>
+        </div>
+
+        ${isContractExpired ? `
+          <div style="background: #0f172a; border: 1px solid var(--accent-gold); padding: 12px; border-radius: 8px; text-align: left; margin-bottom: 14px;">
+            <h4 style="color: var(--accent-gold); margin-bottom: 4px; font-size: 0.88rem;">📜 Vínculo Contractual de 3 Años Finalizado</h4>
+            <p style="font-size: 0.8rem;" class="text-sub">Confianza Directiva: <strong>${contract.boardConfidence}%</strong>.</p>
+          </div>
+        ` : ''}
+
+        <div class="modal-actions mt-3" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+          ${isContractExpired && contract.renewalChance >= 60 ? `
+            <button id="btnRenew3Years" class="btn-primary">✍️ RENOVAR POR 3 AÑOS MÁS (${userTeam.name})</button>
+            <button id="btnSearchJobOffersSeason" class="btn-secondary">💼 FIRMAR POR UN NUEVO CLUB</button>
+          ` : isContractExpired ? `
+            <button id="btnSearchJobOffersSeason" class="btn-primary">💼 EXPLORAR OFERTAS Y CAMBIAR DE CLUB</button>
+          ` : `
+            <button id="btnAdvanceSeason" class="btn-primary btn-large">🚀 EVOLUCIONAR PLANTILLA & TEMPORADA ${gameState.season + 1}/${gameState.season + 2}</button>
+          `}
+        </div>
       </div>
     `;
 
-    document.getElementById('btnAdvanceSeason').addEventListener('click', () => {
+    document.querySelectorAll('.btn-mourinho-answer').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        sfx.playClick();
+        const bonusType = e.currentTarget.dataset.bonus;
+        const feedback = document.getElementById('mourinhoFeedback');
+        if (bonusType === 'board') {
+          if (gameState.contract) gameState.contract.boardConfidence = Math.min(100, gameState.contract.boardConfidence + 5);
+          feedback.innerText = '¡Declaración icónica! La directiva valoró tu contundencia (+5% Confianza).';
+        } else {
+          gameState.matchBonus.moraleBonus += 5;
+          feedback.innerText = '¡Tensión en la sala de prensa! El vestuario cerró filas contigo (+5% Moral).';
+        }
+        feedback.classList.remove('hidden');
+        document.querySelectorAll('.btn-mourinho-answer').forEach(b => b.disabled = true);
+      });
+    });
+
+    document.getElementById('btnRenew3Years')?.addEventListener('click', () => {
+      sfx.playGoal();
+      ContractEngine.startClubContract(gameState.userTeamId, 3);
+      db.processSeasonPlayerEvolution();
+      alert(`¡CONTRATO RENOVADO! Has extendido tu vínculo con ${userTeam.name} por 3 temporadas adicionales.`);
+      modal.classList.add('hidden');
+      renderDashboard(container, navigateTo);
+    });
+
+    document.getElementById('btnSearchJobOffersSeason')?.addEventListener('click', () => {
+      sfx.playClick();
+      modal.classList.add('hidden');
+      navigateTo('contract');
+    });
+
+    document.getElementById('btnAdvanceSeason')?.addEventListener('click', () => {
       sfx.playGoal();
       db.processSeasonPlayerEvolution();
       modal.classList.add('hidden');

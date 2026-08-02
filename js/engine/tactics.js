@@ -1,4 +1,48 @@
-// Gestor de Tácticas, Alineaciones y Rendimiento
+// Gestor de Tácticas, Alineaciones, Arquetipos de Entrenador (Guardiola, Xabi Alonso, De la Fuente / Potrero) y Niveles Tácticos
+
+import { db } from '../data/db.js';
+
+export const MANAGER_ARCHETYPES = {
+  GUARDIOLA: {
+    id: 'GUARDIOLA',
+    name: 'EL MAESTRO DE POSESIÓN',
+    coachStyle: 'Estilo Pep Guardiola / Xavi Hernández',
+    description: 'Posesión asfixiante, pase corto, triangulaciones y control absoluto del ritmo.',
+    badgeColor: '#00c885',
+    icon: '⚽',
+    skills: {
+      possession: { name: 'Control de Posesión y Triangulación', level: 1, maxLevel: 10 },
+      shortPassing: { name: 'Precisión de Pase Corto en Salida', level: 1, maxLevel: 10 }
+    },
+    bonusSummary: '+8 Pases Cortos | +5% Control de Partido | +3% Victoria'
+  },
+  XABI_ALONSO: {
+    id: 'XABI_ALONSO',
+    name: 'EL REY DEL CONTRAATAQUE',
+    coachStyle: 'Estilo Xabi Alonso / Klopp / Ancelotti',
+    description: 'Transición vertical relámpago, velocidad desbocada en extremos y ataque directo.',
+    badgeColor: '#0096c7',
+    icon: '⚡',
+    skills: {
+      counterSpeed: { name: 'Velocidad de Transición al Espacio', level: 1, maxLevel: 10 },
+      directAttacking: { name: 'Efectividad en Ataque Relámpago', level: 1, maxLevel: 10 }
+    },
+    bonusSummary: '+8 Velocidad de Ataque | +6% Eficiencia Contraataque'
+  },
+  DE_LA_FUENTE: {
+    id: 'DE_LA_FUENTE',
+    name: 'ESTRATEGA DE POTRERO & BALÓN PARADO',
+    coachStyle: 'Estilo Luis de la Fuente / Cholo Simeone',
+    description: 'Garra de potrero, balón parado letal, presión física sofocante y templanza en finales.',
+    badgeColor: '#e5a93c',
+    icon: '🔥',
+    skills: {
+      setPiece: { name: 'Jugadas de Balón Parado & Córners', level: 1, maxLevel: 10 },
+      potreroGrit: { name: 'Garra de Potrero & Presión Física', level: 1, maxLevel: 10 }
+    },
+    bonusSummary: '+8 Balón Parado | +6% Cohesión | +4% Victoria en Finales'
+  }
+};
 
 export const FORMATIONS = {
   '4-3-3': {
@@ -95,10 +139,8 @@ export class TacticsEngine {
     const usedIds = new Set();
 
     formation.positions.forEach(slot => {
-      // Buscar mejor jugador para esa posición
       let best = squad.find(p => !usedIds.has(p.id) && p.pos === slot.role);
       if (!best) {
-        // Si no hay posición exacta, buscar la más cercana
         best = squad.find(p => !usedIds.has(p.id));
       }
       if (best) {
@@ -113,7 +155,35 @@ export class TacticsEngine {
   }
 
   /**
-   * Calcula el nivel de química y la media táctica titular (0-100)
+   * Mejora el nivel de una habilidad táctica del DT consumiendo EXP
+   */
+  static upgradeManagerSkill(skillKey) {
+    const gameState = db.gameState;
+    if (!gameState.managerTactics) {
+      gameState.managerTactics = { archetype: 'GUARDIOLA', exp: 500, skillLevels: { skill1: 1, skill2: 1 } };
+    }
+
+    const mTac = gameState.managerTactics;
+    const currentLevel = mTac.skillLevels[skillKey] || 1;
+
+    if (currentLevel >= 10) {
+      return { success: false, reason: 'Esta habilidad táctica ya alcanzó el Nivel Máximo (Nivel 10).' };
+    }
+
+    const upgradeCost = currentLevel * 300;
+    if ((mTac.exp || 0) < upgradeCost) {
+      return { success: false, reason: `Se requieren ${upgradeCost} EXP de DT para subir a Nivel ${currentLevel + 1} (Tienes ${mTac.exp || 0} EXP).` };
+    }
+
+    mTac.exp -= upgradeCost;
+    mTac.skillLevels[skillKey] = currentLevel + 1;
+    db.saveGame();
+
+    return { success: true, message: `¡Habilidad Táctica mejorada a Nivel ${currentLevel + 1}! Tu equipo gana +${currentLevel + 1}% de bonificación táctica.` };
+  }
+
+  /**
+   * Calcula la química y el nivel táctico acumulado incorporando el nivel del DT
    */
   static calculateEffectiveRating(startingXI, tacticsConfig) {
     if (!startingXI || startingXI.length === 0) return 60;
@@ -125,7 +195,6 @@ export class TacticsEngine {
       const p = item.player;
       let posPenalty = 0;
 
-      // Penalización si el jugador juega fuera de su posición natural
       if (p.pos !== item.slot.role) {
         posPenalty = 4;
       }
@@ -140,11 +209,11 @@ export class TacticsEngine {
     const avgOvr = totalOvr / startingXI.length;
     const chemistry = Math.min(100, 75 + chemistryPoints);
 
-    // Impacto de estrategia táctica
-    let styleBonus = 0;
-    if (tacticsConfig.style === 'Tiki-Taka' && avgOvr > 75) styleBonus = 2;
-    if (tacticsConfig.style === 'Contraataque' && tacticsConfig.formation === '5-3-2') styleBonus = 3;
+    // Bonificación por Arquetipo y Nivel del Entrenador
+    const gameState = db.gameState;
+    const mTac = gameState?.managerTactics || { skillLevels: { skill1: 1, skill2: 1 } };
+    const skillBonus = ((mTac.skillLevels?.skill1 || 1) + (mTac.skillLevels?.skill2 || 1)) * 0.8;
 
-    return Math.round(avgOvr * 0.85 + (chemistry * 0.15) + styleBonus);
+    return Math.round(avgOvr * 0.80 + (chemistry * 0.15) + skillBonus);
   }
 }

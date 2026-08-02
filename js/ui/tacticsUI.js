@@ -73,6 +73,23 @@ export function renderTactics(container) {
           </select>
         </div>
 
+        <!-- MÓDULO DE NIVELES TÁCTICOS DEL ENTRENADOR (EXP) -->
+        <div style="background: #0f172a; border: 1px solid var(--border-color); padding: 12px; border-radius: 10px; margin-bottom: 16px;">
+          <h4 style="color: var(--accent-gold); font-size: 0.88rem; margin-bottom: 6px;">🧠 Habilidades Tácticas de Entrenador</h4>
+          <p class="text-sub" style="font-size: 0.78rem; margin-bottom: 10px;">EXP Táctica Acumulada: <strong class="text-highlight">${(gameState.managerTactics?.exp || 400)} EXP</strong></p>
+          
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #141d2e; padding: 8px 10px; border-radius: 6px;">
+              <span style="font-size: 0.8rem;">⚽ Pases & Posesión: <strong>Nivel ${gameState.managerTactics?.skillLevels?.skill1 || 1}/10</strong></span>
+              <button class="btn-primary btn-sm btn-upgrade-skill" data-skill="skill1">Subir (+1)</button>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #141d2e; padding: 8px 10px; border-radius: 6px;">
+              <span style="font-size: 0.8rem;">🔥 Potrero & Balón Parado: <strong>Nivel ${gameState.managerTactics?.skillLevels?.skill2 || 1}/10</strong></span>
+              <button class="btn-primary btn-sm btn-upgrade-skill" data-skill="skill2">Subir (+1)</button>
+            </div>
+          </div>
+        </div>
+
         <h3>📋 Suplentes (Haz clic para Inspeccionar/Vender)</h3>
         <div class="squad-table-container">
           <table class="data-table">
@@ -190,6 +207,21 @@ export function renderTactics(container) {
 
     row.addEventListener('dragstart', handleDragStart);
     row.addEventListener('dragend', handleDragEnd);
+  });
+
+  document.querySelectorAll('.btn-upgrade-skill').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      sfx.playClick();
+      const skillKey = e.currentTarget.dataset.skill;
+      const res = TacticsEngine.upgradeManagerSkill(skillKey);
+      if (res.success) {
+        sfx.playGoal();
+        alert(res.message);
+        renderTactics(container);
+      } else {
+        alert(res.reason);
+      }
+    });
   });
 
   // Handlers para cambios de formación y tácticas

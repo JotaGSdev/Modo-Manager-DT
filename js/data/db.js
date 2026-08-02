@@ -213,7 +213,10 @@ class DatabaseManager {
     this.gameState.seasonEventsCount = 0;
     TransferEngine.resetWindowLocks();
 
-    // 4. Avanzar año y semana
+    // 4. PROCESAR VINCULO CONTRACTUAL DEL DT (RESTAR 1 AÑO AL CONTRATO DE 3 AÑOS)
+    ContractEngine.processContractYearEnd();
+
+    // 5. Avanzar año y semana
     this.gameState.season++;
     this.gameState.week = 1;
     this.gameState.eventsLog.unshift({
