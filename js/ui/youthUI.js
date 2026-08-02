@@ -80,6 +80,8 @@ export function renderYouth(container) {
     });
   };
 
+  const isTournamentPlayed = gameState.youthTournamentPlayed || false;
+
   container.innerHTML = `
     <div class="youth-layout">
       <!-- Encabezado de la Cantera -->
@@ -116,11 +118,13 @@ export function renderYouth(container) {
         </div>
       </div>
 
-      <!-- Lista de Canteranos -->
+      <!-- Lista de Canteranos y Torneo Sub-19 Unico -->
       <div class="youth-prospects-header mt-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <h3>📋 Jugadores en la Cantera del Club (${academy.length})</h3>
-        <button id="btnRunYouthTournament" class="btn-primary" style="background: var(--accent-gold); color: #000; font-weight: 800;">
-          🏆 SIMULAR JORNADA TORNEO CANTERA SUB-19 (+1 A +3 OVR)
+        <button id="btnRunYouthTournament" class="btn-primary" 
+                style="${isTournamentPlayed ? 'background: #334155; color: #94a3b8; opacity: 0.7; cursor: not-allowed;' : 'background: var(--accent-gold); color: #000; font-weight: 800;'}"
+                ${isTournamentPlayed ? 'disabled' : ''}>
+          ${isTournamentPlayed ? '✅ TORNEO SUB-19 DISPUTADO (1/1 ESTA TEMPORADA)' : '🏆 SIMULAR TORNEO CANTERA SUB-19 (+1 A +3 OVR)'}
         </button>
       </div>
       <div id="youthProspectsList" class="youth-list mt-2"></div>

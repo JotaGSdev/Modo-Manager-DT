@@ -1,13 +1,13 @@
-// Motor de Eventos Inesperados Narrativos con Decisiones Interactivas y Disparador Garantizado
+// Motor de Eventos Inesperados Narrativos con Decisiones Interactivas (Máximo 2 Eventos por Temporada)
 
 import { db } from '../data/db.js';
 
 export const NARRATIVE_EVENTS = [
   {
     id: 'INJURY_STRIKER',
-    weeks: [4, 23],
+    weekTarget: 12,
     title: '🚑 Molestia Física del Goleador',
-    description: 'Tu delantero principal sintió un tirón muscular en la última práctica antes del próximo encuentro.',
+    description: 'Tu delantero principal sintió un tirón muscular en la última práctica antes del próximo encuentro de liga.',
     optionA: {
       text: 'Tratamiento Intensivo Especial (€200,000)',
       effect: (gameState) => {
@@ -30,7 +30,7 @@ export const NARRATIVE_EVENTS = [
   },
   {
     id: 'SPONSOR_BONUS',
-    weeks: [9, 28],
+    weekTarget: 28,
     title: '💰 Patrocinio Sorpresa Regional',
     description: 'Una marca multinacional ha quedado impresionada por el estilo de juego de tu equipo y ofrece un patrocinio inmediato.',
     optionA: {
@@ -47,68 +47,29 @@ export const NARRATIVE_EVENTS = [
         return 'La junta directiva valoró el respeto a la tradición (+5% Confianza Directiva).';
       }
     }
-  },
-  {
-    id: 'DRESSING_ROOM_DISPUTE',
-    weeks: [14, 32],
-    title: '🗣️ Conflicto en el Vestuario',
-    description: 'Dos referentes de la plantilla tuvieron una acalorada discusión sobre los minutos de juego tras la sesión táctica.',
-    optionA: {
-      text: 'Organizar Cena de Mediación y Grupo (€50,000)',
-      effect: (gameState) => {
-        gameState.budget = Math.max(0, gameState.budget - 50000);
-        gameState.matchBonus.moraleBonus += 8;
-        return 'La reunión sirvió para unir al grupo. La moral de la plantilla subió +8%.';
-      }
-    },
-    optionB: {
-      text: 'Aplicar Reglamento Interno y Multar (-10% Moral, +€100K)',
-      effect: (gameState) => {
-        gameState.budget += 100000;
-        gameState.matchBonus.moraleBonus -= 6;
-        return 'Se recaudaron €100K en multas, pero el ambiente en el vestuario quedó tenso (-6% moral).';
-      }
-    }
-  },
-  {
-    id: 'PRESS_RUMOR',
-    weeks: [17, 36],
-    title: '🎤 Rueda de Prensa y Rumores de Mercado',
-    description: 'La prensa deportiva cuestiona tus planteamientos tácticos e indaga sobre un supuesto rumor de salida de tu figura.',
-    optionA: {
-      text: 'Reafirmar Compromiso y Proyecto (+5% Confianza)',
-      effect: (gameState) => {
-        if (gameState.contract) gameState.contract.boardConfidence = Math.min(100, gameState.contract.boardConfidence + 5);
-        return 'Tu firmeza en la rueda de prensa transmitió seguridad al club (+5% Confianza Directiva).';
-      }
-    },
-    optionB: {
-      text: 'Exigir Más Inversión a la Directiva (+€1.5M)',
-      effect: (gameState) => {
-        gameState.budget += 1500000;
-        return 'La directiva reaccionó inyectando €1.5M adicionales al presupuesto.';
-      }
-    }
   }
 ];
 
 export class EventsEngine {
   /**
-   * Determina si debe detonarse un evento narrativo en la semana dada
+   * Determina si debe detonarse un evento narrativo en la semana dada (Máximo 2 por temporada)
    */
   static getEventForWeek(weekNumber) {
-    const fixedWeeks = [4, 9, 14, 17, 23, 28, 32, 36];
-    
-    // Si es una semana clave de la temporada, retornar evento narrativo garantizado
-    const matchEvent = NARRATIVE_EVENTS.find(e => e.weeks.includes(weekNumber));
-    if (matchEvent) {
-      return matchEvent;
+    const gameState = db.gameState;
+    const count = gameState.seasonEventsCount || 0;
+
+    // Límite estricto: Máximo 2 eventos por temporada
+    if (count >= 2) {
+      return null;
     }
 
-    // De lo contrario, 25% de probabilidad aleatoria en semanas ordinarias
-    if (Math.random() < 0.25) {
-      const randomIndex = Math.floor(Math.random() * NARRATIVE_EVENTS.length);
-      return NARRATIVE_EVENTS[randomIndex];
+    // Evento 1: Semana 12 | Evento 2: Semana 28
+    if (weekNumber === 12 && count === 0) {
+      return NARRATIVE_EVENTS[0];
+    }
+
+    if (weekNumber === 28 && count === 1) {
+      return NARRATIVE_EVENTS[1];
     }
 
     return null;
@@ -152,6 +113,7 @@ export class EventsEngine {
 
     document.getElementById('btnOptionA').addEventListener('click', () => {
       const res = eventData.optionA.effect(gameState);
+      gameState.seasonEventsCount = (gameState.seasonEventsCount || 0) + 1;
       gameState.eventsLog.unshift({
         date: `Semana ${gameState.week}`,
         text: `${eventData.title}: ${res}`
@@ -169,6 +131,7 @@ export class EventsEngine {
 
     document.getElementById('btnOptionB').addEventListener('click', () => {
       const res = eventData.optionB.effect(gameState);
+      gameState.seasonEventsCount = (gameState.seasonEventsCount || 0) + 1;
       gameState.eventsLog.unshift({
         date: `Semana ${gameState.week}`,
         text: `${eventData.title}: ${res}`

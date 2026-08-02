@@ -191,10 +191,18 @@ export class YouthAcademyEngine {
   }
 
   /**
-   * Simula una jornada del Torneo de Cantera Sub-19 para evolucionar a los juveniles (+1 a +3 OVR)
+   * Simula el Torneo de Cantera Sub-19 anual para evolucionar a los juveniles (+1 a +3 OVR). Solo 1 por temporada.
    */
   static runYouthTournamentMatch() {
     const gameState = db.gameState;
+
+    if (gameState.youthTournamentPlayed) {
+      return { 
+        success: false, 
+        reason: `🏆 El Torneo de Cantera Sub-19 ya fue disputado durante la presente temporada (${gameState.season}/${gameState.season + 1}). Solo se permite 1 torneo juvenil por temporada.` 
+      };
+    }
+
     const academy = gameState.youthAcademy || [];
     if (academy.length === 0) {
       return { success: false, reason: 'No tienes canteranos en la academia para disputar el Torneo Sub-19.' };
@@ -207,10 +215,11 @@ export class YouthAcademyEngine {
       p.salary = calculatePlayerSalary(p.value, p.overall);
     });
 
+    gameState.youthTournamentPlayed = true;
     db.saveGame();
     return {
       success: true,
-      message: `🏆 ¡JORNADA DE COPA SUB-19 COMPLETADA! Tus ${academy.length} canteranos disputaron el encuentro juvenil y mejoraron su rendimiento (+1 a +3 OVR).`
+      message: `🏆 ¡TORNEO DE CANTERA SUB-19 COMPLETADO! Tus ${academy.length} canteranos disputaron la edición anual y evolucionaron (+1 a +3 OVR).`
     };
   }
 }

@@ -4,6 +4,7 @@ import { db } from './data/db.js';
 import { renderNewCareer } from './ui/newCareerUI.js';
 import { renderDashboard } from './ui/dashboardUI.js';
 import { renderSquad } from './ui/squadUI.js';
+import { renderTactics } from './ui/tacticsUI.js';
 import { renderTransfers } from './ui/transfersUI.js';
 import { renderYouth } from './ui/youthUI.js';
 import { renderTrophyRoom } from './ui/trophyUI.js';
@@ -56,7 +57,8 @@ class App {
         <aside class="sidebar-nav">
           <a class="nav-item active" data-view="dashboard">🏠 Dashboard</a>
           <a class="nav-item" data-view="contract" id="navItemContract">📜 Mi Contrato (${contract.yearsRemaining}a)</a>
-          <a class="nav-item" data-view="squad">📋 Plantilla & Tácticas</a>
+          <a class="nav-item" data-view="squad">📋 Plantilla Hub</a>
+          <a class="nav-item" data-view="tactics">🧩 Tácticas & Alineación</a>
           <a class="nav-item" data-view="transfers">📝 Mercado Fichajes</a>
           <a class="nav-item" data-view="youth">🌱 Cantera</a>
           <a class="nav-item" data-view="trophies">🏆 Palmarés</a>
@@ -168,8 +170,18 @@ class App {
         renderContractView(this.mainContainer, (v, p) => this.navigateTo(v, p));
       } else if (viewName === 'squad') {
         renderSquad(this.mainContainer);
+      } else if (viewName === 'tactics') {
+        renderTactics(this.mainContainer);
       } else if (viewName === 'transfers') {
         renderTransfers(this.mainContainer);
+      } else if (viewName === 'youth') {
+        renderYouth(this.mainContainer);
+      } else if (viewName === 'training') {
+        renderTraining(this.mainContainer, (v, p) => this.navigateTo(v, p));
+      } else if (viewName === 'trophies') {
+        renderTrophyRoom(this.mainContainer);
+      } else if (viewName === 'match') {
+        renderMatch(this.mainContainer, params.rival, params.mode, (v, p) => this.navigateTo(v, p));
       } else if (viewName === 'youth') {
         renderYouth(this.mainContainer);
       } else if (viewName === 'training') {

@@ -1,4 +1,4 @@
-// Vista Principal (Dashboard) con Simulación de Jornada Completa para Todos los Equipos y Copas Continentales
+// Vista Principal (Dashboard Integrado en 1 Sola Pantalla - Zero Scroll)
 
 import { db } from '../data/db.js';
 import { MatchEngine } from '../engine/matchEngine.js';
@@ -32,88 +32,90 @@ export function renderDashboard(container, navigateTo) {
   const topClubAssister = squad[1] || squad[0] || { name: 'Sin registros', overall: 75 };
 
   container.innerHTML = `
-    <!-- PANEL SUPERIOR DE KPIs DEL CLUB Y TORNEOS EN COMPETICIÓN -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
-      <div class="glass-panel text-center py-3">
-        <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">PARTIDOS EN TEMPORADA</span>
-        <h3 style="margin-top: 4px; font-size: 1.6rem; color: var(--accent-green);">${userStanding ? userStanding.played : 0} PJ</h3>
-        <span class="text-sub" style="font-size: 0.78rem;">Jornada ${gameState.week} de ${gameState.maxWeeks}</span>
+    <!-- 1. BANDA SUPERIOR DE KPIs DEL CLUB -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px;">
+      <div class="glass-panel text-center" style="padding: 10px 12px;">
+        <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">PJ TEMPORADA</span>
+        <h4 style="margin: 2px 0 0 0; font-size: 1.25rem; color: var(--accent-green);">${userStanding ? userStanding.played : 0} PJ</h4>
+        <span class="text-sub" style="font-size: 0.72rem;">Jornada ${gameState.week}/${gameState.maxWeeks}</span>
       </div>
 
-      <div class="glass-panel text-center py-3">
-        <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">MÁXIMO GOLEADOR</span>
-        <h3 style="margin-top: 4px; font-size: 1.2rem; color: #ffffff; font-weight: 800;">${topClubScorer.name}</h3>
-        <span class="stat-ovr mt-1" style="font-size: 0.78rem;">${topClubScorer.seasonGoals || 0} Goles ⚽</span>
+      <div class="glass-panel text-center" style="padding: 10px 12px;">
+        <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">MÁXIMO GOLEADOR</span>
+        <h4 style="margin: 2px 0 0 0; font-size: 1.05rem; color: #ffffff; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${topClubScorer.name}</h4>
+        <span class="stat-ovr mt-1" style="font-size: 0.72rem; padding: 2px 6px;">${topClubScorer.seasonGoals || 0} Goles ⚽</span>
       </div>
 
-      <div class="glass-panel text-center py-3">
-        <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">LÍDER DE ASISTENCIAS</span>
-        <h3 style="margin-top: 4px; font-size: 1.2rem; color: #ffffff; font-weight: 800;">${topClubAssister.name}</h3>
-        <span class="text-highlight mt-1" style="font-size: 0.82rem;">${Math.floor((topClubAssister.overall - 65) / 4) + 1} Asistencias 👟</span>
+      <div class="glass-panel text-center" style="padding: 10px 12px;">
+        <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">LÍDER ASISTENCIAS</span>
+        <h4 style="margin: 2px 0 0 0; font-size: 1.05rem; color: #ffffff; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${topClubAssister.name}</h4>
+        <span class="text-highlight mt-1" style="font-size: 0.75rem;">${Math.floor((topClubAssister.overall - 65) / 4) + 1} Asistencias 👟</span>
       </div>
 
-      <div class="glass-panel text-center py-3">
-        <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">ESTADO DE TORNEOS</span>
-        <h3 style="margin-top: 4px; font-size: 1.1rem; color: var(--accent-gold); font-weight: 800;">${userPosLabel}</h3>
-        <span class="text-sub" style="font-size: 0.78rem;">Copa Nacional / Continental 🏆</span>
+      <div class="glass-panel text-center" style="padding: 10px 12px;">
+        <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">ESTADO DE TORNEOS</span>
+        <h4 style="margin: 2px 0 0 0; font-size: 1.05rem; color: var(--accent-gold); font-weight: 800;">${userPosLabel}</h4>
+        <span class="text-sub" style="font-size: 0.72rem;">Liga / Copa 🏆</span>
       </div>
     </div>
 
-    <div class="dashboard-grid">
-      <!-- Tarjeta de Partido y Avance de Temporada -->
-      <div class="card next-match-card glass-panel">
-        <div class="card-header">
-          <span class="badge ${isFinalMatch ? 'badge-final' : ''}">
-            ${gameState.week === 19 ? '❄️ PARÓN INVERNAL (SEMANA 19)' : `JORNADA ${gameState.week} DE ${gameState.maxWeeks}`}
+    <!-- 2. REJILLA TRI-COLUMNA EN 1 SOLA PANTALLA (PRÓXIMO PARTIDO + TABLA POSICIONES + PICHICHI) -->
+    <div style="display: grid; grid-template-columns: 1.1fr 1fr 0.9fr; gap: 14px; align-items: stretch;">
+      
+      <!-- Columna 1: Tarjeta de Partido -->
+      <div class="card glass-panel" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="card-header" style="margin-bottom: 8px;">
+          <span class="badge ${isFinalMatch ? 'badge-final' : ''}" style="font-size: 0.75rem; padding: 3px 8px;">
+            ${gameState.week === 19 ? '❄️ PARÓN INVERNAL' : `JORNADA ${gameState.week} / ${gameState.maxWeeks}`}
           </span>
-          <span class="league-name">${league.name} (${league.country}) - Temporada ${seasonLabel}</span>
+          <span class="league-name" style="font-size: 0.80rem;">${league.name} (${seasonLabel})</span>
         </div>
 
-        <div class="match-vs-container">
+        <div class="match-vs-container" style="margin: 12px 0;">
           <div class="team-box text-center">
-            ${renderTeamBadgeSVG(userTeam, 64)}
-            <h4 class="mt-2">${userTeam.name}</h4>
-            <span class="team-ovr text-sub">OVR: ${userTeam.overall}</span>
+            ${renderTeamBadgeSVG(userTeam, 52)}
+            <h4 style="font-size: 0.95rem; margin-top: 4px;">${userTeam.name}</h4>
+            <span class="team-ovr text-sub" style="font-size: 0.78rem;">OVR: ${userTeam.overall}</span>
           </div>
 
           <div class="vs-divider text-center">
-            <span class="vs-text" style="font-size: 1.6rem; font-weight: 900; color: var(--accent-cyan);">VS</span>
-            <span class="stadium-subtext text-sub d-block">🏟️ ${userTeam.stadium}</span>
+            <span class="vs-text" style="font-size: 1.4rem; font-weight: 900; color: var(--accent-cyan);">VS</span>
+            <span class="stadium-subtext text-sub d-block" style="font-size: 0.74rem;">🏟️ ${userTeam.stadium}</span>
           </div>
 
           <div class="team-box text-center">
-            ${renderTeamBadgeSVG(nextRival, 64)}
-            <h4 class="mt-2">${nextRival.name}</h4>
-            <span class="team-ovr text-sub">OVR: ${nextRival.overall}</span>
+            ${renderTeamBadgeSVG(nextRival, 52)}
+            <h4 style="font-size: 0.95rem; margin-top: 4px;">${nextRival.name}</h4>
+            <span class="team-ovr text-sub" style="font-size: 0.78rem;">OVR: ${nextRival.overall}</span>
           </div>
         </div>
 
-        <div class="match-actions mt-3">
-          <button id="btnPlayMatch" class="btn-primary btn-large">⚽ JUGAR PARTIDO EN VIVO</button>
-          <button id="btnSimBlock" class="btn-secondary">⏩ SIMULAR HASTA MITAD / FINAL</button>
+        <div class="match-actions" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+          <button id="btnPlayMatch" class="btn-primary" style="width: 100%; padding: 10px; font-size: 0.88rem;">⚽ JUGAR PARTIDO EN VIVO</button>
+          <button id="btnSimBlock" class="btn-secondary" style="width: 100%; padding: 9px; font-size: 0.84rem;">⏩ SIMULAR HASTA MITAD / FINAL</button>
         </div>
       </div>
 
-      <!-- Clasificación de la Liga -->
-      <div class="card glass-panel">
-        <h3>📊 Tabla de Posiciones - ${league.name} (${(league.teams || []).length} Equipos)</h3>
+      <!-- Columna 2: Tabla de Posiciones -->
+      <div class="card glass-panel" style="padding: 14px 16px;">
+        <h4 style="margin-bottom: 8px; font-size: 0.92rem; color: #ffffff;">📊 Tabla de Posiciones</h4>
         <div class="table-responsive">
-          <table class="data-table">
+          <table class="data-table" style="font-size: 0.80rem;">
             <thead>
               <tr>
-                <th>#</th>
-                <th>Club</th>
-                <th>PJ</th>
-                <th>PTS</th>
+                <th style="padding: 4px 6px;">#</th>
+                <th style="padding: 4px 6px;">Club</th>
+                <th style="padding: 4px 6px;">PJ</th>
+                <th style="padding: 4px 6px;">PTS</th>
               </tr>
             </thead>
             <tbody>
-              ${(gameState.standings || []).slice(0, 10).map((item, idx) => `
+              ${(gameState.standings || []).slice(0, 8).map((item, idx) => `
                 <tr class="${item.teamId === userTeam.id ? 'highlight-row' : ''}">
-                  <td>${idx + 1}</td>
-                  <td><strong>${item.name}</strong></td>
-                  <td>${item.played}</td>
-                  <td><strong>${item.points}</strong></td>
+                  <td style="padding: 5px 6px;">${idx + 1}</td>
+                  <td style="padding: 5px 6px;"><strong>${item.name}</strong></td>
+                  <td style="padding: 5px 6px;">${item.played}</td>
+                  <td style="padding: 5px 6px;"><strong>${item.points}</strong></td>
                 </tr>
               `).join('')}
             </tbody>
@@ -121,34 +123,33 @@ export function renderDashboard(container, navigateTo) {
         </div>
       </div>
 
-      <!-- Tabla de Goleadores (Pichichi) -->
-      <div class="card glass-panel">
-        <h3>⚽ Tabla de Goleadores (Pichichi)</h3>
+      <!-- Columna 3: Tabla de Goleadores (Pichichi) -->
+      <div class="card glass-panel" style="padding: 14px 16px;">
+        <h4 style="margin-bottom: 8px; font-size: 0.92rem; color: #ffffff;">⚽ Pichichi de la Liga</h4>
         <div class="table-responsive">
-          <table class="data-table">
+          <table class="data-table" style="font-size: 0.80rem;">
             <thead>
               <tr>
-                <th>#</th>
-                <th>Jugador</th>
-                <th>Club</th>
-                <th>Goles</th>
+                <th style="padding: 4px 6px;">#</th>
+                <th style="padding: 4px 6px;">Jugador</th>
+                <th style="padding: 4px 6px;">Goles</th>
               </tr>
             </thead>
             <tbody>
               ${topScorers.length === 0 ? `
-                <tr><td colspan="4" class="text-sub text-center py-3">Sin goles registrados aún en la temporada ${seasonLabel}.</td></tr>
-              ` : topScorers.slice(0, 8).map((s, idx) => `
+                <tr><td colspan="3" class="text-sub text-center py-3">Sin goles registrados aún.</td></tr>
+              ` : topScorers.slice(0, 6).map((s, idx) => `
                 <tr>
-                  <td>${idx + 1}</td>
-                  <td><strong>${s.name}</strong></td>
-                  <td>${s.teamName}</td>
-                  <td><span class="stat-ovr">${s.goals} ⚽</span></td>
+                  <td style="padding: 5px 6px;">${idx + 1}</td>
+                  <td style="padding: 5px 6px;"><strong>${s.name}</strong></td>
+                  <td style="padding: 5px 6px;"><span class="stat-ovr" style="padding: 2px 6px; font-size: 0.75rem;">${s.goals} ⚽</span></td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
         </div>
       </div>
+
     </div>
 
     <!-- Modal de Parón Invernal / Final de Temporada -->
@@ -178,7 +179,6 @@ export function renderDashboard(container, navigateTo) {
     let pendingEvent = null;
 
     while (gameState.week < targetWeek) {
-      // Verificar si hay evento narrativo en esta fecha antes de simular
       const event = EventsEngine.getEventForWeek(gameState.week);
       if (event && !pendingEvent) {
         pendingEvent = event;
@@ -189,11 +189,11 @@ export function renderDashboard(container, navigateTo) {
       const match = new MatchEngine(userTeam, currentRival, userTeam.overall, currentRival.overall, gameState.matchBonus?.moraleBonus || 0);
       const res = match.simulateFullMatch();
 
-      // Taquilla por partido como local
-      const ticketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
-      gameState.budget += ticketRevenue;
+      // Distribución Financiera Directiva EA FC: 25% Fichajes | 75% Gastos Operativos
+      const totalTicketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
+      const transferAllocation = Math.round(totalTicketRevenue * 0.25);
+      gameState.budget += transferAllocation;
 
-      // Actualizar marcador del usuario y su rival
       const userStanding = gameState.standings.find(s => s.teamId === userTeam.id);
       const rivalStanding = gameState.standings.find(s => s.teamId === currentRival.id);
 
@@ -214,16 +214,13 @@ export function renderDashboard(container, navigateTo) {
         }
       }
 
-      // SIMULAR SIMULTÁNEAMENTE TODOS LOS DEMÁS PARTIDOS DE LA JORNADA RIVAL
       MatchEngine.simulateAllRivalMatches(userTeam.id, currentRival.id);
 
-      // PROCESAR COMPETICIÓN CONTINENTAL O COPA NACIONAL
       CompetitionsEngine.processCupWeek(gameState.week);
       CompetitionsEngine.processNationalCupWeek(gameState.week);
 
       gameState.week++;
 
-      // Si se detonó un evento narrativo importante, pausar la simulación para presentarlo al DT
       if (pendingEvent) {
         break;
       }
@@ -289,7 +286,6 @@ export function renderDashboard(container, navigateTo) {
     const champion = gameState.standings[0];
     const isChampion = champion.teamId === userTeam.id;
 
-    // Premios económicos por posición en la liga
     const userRank = gameState.standings.findIndex(s => s.teamId === userTeam.id) + 1;
     let prizeMoney = 10000000;
     if (userRank === 1) prizeMoney = 40000000;

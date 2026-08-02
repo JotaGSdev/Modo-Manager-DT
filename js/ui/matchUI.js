@@ -1,4 +1,4 @@
-// Vista de Partido en Vivo con Simulación Simultánea, Relato y Cinemáticas de Resultado
+// Vista de Partido en Vivo con Simulación Simultánea, Relato, Distribución Financiera de Taquilla Estilo EA FC y Cinemáticas
 
 import { db } from '../data/db.js';
 import { MatchEngine } from '../engine/matchEngine.js';
@@ -45,14 +45,12 @@ function launchOutcomeParticles(canvas, outcome) {
     particles.forEach(p => {
       ctx.beginPath();
       if (outcome === 'loss') {
-        // Lluvia tenue en derrota
         ctx.strokeStyle = p.color;
         ctx.lineWidth = 2;
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x, p.y + 12);
         ctx.stroke();
       } else {
-        // Confeti de victoria / ráfagas de empate
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x + p.tilt, p.y, p.r, p.r * 1.4);
       }
@@ -135,7 +133,7 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
     logEl.prepend(item);
   };
 
-  const showMatchCinematicOverlay = (userGoals, rivalGoals, ticketRevenue) => {
+  const showMatchCinematicOverlay = (userGoals, rivalGoals, totalTicketRevenue) => {
     const modalEl = document.getElementById('matchCinematicModal');
     const cardEl = document.getElementById('cinematicCard');
     const titleEl = document.getElementById('cinematicTitle');
@@ -147,8 +145,16 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
 
     if (!modalEl) return;
 
+    // Distribución Financiera Directiva Estilo EA FC
+    const transferAllocation = Math.round(totalTicketRevenue * 0.25);
+    const operatingExpenses = totalTicketRevenue - transferAllocation;
+
     scoreEl.innerText = `${userGoals} - ${rivalGoals}`;
-    ticketEl.innerText = `🎟️ Recaudación de Taquilla de Estadio: +€${(ticketRevenue / 1000000).toFixed(2)}M`;
+    ticketEl.innerHTML = `
+      🎟️ <strong>Taquilla del Estadio:</strong> €${(totalTicketRevenue / 1000000).toFixed(2)}M Recaudados<br>
+      <span class="text-highlight" style="font-size: 0.86rem;">+€${(transferAllocation / 1000000).toFixed(2)}M asignados a Fichajes (25%)</span> | 
+      <span class="text-sub" style="font-size: 0.82rem;">€${(operatingExpenses / 1000000).toFixed(2)}M a Gastos Operativos y Salarios (75%)</span>
+    `;
 
     let outcomeClass = 'draw';
     if (userGoals > rivalGoals) {
@@ -178,11 +184,14 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
   };
 
   const finishMatchSession = () => {
-    // 1. Ingrese ingresos por taquilla de estadio al presupuesto (+€600k a +€2.5M)
-    const ticketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
-    gameState.budget += ticketRevenue;
+    // Recaudación de Taquilla del Estadio (€600K a €2.5M)
+    const totalTicketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
+    
+    // Distribución Financiera EA FC: 25% Presupuesto de Traspasos | 75% Gastos Operativos / Salarios
+    const transferAllocation = Math.round(totalTicketRevenue * 0.25);
+    gameState.budget += transferAllocation;
 
-    // 2. Actualizar la tabla de posiciones para el usuario y su rival
+    // Actualizar la tabla de posiciones para el usuario y su rival
     const userStanding = gameState.standings.find(s => s.teamId === userTeam.id);
     const rivalStanding = gameState.standings.find(s => s.teamId === rival.id);
 
@@ -203,10 +212,10 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
       }
     }
 
-    // 3. SIMULAR LA JORNADA SIMULTÁNEA PARA TODOS LOS DEMÁS EQUIPOS RIVALES DE LIGA
+    // SIMULAR LA JORNADA SIMULTÁNEA PARA TODOS LOS DEMÁS EQUIPOS RIVALES DE LIGA
     MatchEngine.simulateAllRivalMatches(userTeam.id, rival.id);
 
-    // 4. PROCESAR COMPETICIÓN CONTINENTAL O COPA NACIONAL
+    // PROCESAR COMPETICIÓN CONTINENTAL O COPA NACIONAL
     CompetitionsEngine.processCupWeek(gameState.week);
     CompetitionsEngine.processNationalCupWeek(gameState.week);
 
@@ -214,8 +223,8 @@ export function renderMatch(container, rival, mode = 'live', navigateTo) {
     gameState.standings.sort((a, b) => b.points - a.points || b.gd - a.gd);
     db.saveGame();
 
-    // Lanzar cinemática
-    showMatchCinematicOverlay(engine.homeScore, engine.awayScore, ticketRevenue);
+    // Lanzar cinemática con distribución realista de taquilla
+    showMatchCinematicOverlay(engine.homeScore, engine.awayScore, totalTicketRevenue);
   };
 
   // Temporizador de simulación en vivo

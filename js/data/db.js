@@ -44,9 +44,12 @@ class DatabaseManager {
       }
     }
 
-    // Actualizar valor de mercado con la nueva curva hiperrealista si el jugador era antiguo
+    // Actualizar valor de mercado y limitar media inicial máxima a 91 OVR (estándar EA FC / FIFA)
     if (this.players[teamId]) {
       this.players[teamId].forEach(p => {
+        if (p.overall > 91) {
+          p.overall = 91;
+        }
         const expectedValue = calculatePlayerMarketValue(p.overall, p.age, p.potential || p.overall);
         if (!p.value || (p.overall >= 80 && p.value < expectedValue * 0.4)) {
           p.value = expectedValue;
@@ -184,8 +187,10 @@ class DatabaseManager {
       });
     }
 
-    // 3. REINICIAR TABLA DE GOLEADORES Y BLOQUEOS DE FICHAJES
+    // 3. REINICIAR TABLA DE GOLEADORES, BLOQUEOS DE FICHAJES Y CONTADORES DE TEMPORADA
     this.gameState.topScorers = [];
+    this.gameState.youthTournamentPlayed = false;
+    this.gameState.seasonEventsCount = 0;
     TransferEngine.resetWindowLocks();
 
     // 4. Avanzar año y semana
