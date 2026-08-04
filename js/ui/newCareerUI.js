@@ -1,16 +1,15 @@
 /**
  * ============================================================================
- * ENTRENADOR LEYENDA - SELECCIÓN INICIAL DE CARRERA (newCareerUI.js v2.3)
+ * ENTRENADOR LEYENDA - SELECCIÓN INICIAL DE CARRERA (newCareerUI.js v2.4)
  * ============================================================================
- * Flujo Narrativo en 3 Pasos Obligatorio:
- * 1. PASO 1: Presentación Oficial del DT (Nombre, Edad 30-65, Nacionalidad con Bandera).
- *    - Todo DT inicia obligatoriamente como PRINCIPIANTE / CANTERA (0 años exp).
+ * Flujo Narrativo en 3 Pasos Obligatorio con Picker Visual de Banderas SVG:
+ * 1. PASO 1: Presentación Oficial del DT (Nombre, Edad 30-65, Selector Visual de País con Banderas SVG Reales).
  * 2. PASO 2: Selección de Filosofía Táctica Real (Tiki-Taka, Gegenpressing, Catenaccio, Bandas, Contraataque).
  * 3. PASO 3: Selección Automática de 3 Ofertas de Clubes Modestos/Bajos de su PAÍS DE ORIGEN.
  */
 
 import { db } from '../data/db.js';
-import { renderTeamBadgeSVG, getCountryFlag } from './badgeHelper.js';
+import { renderTeamBadgeSVG, renderCountryFlagSVG } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
 import { MANAGER_ARCHETYPES } from '../engine/tactics.js';
 
@@ -20,7 +19,7 @@ export function renderNewCareer(container, onCareerStarted) {
   // Estado inicial obligatorio: Todo entrenador comienza como Novato de Cantera en su país
   let managerName = 'Director Técnico';
   let managerAge = 35;
-  let managerCountry = 'Argentina';
+  let managerCountry = 'Perú'; // Por defecto
   let selectedArchetype = 'TIKI_TAKA';
 
   // Obtener lista completa de países presentes en las ligas de la BD
@@ -30,12 +29,10 @@ export function renderNewCareer(container, onCareerStarted) {
    * Selecciona 3 proyectos modestos/bajos EXCLUSIVAMENTE del PAÍS DE ORIGEN del DT principiante.
    */
   const getMatchingTeams = () => {
-    // Filtrar ligas pertenecientes al país natal del entrenador
     let homeCountryLeagues = db.leagues.filter(l => l.country.toLowerCase() === managerCountry.toLowerCase());
     
-    // Si el país seleccionado no tiene liga propia registrada, usar la región continental
     if (homeCountryLeagues.length === 0) {
-      const sampleLeague = db.leagues.find(l => l.country === 'Argentina') || db.leagues[0];
+      const sampleLeague = db.leagues.find(l => l.country === 'Perú') || db.leagues[0];
       homeCountryLeagues = [sampleLeague];
     }
 
@@ -51,10 +48,8 @@ export function renderNewCareer(container, onCareerStarted) {
       });
     });
 
-    // Ordenar de menor a mayor OVR para ofrecer clubes modestos de inicio de carrera
     homeTeams.sort((a, b) => a.overall - b.overall);
 
-    // Seleccionar 3 proyectos de nivel bajo a medio de su país natal
     const club1 = homeTeams[0] || homeTeams[0];
     const club2 = homeTeams[Math.floor(homeTeams.length / 2)] || homeTeams[1];
     const club3 = homeTeams[homeTeams.length - 1] || homeTeams[homeTeams.length - 1];
@@ -112,7 +107,7 @@ export function renderNewCareer(container, onCareerStarted) {
 
         <!-- PASO 1: PERFIL DEL DT PRINCIPIANTE -->
         ${currentStep === 1 ? `
-          <div class="glass-panel" style="width: 100%; max-width: 620px; padding: 28px; border: 1px solid var(--border-color); background: #121826;">
+          <div class="glass-panel" style="width: 100%; max-width: 680px; padding: 28px; border: 1px solid var(--border-color); background: #121826;">
             <div style="display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 20px;">
               <div style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green)); width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #000;">
                 👔
@@ -125,32 +120,43 @@ export function renderNewCareer(container, onCareerStarted) {
 
             <div class="form-group mb-3">
               <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: var(--accent-cyan);">👤 Nombre Completo del DT:</label>
-              <input type="text" id="inputManagerName" class="input-text" value="${managerName}" style="width: 100%; font-size: 0.95rem;" placeholder="Ej: Lionel Scaloni, Marcelo Gallardo..." />
+              <input type="text" id="inputManagerName" class="input-text" value="${managerName}" style="width: 100%; font-size: 0.95rem;" placeholder="Ej: Lionel Scaloni, Ricardo Gareca..." />
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 16px; margin-bottom: 20px;">
-              <div class="form-group">
-                <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: var(--accent-gold);">🎂 Edad Inicial (Años):</label>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <input type="number" id="inputManagerAge" class="input-text" value="${managerAge}" min="30" max="65" style="width: 100%; font-size: 0.95rem; text-align: center;" />
-                  <span class="text-sub" style="font-size: 0.8rem;">(30 - 65)</span>
+            <div class="form-group mb-4">
+              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: var(--accent-gold);">🎂 Edad Inicial (Años):</label>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <input type="number" id="inputManagerAge" class="input-text" value="${managerAge}" min="30" max="65" style="width: 140px; font-size: 0.95rem; text-align: center;" />
+                <span class="text-sub" style="font-size: 0.8rem;">(Edad comprendida entre 30 y 65 años)</span>
+              </div>
+            </div>
+
+            <!-- SELECTOR VISUAL DE PAÍS CON BANDERAS SVG IMAGEN -->
+            <div class="form-group mb-4">
+              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: var(--accent-green);">🌎 Selecciona tu País de Origen:</label>
+              
+              <!-- TARJETA DEL PAÍS SELECCIONADO ACTUALMENTE -->
+              <div id="selectedCountryCard" style="background: #0f172a; border: 2px solid var(--accent-green); padding: 12px 16px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s ease;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  ${renderCountryFlagSVG(managerCountry, 26)}
+                  <strong style="font-size: 1.05rem; color: #ffffff;" id="displayCountryName">${managerCountry}</strong>
                 </div>
+                <span style="font-size: 0.8rem; background: var(--accent-green); color: #000; font-weight: 900; padding: 4px 10px; border-radius: 6px;">CAMBIAR PAÍS 🔽</span>
               </div>
 
-              <div class="form-group">
-                <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: var(--accent-green);">🌎 País de Origen:</label>
-                <select id="selectManagerCountry" class="input-select" style="width: 100%; font-size: 0.9rem;">
-                  ${countriesInDB.map(c => `
-                    <option value="${c}" ${c === managerCountry ? 'selected' : ''}>
-                      ${getCountryFlag(c)} ${c}
-                    </option>
-                  `).join('')}
-                </select>
+              <!-- REJILLA VISUAL DESPLEGABLE DE PAÍSES -->
+              <div id="countryGridModal" class="hidden" style="margin-top: 10px; max-height: 220px; overflow-y: auto; background: #0b111e; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                ${countriesInDB.map(c => `
+                  <div class="country-option-item" data-country="${c}" style="display: flex; align-items: center; gap: 10px; background: ${c === managerCountry ? '#142036' : '#0f172a'}; border: 1px solid ${c === managerCountry ? 'var(--accent-green)' : 'var(--border-color)'}; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: background 0.15s ease;">
+                    ${renderCountryFlagSVG(c, 20)}
+                    <span style="font-size: 0.86rem; font-weight: 700; color: #fff;">${c}</span>
+                  </div>
+                `).join('')}
               </div>
             </div>
 
             <div style="background: #0d1320; padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 20px; font-size: 0.82rem;" class="text-sub">
-              🔰 <strong>Nota de Progresión Profesional:</strong> Como DT novato, tus primeras ofertas pertenecerán a clubes de <strong>${managerCountry}</strong>. Con el paso de los años, victorias y títulos, ganarás reputación para renovar, dirigir gigantes de Europa/Sudamérica o ser llamado por la <strong>Selección Nacional</strong> para la Copa del Mundo.
+              🔰 <strong>Regla de Carrera:</strong> Como DT novato, tus primeras 3 ofertas pertenecerán obligatoriamente a clubes de <strong id="noteCountryText" style="color: var(--accent-green);">${managerCountry}</strong>.
             </div>
 
             <button id="btnNextToStep2" class="btn-primary btn-large" style="width: 100%; font-size: 1rem; font-weight: 900;">
@@ -261,11 +267,13 @@ export function renderNewCareer(container, onCareerStarted) {
         <!-- PASO 3: RECOMENDACIÓN DE 3 CLUBES NACIONALES -->
         ${currentStep === 3 ? `
           <div style="width: 100%; max-width: 1120px;">
-            <div class="glass-panel mb-3 text-center" style="padding: 16px; border: 1px solid var(--border-color); background: #121826;">
-              <span class="text-sub" style="font-weight: 800; font-size: 0.84rem;">ENTRENADOR NOBATO: <strong style="color: #fff;">${managerName}</strong> (${getCountryFlag(managerCountry)} ${managerCountry}, ${managerAge}a)</span>
-              <span style="margin: 0 10px; color: var(--border-color);">|</span>
-              <span class="text-sub" style="font-weight: 800; font-size: 0.84rem;">EXPERIENCIA INICIAL: <strong style="color: var(--accent-green);">🔰 PRINCIPIANTE DE CANTERA (0a)</strong></span>
-              <span style="margin: 0 10px; color: var(--border-color);">|</span>
+            <div class="glass-panel mb-3 text-center" style="padding: 16px; border: 1px solid var(--border-color); background: #121826; display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap;">
+              <span class="text-sub" style="font-weight: 800; font-size: 0.84rem; display: flex; align-items: center; gap: 8px;">
+                ENTRENADOR: <strong style="color: #fff;">${managerName}</strong> (${renderCountryFlagSVG(managerCountry, 18)} ${managerCountry}, ${managerAge}a)
+              </span>
+              <span style="color: var(--border-color);">|</span>
+              <span class="text-sub" style="font-weight: 800; font-size: 0.84rem;">EXPERIENCIA: <strong style="color: var(--accent-green);">🔰 PRINCIPIANTE DE CANTERA (0a)</strong></span>
+              <span style="color: var(--border-color);">|</span>
               <span class="text-sub" style="font-weight: 800; font-size: 0.84rem;">FILOSOFÍA: <strong style="color: var(--accent-gold);">${MANAGER_ARCHETYPES[selectedArchetype]?.name || 'TIKI-TAKA'}</strong></span>
             </div>
 
@@ -286,11 +294,36 @@ export function renderNewCareer(container, onCareerStarted) {
     if (currentStep === 1) {
       const nameInput = document.getElementById('inputManagerName');
       const ageInput = document.getElementById('inputManagerAge');
-      const countrySelect = document.getElementById('selectManagerCountry');
+      const countryCard = document.getElementById('selectedCountryCard');
+      const countryModal = document.getElementById('countryGridModal');
 
       nameInput.addEventListener('input', (e) => { managerName = e.target.value; });
       ageInput.addEventListener('input', (e) => { managerAge = parseInt(e.target.value) || 35; });
-      countrySelect.addEventListener('change', (e) => { managerCountry = e.target.value; });
+
+      countryCard.addEventListener('click', () => {
+        sfx.playClick();
+        countryModal.classList.toggle('hidden');
+      });
+
+      document.querySelectorAll('.country-option-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          sfx.playClick();
+          managerCountry = e.currentTarget.dataset.country;
+          countryModal.classList.add('hidden');
+
+          // Actualizar UI del card
+          const displayCountry = document.getElementById('displayCountryName');
+          const noteCountry = document.getElementById('noteCountryText');
+          if (displayCountry) displayCountry.innerText = managerCountry;
+          if (noteCountry) noteCountry.innerText = managerCountry;
+
+          // Re-renderizar tarjeta del país
+          countryCard.querySelector('div').innerHTML = `
+            ${renderCountryFlagSVG(managerCountry, 26)}
+            <strong style="font-size: 1.05rem; color: #ffffff;">${managerCountry}</strong>
+          `;
+        });
+      });
 
       document.getElementById('btnNextToStep2').addEventListener('click', () => {
         sfx.playClick();
@@ -354,8 +387,8 @@ export function renderNewCareer(container, onCareerStarted) {
           </div>
 
           <h3 style="margin-top: 4px; font-size: 1.25rem; color: #ffffff;">${o.team.name}</h3>
-          <span class="text-sub" style="font-size: 0.82rem; font-weight: 700;">
-            ${getCountryFlag(o.team.country)} ${o.team.country} — ${o.team.leagueName}
+          <span class="text-sub" style="font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; justify-content: center;">
+            ${renderCountryFlagSVG(o.team.country, 18)} ${o.team.country} — ${o.team.leagueName}
           </span>
 
           <!-- CARTA NARRATIVA DE LA JUNTA DIRECTIVA -->

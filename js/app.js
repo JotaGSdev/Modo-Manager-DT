@@ -23,6 +23,7 @@ import { renderContractView } from './ui/contractUI.js';
 import { renderFinances } from './ui/financesUI.js';
 import { ContractEngine } from './engine/contracts.js';
 import { sfx } from '../assets/audio/sfx.js';
+import { renderCountryFlagSVG } from './ui/badgeHelper.js';
 
 class App {
   constructor() {
@@ -146,7 +147,7 @@ class App {
     if (mDisplay) {
       const country = db.gameState.managerCountry || '';
       const age = db.gameState.managerAge ? ` (${db.gameState.managerAge}a)` : '';
-      mDisplay.innerText = `${db.gameState.managerName || 'Director Técnico'}${age}`;
+      mDisplay.innerHTML = `${db.gameState.managerName || 'Director Técnico'} ${country ? renderCountryFlagSVG(country, 16) : ''}${age}`;
     }
     
     const userTeam = db.teams[db.gameState.userTeamId];

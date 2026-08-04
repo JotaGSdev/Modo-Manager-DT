@@ -39,21 +39,30 @@ export function getCountryFlag(countryName) {
 }
 
 /**
- * Genera el marcado HTML para la bandera oficial de un país usando API-Sports CDN
- * @param {string} countryName - Nombre del país
- * @param {number} [height=18] - Altura en px
+ * Obtiene el código ISO del país para banderas
  */
-export function renderCountryFlagSVG(countryName, height = 18) {
+export function getCountryCode(countryName) {
+  return COUNTRY_FLAG_CODES[countryName] || 'ar';
+}
+
+/**
+ * Renderiza la imagen vectorial oficial SVG de la bandera de un país
+ * @param {string} countryName - Nombre del país (ej: 'Perú', 'Argentina')
+ * @param {number} [height=20] - Altura en px
+ */
+export function renderCountryFlagSVG(countryName, height = 20) {
   const code = COUNTRY_FLAG_CODES[countryName];
   if (!code) return getCountryFlag(countryName);
 
-  const flagUrl = `https://media.api-sports.io/flags/${code}.svg`;
+  const localUrl = `./assets/flags/${code}.svg`;
+  const cdnUrl = `https://media.api-sports.io/flags/${code}.svg`;
+
   return `
-    <img src="${flagUrl}" 
+    <img src="${localUrl}" 
          alt="${countryName}" 
-         style="height: ${height}px; width: auto; border-radius: 3px; vertical-align: middle; box-shadow: 0 1px 3px rgba(0,0,0,0.5);" 
-         onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';" />
-    <span style="display:none;">${getCountryFlag(countryName)}</span>
+         style="height: ${height}px; width: auto; max-width: 32px; border-radius: 3px; vertical-align: middle; box-shadow: 0 1px 4px rgba(0,0,0,0.6); object-fit: cover; display: inline-block;" 
+         onerror="this.src='${cdnUrl}'; this.onerror=function(){ this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline'; };" />
+    <span style="display:none; font-weight:800;">${countryName.substring(0, 3).toUpperCase()}</span>
   `;
 }
 
@@ -106,15 +115,16 @@ export function renderTeamBadgeSVG(team, size = 52) {
     </svg>
   `;
 
-  // Si se cuenta con ID registrado de API-Football, intentar cargar primero la imagen oficial CDN
+  // Si se cuenta con ID registrado de API-Football, intentar cargar primero la imagen oficial
   if (apiId) {
+    const localBadge = `./assets/badges/${team.id}.png`;
     const cdnUrl = `https://media.api-sports.io/football/teams/${apiId}.png`;
     return `
       <div style="display: inline-block; position: relative;">
-        <img src="${cdnUrl}" 
+        <img src="${localBadge}" 
              alt="${team.name}" 
              style="width: ${size}px; height: ${size}px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6)); vertical-align: middle;" 
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';" />
+             onerror="this.src='${cdnUrl}'; this.onerror=function(){ this.style.display='none'; this.nextElementSibling.style.display='inline-block'; };" />
         <div style="display: none;">${vectorBadge}</div>
       </div>
     `;

@@ -1,8 +1,8 @@
 /**
  * ============================================================================
- * SCRIPT DE DESCARGA AUTOMÁTICA DE ASSETS LOCALES DE API-FOOTBALL (API-SPORTS)
+ * SCRIPT DE DESCARGA AUTOMÁTICA DE BANDERAS Y ESCUDOS DE API-FOOTBALL (API-SPORTS)
  * ============================================================================
- * Descarga escudos PNG de clubes y banderas SVG de países a las carpetas locales:
+ * Descarga escudos PNG de clubes y banderas SVG de TODOS los países a:
  * - ./assets/badges/
  * - ./assets/flags/
  * 
@@ -42,23 +42,19 @@ const TEAMS_TO_DOWNLOAD = [
   { id: 'america_mx', apiId: 2287, name: 'Club América' }
 ];
 
-const FLAGS_TO_DOWNLOAD = [
-  { country: 'Argentina', code: 'ar' },
-  { country: 'Brasil', code: 'br' },
-  { country: 'España', code: 'es' },
-  { country: 'Inglaterra', code: 'gb' },
-  { country: 'Italia', code: 'it' },
-  { country: 'Alemania', code: 'de' },
-  { country: 'Francia', code: 'fr' },
-  { country: 'Colombia', code: 'co' },
-  { country: 'Chile', code: 'cl' },
-  { country: 'Uruguay', code: 'uy' },
-  { country: 'Perú', code: 'pe' },
-  { country: 'México', code: 'mx' }
-];
+const COUNTRY_FLAGS_MAP = {
+  'Argentina': 'ar', 'Brasil': 'br', 'Colombia': 'co', 'Chile': 'cl', 'Uruguay': 'uy',
+  'Perú': 'pe', 'Ecuador': 'ec', 'Paraguay': 'py', 'Bolivia': 'bo', 'Venezuela': 've',
+  'España': 'es', 'Inglaterra': 'gb', 'Italia': 'it', 'Alemania': 'de', 'Francia': 'fr',
+  'Portugal': 'pt', 'Países Bajos': 'nl', 'Bélgica': 'be', 'Escocia': 'gb-sct', 'Turquía': 'tr',
+  'Grecia': 'gr', 'Suiza': 'ch', 'Austria': 'at', 'Dinamarca': 'dk', 'Noruega': 'no',
+  'Suecia': 'se', 'Polonia': 'pl', 'República Checa': 'cz', 'Croacia': 'hr', 'México': 'mx',
+  'Estados Unidos': 'us', 'Arabia Saudita': 'sa', 'Japón': 'jp', 'Emiratos Árabes': 'ae',
+  'Australia': 'au', 'Marruecos': 'ma', 'Egipto': 'eg'
+};
 
 function downloadFile(url, destPath) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const file = fs.createWriteStream(destPath);
     https.get(url, (response) => {
       if (response.statusCode !== 200) {
@@ -70,7 +66,7 @@ function downloadFile(url, destPath) {
         file.close();
         resolve(true);
       });
-    }).on('error', (err) => {
+    }).on('error', () => {
       fs.unlink(destPath, () => {});
       resolve(false);
     });
@@ -78,7 +74,7 @@ function downloadFile(url, destPath) {
 }
 
 async function startDownload() {
-  console.log('⬇️ Iniciando descarga gratuita de assets de API-Football...');
+  console.log('⬇️ Iniciando descarga completa de escudos y banderas de API-Football...');
 
   // Descargar Escudos de Equipos
   for (const team of TEAMS_TO_DOWNLOAD) {
@@ -89,14 +85,14 @@ async function startDownload() {
   }
 
   // Descargar Banderas de Países
-  for (const flag of FLAGS_TO_DOWNLOAD) {
-    const url = `https://media.api-sports.io/flags/${flag.code}.svg`;
-    const dest = path.join(FLAGS_DIR, `${flag.code}.svg`);
+  for (const [countryName, code] of Object.entries(COUNTRY_FLAGS_MAP)) {
+    const url = `https://media.api-sports.io/flags/${code}.svg`;
+    const dest = path.join(FLAGS_DIR, `${code}.svg`);
     const ok = await downloadFile(url, dest);
-    console.log(`[Bandera] ${flag.country} -> ${ok ? '✅ Descargada' : '❌ Error'}`);
+    console.log(`[Bandera] ${countryName} (${code}) -> ${ok ? '✅ Descargada' : '❌ Error'}`);
   }
 
-  console.log('🎉 Descarga de assets de API-Football completada.');
+  console.log('🎉 Descarga de assets completada.');
 }
 
 startDownload();
