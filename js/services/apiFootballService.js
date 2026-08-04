@@ -2,12 +2,13 @@
  * ============================================================================
  * SERVICIO DE INTEGRACIÓN CON API-FOOTBALL (v3.football.api-sports.io)
  * ============================================================================
- * Permite consultar escudos, logos de ligas, posiciones reales y estadísticas
- * utilizando la clave de API oficial.
+ * Módulo de lectura de datos extraídos localmente para el juego.
+ * NOTA DE SEGURIDAD: Ninguna clave de API se almacena en este archivo.
+ * Las extracciones masivas (batch) se realizan localmente mediante Node.js en
+ * scripts/batch_data_extractor.js utilizando variables de entorno (.env).
  */
 
 export const API_FOOTBALL_CONFIG = {
-  apiKey: 'dd5adef4b4e457b125b038f86786fcdd',
   baseUrl: 'https://v3.football.api-sports.io'
 };
 
@@ -56,59 +57,16 @@ export const API_LEAGUE_IDS = {
 
 export class APIFootballService {
   /**
-   * Realiza una petición GET segura a la API de API-Football
-   * @param {string} endpoint - Ejemplo: '/leagues?id=128'
+   * Carga los datos de lotes extraídos previamente y guardados en assets locales
    */
-  static async fetchAPI(endpoint) {
+  static async loadLocalExtractedData() {
     try {
-      const response = await fetch(`${API_FOOTBALL_CONFIG.baseUrl}${endpoint}`, {
-        method: 'GET',
-        headers: {
-          'x-apisports-key': API_FOOTBALL_CONFIG.apiKey
-        }
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      return data.response;
+      const res = await fetch('./assets/data/api_extracted_data.json');
+      if (!res.ok) return null;
+      return await res.json();
     } catch (err) {
-      console.warn(`[API-Football Warning] No se pudo conectar a ${endpoint}:`, err);
+      console.log('[APIFootballService] Uso de datos por defecto locales.');
       return null;
     }
-  }
-
-  /**
-   * Obtiene la tabla de posiciones en vivo de una liga desde la API
-   * @param {number} leagueId - ID de la liga en API-Football
-   * @param {number} [season=2024] - Temporada
-   */
-  static async getRealStandings(leagueId, season = 2024) {
-    const data = await this.fetchAPI(`/standings?league=${leagueId}&season=${season}`);
-    if (data && data.length > 0) {
-      return data[0].league.standings[0];
-    }
-    return null;
-  }
-
-  /**
-   * Obtiene los equipos y sus escudos oficiales HD en PNG
-   * @param {number} leagueId 
-   * @param {number} season 
-   */
-  static async getLeagueTeams(leagueId, season = 2024) {
-    const data = await this.fetchAPI(`/teams?league=${leagueId}&season=${season}`);
-    if (data) {
-      return data.map(item => ({
-        id: item.team.id,
-        name: item.team.name,
-        code: item.team.code,
-        country: item.team.country,
-        founded: item.team.founded,
-        logo: item.team.logo,
-        stadium: item.venue?.name,
-        city: item.venue?.city,
-        stadiumCapacity: item.venue?.capacity
-      }));
-    }
-    return [];
   }
 }

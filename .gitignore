@@ -1,0 +1,16 @@
+# Archivos de configuración local y claves de seguridad API
+.env
+.env.local
+*.env
+config.local.json
+config.json
+
+# Node modules y logs de depuración
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporales y caches de sistema
+.DS_Store
+Thumbs.db
