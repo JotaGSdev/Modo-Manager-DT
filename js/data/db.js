@@ -111,10 +111,13 @@ class DatabaseManager {
   /**
    * Inicializa un nuevo estado de carrera de 25 temporadas para el DT.
    * @param {string} userTeamId - ID del equipo seleccionado
-   * @param {string} managerName - Nombre del entrenador
+   * @param {string} [managerName='Director Técnico'] - Nombre del entrenador
+   * @param {string} [managerCountry='Argentina'] - Nacionalidad del entrenador
+   * @param {number} [managerAge=35] - Edad actual del entrenador (30 a 65)
+   * @param {string} [managerArchetype='GUARDIOLA'] - Arquetipo táctico elegido
    * @returns {Object} Estado inicial creado
    */
-  newCareer(userTeamId, managerName = 'Director Técnico') {
+  newCareer(userTeamId, managerName = 'Director Técnico', managerCountry = 'Argentina', managerAge = 35, managerArchetype = 'GUARDIOLA') {
     const userTeam = this.teams[userTeamId];
     if (!userTeam) return null;
 
@@ -136,6 +139,9 @@ class DatabaseManager {
 
     this.gameState = {
       managerName: managerName,
+      managerCountry: managerCountry,
+      managerAge: parseInt(managerAge) || 35,
+      managerArchetype: managerArchetype,
       userTeamId: userTeamId,
       userLeagueId: userTeam.leagueId,
       budget: userTeam.budget,
@@ -153,9 +159,14 @@ class DatabaseManager {
       tactics: {
         formation: '4-3-3',
         mentality: 'Ofensiva',
-        style: 'Tiki-Taka',
+        style: managerArchetype === 'GUARDIOLA' ? 'Tiki-Taka' : (managerArchetype === 'XABI_ALONSO' ? 'Contraataque' : 'Presión Alta'),
         defensiveLine: 'Alta',
         passingStyle: 'Corto'
+      },
+      managerTactics: {
+        archetype: managerArchetype,
+        exp: 500,
+        skillLevels: { skill1: 1, skill2: 1 }
       },
       matchBonus: {
         moraleBonus: 0,

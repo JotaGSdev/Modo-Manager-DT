@@ -143,7 +143,11 @@ class App {
     const sDisplay = document.getElementById('topSeasonDisplay');
     const navContract = document.getElementById('navItemContract');
 
-    if (mDisplay) mDisplay.innerText = db.gameState.managerName || 'Director Técnico';
+    if (mDisplay) {
+      const country = db.gameState.managerCountry || '';
+      const age = db.gameState.managerAge ? ` (${db.gameState.managerAge}a)` : '';
+      mDisplay.innerText = `${db.gameState.managerName || 'Director Técnico'}${age}`;
+    }
     
     const userTeam = db.teams[db.gameState.userTeamId];
     if (cDisplay && userTeam) cDisplay.innerText = userTeam.name;

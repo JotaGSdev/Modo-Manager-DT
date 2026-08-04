@@ -1,8 +1,18 @@
-// Pantalla Cinemática de Selección de 3 Ofertas de Clubes e Inicio de Carrera de DT con Todos los Países de la BD y Diseño UI/UX Rediseñado
+/**
+ * ============================================================================
+ * ENTRENADOR LEYENDA - SELECCIÓN INICIAL DE CARRERA (newCareerUI.js)
+ * ============================================================================
+ * Asistente narrativo interactivo en 3 pasos estilo EA FC / FIFA:
+ * 1. PASO 1: Entrevista de Bienvenida & Datos del DT (Nombre, Edad 30-65, Nacionalidad).
+ * 2. PASO 2: Selección de Filosofía Táctica (Guardiola / Xabi Alonso / De la Fuente).
+ * 3. PASO 3: Algoritmo de Coincidencia Táctica Automática que selecciona 3 Proyectos
+ *    Deportivos de la Base de Datos coincidentes con la identidad del Entrenador.
+ */
 
 import { db } from '../data/db.js';
 import { renderTeamBadgeSVG } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
+import { MANAGER_ARCHETYPES } from '../engine/tactics.js';
 
 const COUNTRY_FLAGS = {
   'Argentina': '🇦🇷', 'Brasil': '🇧🇷', 'Colombia': '🇨🇴', 'Chile': '🇨🇱', 'Uruguay': '🇺🇾',
@@ -15,69 +25,382 @@ const COUNTRY_FLAGS = {
   'Australia': '🇦🇺', 'Marruecos': '🇲🇦', 'Egipto': '🇪🇬'
 };
 
+/**
+ * Renderiza el asistente cinematográfico de inicio de carrera en 3 pasos.
+ * @param {HTMLElement} container - Contenedor principal #app
+ * @param {Function} onCareerStarted - Callback para iniciar la interfaz principal
+ */
 export function renderNewCareer(container, onCareerStarted) {
-  let selectedRegion = 'Sudamérica';
-  let selectedLeagueId = 'arg_1';
+  let currentStep = 1;
+
+  // Estado del perfil del entrenador
+  let managerName = 'Director Técnico';
+  let managerAge = 35;
+  let managerCountry = 'Argentina';
   let selectedArchetype = 'GUARDIOLA';
+  let selectedRegionFilter = 'ALL';
 
   // Obtener lista completa de países presentes en las ligas de la BD
   const countriesInDB = Array.from(new Set(db.leagues.map(l => l.country))).sort();
 
-  const updateOffersGrid = () => {
-    const league = db.leagues.find(l => l.id === selectedLeagueId) || db.leagues[0];
-    const offersContainer = document.getElementById('threeOffersGrid');
-    if (!league || !offersContainer) return;
+  /**
+   * Algoritmo inteligente que selecciona automáticamente 3 clubes coincidentes
+   * con la filosofía del entrenador a partir de toda la base de datos de ligas.
+   */
+  const getMatchingTeams = () => {
+    let availableLeagues = db.leagues;
+    if (selectedRegionFilter !== 'ALL') {
+      availableLeagues = db.leagues.filter(l => l.region === selectedRegionFilter);
+      if (availableLeagues.length === 0) availableLeagues = db.leagues;
+    }
 
-    const teams = [...league.teams].sort((a, b) => b.overall - a.overall);
-    
-    const topTeam = teams[0] || teams[0]; 
-    const midTeam = teams[Math.floor(teams.length / 2)] || teams[1]; 
-    const underdogTeam = teams[teams.length - 1] || teams[2]; 
+    // Reunir todos los equipos disponibles con sus metadatos
+    const allTeams = [];
+    availableLeagues.forEach(l => {
+      l.teams.forEach(t => {
+        allTeams.push({
+          ...t,
+          leagueName: l.name,
+          country: l.country,
+          region: l.region
+        });
+      });
+    });
 
-    const offers = [
+    // Ordenar de mayor a menor OVR
+    allTeams.sort((a, b) => b.overall - a.overall);
+
+    let topCandidates = [];
+    let midCandidates = [];
+    let underdogCandidates = [];
+
+    if (selectedArchetype === 'GUARDIOLA') {
+      // Priorizar clubes con alto OVR/Presupuesto de toque y posesión
+      topCandidates = allTeams.filter(t => t.overall >= 80);
+      midCandidates = allTeams.filter(t => t.overall >= 72 && t.overall < 80);
+      underdogCandidates = allTeams.filter(t => t.overall < 72);
+    } else if (selectedArchetype === 'XABI_ALONSO') {
+      // Priorizar clubes dinámicos y verticales
+      topCandidates = allTeams.filter(t => t.overall >= 79);
+      midCandidates = allTeams.filter(t => t.overall >= 71 && t.overall < 79);
+      underdogCandidates = allTeams.filter(t => t.overall < 71);
+    } else {
+      // DE_LA_FUENTE: Priorizar clubes de garra, presión física e intensidad
+      topCandidates = allTeams.filter(t => t.overall >= 78);
+      midCandidates = allTeams.filter(t => t.overall >= 70 && t.overall < 78);
+      underdogCandidates = allTeams.filter(t => t.overall < 70);
+    }
+
+    const club1 = topCandidates[Math.floor(Math.random() * Math.min(6, topCandidates.length))] || allTeams[0];
+    const club2 = midCandidates[Math.floor(Math.random() * Math.min(8, midCandidates.length))] || allTeams[Math.floor(allTeams.length / 2)];
+    const club3 = underdogCandidates[Math.floor(Math.random() * Math.min(8, underdogCandidates.length))] || allTeams[allTeams.length - 1];
+
+    const archetypeData = MANAGER_ARCHETYPES[selectedArchetype] || MANAGER_ARCHETYPES['GUARDIOLA'];
+
+    return [
       {
-        team: topTeam,
+        team: club1,
         projectType: '🏆 PROYECTO ÉLITE / CANDIDATO',
-        objective: 'Pelear el Título de Liga y Consagración Continental',
         badgeColor: 'var(--accent-gold)',
-        expectation: 'Exigencia Máxima: Obligado a campeonar'
+        letterMessage: `La Junta Directiva de ${club1.name} te busca específicamente por tu filosofía de ${archetypeData.name.toLowerCase()} para conquistar el título de liga y pelear copas internacionales.`
       },
       {
-        team: midTeam,
+        team: club2,
         projectType: '⚽ PROYECTO PROTAGONISTA',
-        objective: 'Clasificar a Copas Internacionales y Consolidar Estilo',
         badgeColor: 'var(--accent-cyan)',
-        expectation: 'Exigencia Media: Luchar en la zona alta'
+        letterMessage: `La directiva de ${club2.name} necesita un DT con tu identidad táctica para dar el salto de calidad, consolidar una idea de juego y clasificar a torneos continentales.`
       },
       {
-        team: underdogTeam,
-        projectType: '🌱 DESAFÍO CANTERANO',
-        objective: 'Desarrollar Jóvenes Talentos y Mantener la Categoría',
+        team: club3,
+        projectType: '🌱 DESAFÍO DE POTRERO Y CANTERA',
         badgeColor: 'var(--accent-green)',
-        expectation: 'Exigencia Moderada: Maximizar la cantera'
+        letterMessage: `En ${club3.name} apuestan por tu perfil de entrenador para potenciar la cantera, imprimir garra en la cancha y maximizar el rendimiento de la plantilla.`
       }
     ];
+  };
+
+  /**
+   * Renderiza el paso actual del Wizard
+   */
+  const renderStep = () => {
+    container.innerHTML = `
+      <div style="min-height: 100vh; background: linear-gradient(135deg, #090d16 0%, #0f172a 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; color: #ffffff;">
+        
+        <!-- ENCABEZADO DE BIENVENIDA ESTILO EA FC -->
+        <div class="text-center mb-4" style="max-width: 720px;">
+          <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 200, 133, 0.12); border: 1px solid var(--accent-green); padding: 6px 16px; border-radius: 20px; color: var(--accent-green); font-weight: 800; font-size: 0.82rem; margin-bottom: 12px;">
+            ⚽ BIENVENIDO A TU CARRERA DE DIRECTOR TÉCNICO LEYENDA (2026 - 2051)
+          </div>
+          <h1 style="font-size: 2.2rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 6px;">
+            ${currentStep === 1 ? '🎙️ PASO 1: PERFIL PROFESIONAL DEL ENTRENADOR' : (currentStep === 2 ? '🧩 PASO 2: SELECCIÓN DE FILOSOFÍA TÁCTICA' : '💼 PASO 3: OFERTAS DE CLUBES COINCIDENTES')}
+          </h1>
+          <p class="text-sub" style="font-size: 0.92rem;">
+            ${currentStep === 1 ? 'Ingresa tus datos personales para la presentación oficial ante los medios internacionales.' : (currentStep === 2 ? 'Define tu modelo de juego. La junta directiva evaluará si tu estilo encaja con su proyecto deportivo.' : 'Basado en tu identidad táctica, estos 3 clubes han presentado ofertas formales de contrato para contratarte.')}
+          </p>
+        </div>
+
+        <!-- INDICADOR DE PROGRESO DE 3 PASOS -->
+        <div style="display: flex; gap: 12px; margin-bottom: 24px; width: 100%; max-width: 600px; justify-content: center;">
+          <div style="flex: 1; height: 6px; border-radius: 3px; background: ${currentStep >= 1 ? 'var(--accent-green)' : '#1e293b'}; transition: background 0.3s ease;"></div>
+          <div style="flex: 1; height: 6px; border-radius: 3px; background: ${currentStep >= 2 ? 'var(--accent-green)' : '#1e293b'}; transition: background 0.3s ease;"></div>
+          <div style="flex: 1; height: 6px; border-radius: 3px; background: ${currentStep >= 3 ? 'var(--accent-green)' : '#1e293b'}; transition: background 0.3s ease;"></div>
+        </div>
+
+        <!-- PASO 1: PERFIL DEL DT -->
+        ${currentStep === 1 ? `
+          <div class="glass-panel" style="width: 100%; max-width: 620px; padding: 28px; border: 1px solid var(--border-color); background: #121826;">
+            <div style="display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 20px;">
+              <div style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green)); width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #000;">
+                👔
+              </div>
+              <div>
+                <h3 style="margin: 0; font-size: 1.2rem;">Ficha Personal del Director Técnico</h3>
+                <span class="text-sub" style="font-size: 0.8rem;">Completa tus datos de presentación profesional</span>
+              </div>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: var(--accent-cyan);">👤 Nombre Completo del Entrenador:</label>
+              <input type="text" id="inputManagerName" class="input-text" value="${managerName}" style="width: 100%; font-size: 0.95rem;" placeholder="Ej: Marcelo Gallardo, Pep Guardiola..." />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 16px; margin-bottom: 20px;">
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: var(--accent-gold);">🎂 Edad Actual (Años):</label>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="number" id="inputManagerAge" class="input-text" value="${managerAge}" min="30" max="65" style="width: 100%; font-size: 0.95rem; text-align: center;" />
+                  <span class="text-sub" style="font-size: 0.8rem;">(30 - 65)</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: var(--accent-green);">🌎 Nacionalidad:</label>
+                <select id="selectManagerCountry" class="input-select" style="width: 100%; font-size: 0.9rem;">
+                  ${countriesInDB.map(c => `
+                    <option value="${c}" ${c === managerCountry ? 'selected' : ''}>
+                      ${COUNTRY_FLAGS[c] || '🏳️'} ${c}
+                    </option>
+                  `).join('')}
+                </select>
+              </div>
+            </div>
+
+            <div style="background: #0d1320; padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 20px; font-size: 0.82rem;" class="text-sub">
+              📅 <strong>Línea de Tiempo Profesional:</strong> Comenzarás tu carrera en el año <strong>2026</strong> a tus <strong><span id="displayAge">${managerAge}</span> años</strong>, finalizando a tus <strong><span id="displayEndAge">${managerAge + 25}</span> años</strong> en la temporada 2050/2051.
+            </div>
+
+            <button id="btnNextToStep2" class="btn-primary btn-large" style="width: 100%; font-size: 1rem; font-weight: 900;">
+              SIGUIENTE: FILOSOFÍA TÁCTICA ➔
+            </button>
+          </div>
+        ` : ''}
+
+        <!-- PASO 2: FILOSOFÍA TÁCTICA -->
+        ${currentStep === 2 ? `
+          <div class="glass-panel" style="width: 100%; max-width: 860px; padding: 28px; border: 1px solid var(--border-color); background: #121826;">
+            <div class="text-center mb-3">
+              <h3 style="color: var(--accent-gold); font-size: 1.3rem; margin-bottom: 4px;">¿CUÁL ES TU FILOSOFÍA DE JUEGO COMO DT?</h3>
+              <p class="text-sub" style="font-size: 0.86rem;">Selecciona el modelo táctico con el que se identificará tu equipo:</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+              
+              <!-- GUARDIOLA -->
+              <div class="archetype-card-step glass-panel text-center ${selectedArchetype === 'GUARDIOLA' ? 'selected' : ''}" 
+                   data-id="GUARDIOLA" 
+                   style="padding: 20px 14px; cursor: pointer; border: 2px solid ${selectedArchetype === 'GUARDIOLA' ? 'var(--accent-green)' : 'transparent'}; background: ${selectedArchetype === 'GUARDIOLA' ? '#141d2e' : '#0f172a'}; border-radius: 12px; transition: all 0.2s ease;">
+                <div style="font-size: 2.2rem; margin-bottom: 8px;">⚽</div>
+                <h4 style="font-size: 1rem; color: #ffffff; margin-bottom: 4px;">MAESTRO POSESIÓN</h4>
+                <span class="text-sub" style="font-size: 0.76rem; display: block; margin-bottom: 10px;">Pep Guardiola / Xavi Hernández</span>
+                
+                <div style="background: rgba(0, 200, 133, 0.15); color: var(--accent-green); padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 0.74rem; margin-bottom: 10px;">
+                  +8 PASES CORTOS | POSESIÓN
+                </div>
+                <p class="text-sub" style="font-size: 0.78rem; text-align: left; line-height: 1.4;">
+                  Dominio territorial, triangulaciones en salida, paciencia táctica y presión alta tras pérdida.
+                </p>
+              </div>
+
+              <!-- XABI ALONSO -->
+              <div class="archetype-card-step glass-panel text-center ${selectedArchetype === 'XABI_ALONSO' ? 'selected' : ''}" 
+                   data-id="XABI_ALONSO" 
+                   style="padding: 20px 14px; cursor: pointer; border: 2px solid ${selectedArchetype === 'XABI_ALONSO' ? 'var(--accent-cyan)' : 'transparent'}; background: ${selectedArchetype === 'XABI_ALONSO' ? '#141d2e' : '#0f172a'}; border-radius: 12px; transition: all 0.2s ease;">
+                <div style="font-size: 2.2rem; margin-bottom: 8px;">⚡</div>
+                <h4 style="font-size: 1rem; color: #ffffff; margin-bottom: 4px;">REY CONTRAATAQUE</h4>
+                <span class="text-sub" style="font-size: 0.76rem; display: block; margin-bottom: 10px;">Xabi Alonso / Klopp / Ancelotti</span>
+                
+                <div style="background: rgba(0, 150, 199, 0.15); color: var(--accent-cyan); padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 0.74rem; margin-bottom: 10px;">
+                  +8 VELOCIDAD ATAQUE | VERTICAL
+                </div>
+                <p class="text-sub" style="font-size: 0.78rem; text-align: left; line-height: 1.4;">
+                  Transición relámpago al espacio, extremos veloces y ataque directo e implacable.
+                </p>
+              </div>
+
+              <!-- DE LA FUENTE / POTRERO -->
+              <div class="archetype-card-step glass-panel text-center ${selectedArchetype === 'DE_LA_FUENTE' ? 'selected' : ''}" 
+                   data-id="DE_LA_FUENTE" 
+                   style="padding: 20px 14px; cursor: pointer; border: 2px solid ${selectedArchetype === 'DE_LA_FUENTE' ? 'var(--accent-gold)' : 'transparent'}; background: ${selectedArchetype === 'DE_LA_FUENTE' ? '#141d2e' : '#0f172a'}; border-radius: 12px; transition: all 0.2s ease;">
+                <div style="font-size: 2.2rem; margin-bottom: 8px;">🔥</div>
+                <h4 style="font-size: 1rem; color: #ffffff; margin-bottom: 4px;">POTRERO & PRESIÓN</h4>
+                <span class="text-sub" style="font-size: 0.76rem; display: block; margin-bottom: 10px;">Luis de la Fuente / Cholo Simeone</span>
+                
+                <div style="background: rgba(229, 169, 60, 0.15); color: var(--accent-gold); padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 0.74rem; margin-bottom: 10px;">
+                  +8 BALÓN PARADO | GARRA
+                </div>
+                <p class="text-sub" style="font-size: 0.78rem; text-align: left; line-height: 1.4;">
+                  Solidez defensiva asfixiante, balones parados letales, garra de potrero y fuerza en finales.
+                </p>
+              </div>
+
+            </div>
+
+            <!-- FILTRO DE REGIÓN PREFERIDA -->
+            <div style="background: #0f172a; padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <span style="font-size: 0.84rem; font-weight: 800; color: #fff;">🌍 Preferencia de Región para buscar Clubes:</span>
+                <span class="text-sub d-block" style="font-size: 0.76rem;">Elige si deseas explorar una región en específico o cualquier lugar del mundo.</span>
+              </div>
+              <select id="selectRegionFilter" class="input-select" style="min-width: 200px;">
+                <option value="ALL" ${selectedRegionFilter === 'ALL' ? 'selected' : ''}>🌐 Cualquier Región (Mundial)</option>
+                <option value="Sudamérica" ${selectedRegionFilter === 'Sudamérica' ? 'selected' : ''}>🌎 Sudamérica</option>
+                <option value="Europa" ${selectedRegionFilter === 'Europa' ? 'selected' : ''}>🌍 Europa</option>
+                <option value="Norteamérica" ${selectedRegionFilter === 'Norteamérica' ? 'selected' : ''}>🦅 Norteamérica</option>
+                <option value="Asia" ${selectedRegionFilter === 'Asia' ? 'selected' : ''}>🌸 Asia</option>
+              </select>
+            </div>
+
+            <div style="display: flex; gap: 14px;">
+              <button id="btnBackToStep1" class="btn-secondary" style="flex: 1; padding: 14px; font-weight: 800;">
+                ⬅️ VOLVER AL PERFIL
+              </button>
+              <button id="btnNextToStep3" class="btn-primary btn-large" style="flex: 2; font-size: 1rem; font-weight: 900;">
+                🔍 BUSCAR CLUBES COINCIDENTES ➔
+              </button>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- PASO 3: RECOMENDACIÓN DE 3 CLUBES COINCIDENTES -->
+        ${currentStep === 3 ? `
+          <div style="width: 100%; max-width: 1100px;">
+            <div class="glass-panel mb-3 text-center" style="padding: 16px; border: 1px solid var(--border-color); background: #121826;">
+              <span class="text-sub" style="font-weight: 800; font-size: 0.82rem;">DIRECTOR TÉCNICO: <strong style="color: #fff;">${managerName}</strong> (${COUNTRY_FLAGS[managerCountry] || '🏳️'} ${managerCountry}, ${managerAge}a)</span>
+              <span style="margin: 0 10px; color: var(--border-color);">|</span>
+              <span class="text-sub" style="font-weight: 800; font-size: 0.82rem;">IDENTIDAD TÁCTICA: <strong style="color: var(--accent-gold);">${MANAGER_ARCHETYPES[selectedArchetype]?.name || 'POSESIÓN'}</strong></span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;" id="matchingOffersContainer"></div>
+
+            <div style="margin-top: 20px; text-align: center;">
+              <button id="btnBackToStep2" class="btn-secondary" style="padding: 12px 24px; font-weight: 800;">
+                ⬅️ RECALCULAR O CAMBIAR FILOSOFÍA TÁCTICA
+              </button>
+            </div>
+          </div>
+        ` : ''}
+
+      </div>
+    `;
+
+    // EVENT LISTENERS POR PASO
+    if (currentStep === 1) {
+      const nameInput = document.getElementById('inputManagerName');
+      const ageInput = document.getElementById('inputManagerAge');
+      const countrySelect = document.getElementById('selectManagerCountry');
+      const displayAge = document.getElementById('displayAge');
+      const displayEndAge = document.getElementById('displayEndAge');
+
+      nameInput.addEventListener('input', (e) => { managerName = e.target.value; });
+      ageInput.addEventListener('input', (e) => {
+        managerAge = parseInt(e.target.value) || 35;
+        if (displayAge) displayAge.innerText = managerAge;
+        if (displayEndAge) displayEndAge.innerText = managerAge + 25;
+      });
+      countrySelect.addEventListener('change', (e) => { managerCountry = e.target.value; });
+
+      document.getElementById('btnNextToStep2').addEventListener('click', () => {
+        sfx.playClick();
+        managerName = nameInput.value || 'Director Técnico';
+        currentStep = 2;
+        renderStep();
+      });
+    } else if (currentStep === 2) {
+      document.querySelectorAll('.archetype-card-step').forEach(card => {
+        card.addEventListener('click', (e) => {
+          sfx.playClick();
+          selectedArchetype = e.currentTarget.dataset.id;
+          document.querySelectorAll('.archetype-card-step').forEach(c => {
+            c.classList.remove('selected');
+            c.style.borderColor = 'transparent';
+            c.style.background = '#0f172a';
+          });
+          e.currentTarget.classList.add('selected');
+          e.currentTarget.style.borderColor = selectedArchetype === 'GUARDIOLA' ? 'var(--accent-green)' : (selectedArchetype === 'XABI_ALONSO' ? 'var(--accent-cyan)' : 'var(--accent-gold)');
+          e.currentTarget.style.background = '#141d2e';
+        });
+      });
+
+      document.getElementById('selectRegionFilter').addEventListener('change', (e) => {
+        selectedRegionFilter = e.target.value;
+      });
+
+      document.getElementById('btnBackToStep1').addEventListener('click', () => {
+        sfx.playClick();
+        currentStep = 1;
+        renderStep();
+      });
+
+      document.getElementById('btnNextToStep3').addEventListener('click', () => {
+        sfx.playWhistle();
+        currentStep = 3;
+        renderStep();
+        renderStep3Offers();
+      });
+    } else if (currentStep === 3) {
+      document.getElementById('btnBackToStep2')?.addEventListener('click', () => {
+        sfx.playClick();
+        currentStep = 2;
+        renderStep();
+      });
+    }
+  };
+
+  /**
+   * Renderiza las 3 tarjetas de ofertas de clubes coincidentes en el Paso 3
+   */
+  const renderStep3Offers = () => {
+    const offersContainer = document.getElementById('matchingOffersContainer');
+    if (!offersContainer) return;
+
+    const offers = getMatchingTeams();
 
     offersContainer.innerHTML = offers.map(o => `
-      <div class="team-select-card glass-panel text-center" style="border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; transition: transform 0.2s ease;">
-        <span class="badge mb-2" style="background: ${o.badgeColor}; color: #000; font-weight: 800; font-size: 0.76rem;">${o.projectType}</span>
-        
-        <div style="margin: 10px 0;">
-          ${renderTeamBadgeSVG(o.team, 58)}
+      <div class="team-select-card glass-panel text-center" style="border: 1px solid var(--border-color); padding: 22px; border-radius: 14px; background: #121826; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <span class="badge mb-2" style="background: ${o.badgeColor}; color: #000; font-weight: 900; font-size: 0.78rem;">${o.projectType}</span>
+          
+          <div style="margin: 14px 0;">
+            ${renderTeamBadgeSVG(o.team, 64)}
+          </div>
+
+          <h3 style="margin-top: 4px; font-size: 1.25rem; color: #ffffff;">${o.team.name}</h3>
+          <span class="text-sub" style="font-size: 0.8rem;">${o.team.leagueName} (${COUNTRY_FLAGS[o.team.country] || '🏳️'} ${o.team.country})</span>
+
+          <!-- CARTA NARRATIVA DE LA JUNTA DIRECTIVA -->
+          <div style="background: #0f172a; border: 1px solid var(--border-color); padding: 12px; border-radius: 10px; margin: 14px 0; text-align: left; font-size: 0.8rem; line-height: 1.4;" class="text-sub">
+            📩 <strong>Propuesta de la Directiva:</strong><br>
+            <em>"${o.letterMessage}"</em>
+          </div>
+
+          <div style="background: #0d1320; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; text-align: left; font-size: 0.82rem;">
+            <p style="margin-bottom: 4px;">📊 <strong>Nivel Plantilla:</strong> OVR ${o.team.overall}</p>
+            <p style="margin-bottom: 0;">💰 <strong>Presupuesto Fichajes:</strong> <strong class="text-highlight">€${(o.team.budget / 1000000).toFixed(1)}M</strong></p>
+          </div>
         </div>
 
-        <h3 style="margin-top: 4px; font-size: 1.15rem; color: #ffffff;">${o.team.name}</h3>
-        <span class="text-sub" style="font-size: 0.78rem;">${league.name} (${league.country})</span>
-
-        <div style="background: #0f172a; padding: 10px; border-radius: 8px; margin: 12px 0; width: 100%; text-align: left; font-size: 0.8rem;">
-          <p style="margin-bottom: 3px;">🎯 <strong>Objetivo:</strong> ${o.objective}</p>
-          <p style="margin-bottom: 3px;">📊 <strong>Nivel Plantilla:</strong> OVR ${o.team.overall}</p>
-          <p style="margin-bottom: 3px;">💰 <strong>Presupuesto:</strong> <strong class="text-highlight">€${(o.team.budget / 1000000).toFixed(1)}M</strong></p>
-          <p style="margin-bottom: 0;">📣 <strong>Directiva:</strong> ${o.expectation}</p>
-        </div>
-
-        <button class="btn-primary btn-sign-club" data-id="${o.team.id}" style="width: 100%; padding: 10px; font-weight: 800; font-size: 0.88rem;">
-          ✍️ FIRMAR POR ESTE CLUB
+        <button class="btn-primary btn-sign-club" data-id="${o.team.id}" style="width: 100%; padding: 12px; font-weight: 900; font-size: 0.95rem; background: var(--accent-green); color: #000;">
+          ✍️ FIRMAR CONTRATO CON ${o.team.name.toUpperCase()}
         </button>
       </div>
     `).join('');
@@ -85,174 +408,13 @@ export function renderNewCareer(container, onCareerStarted) {
     document.querySelectorAll('.btn-sign-club').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const teamId = e.currentTarget.dataset.id;
-        const nameInput = document.getElementById('inputManagerName');
-        const countryInput = document.getElementById('selectManagerCountry');
 
-        const finalName = nameInput?.value || 'Director Técnico';
-        const finalCountry = countryInput?.value || 'Argentina';
-
-        sfx.playWhistle();
-        db.newCareer(teamId, finalName, finalCountry);
+        sfx.playGoal();
+        db.newCareer(teamId, managerName, managerCountry, managerAge, selectedArchetype);
         onCareerStarted();
       });
     });
   };
 
-  const updateLeagueSelect = () => {
-    const leagues = db.leagues.filter(l => l.region === selectedRegion);
-    const leagueSelect = document.getElementById('selectLeague');
-    if (!leagueSelect) return;
-
-    leagueSelect.innerHTML = leagues.map(l => `
-      <option value="${l.id}" ${l.id === selectedLeagueId ? 'selected' : ''}>${l.name} (${l.country})</option>
-    `).join('');
-
-    if (!leagues.some(l => l.id === selectedLeagueId)) {
-      selectedLeagueId = leagues[0]?.id || 'arg_1';
-    }
-    updateOffersGrid();
-  };
-
-  container.innerHTML = `
-    <div class="new-career-narrative-layout" style="display: grid; grid-template-columns: 320px 1fr; gap: 20px; max-width: 1320px; margin: 0 auto;">
-      
-      <!-- COLUMNA IZQUIERDA: PERFIL DEL DT Y LÍNEA DE TIEMPO (EDAD 35 A 60) -->
-      <div class="glass-panel text-center" style="padding: 20px 16px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--border-color);">
-        <div>
-          <div style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green)); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 12px auto;">
-            👔
-          </div>
-          <h2 style="font-size: 1.3rem; color: #ffffff; margin-bottom: 2px;">Director Técnico</h2>
-          <span class="text-sub" style="font-size: 0.8rem;">Inicio de Carrera Leyenda (2026)</span>
-
-          <div class="form-group mt-3 text-left">
-            <label class="form-label" style="font-size: 0.78rem; font-weight: 700;">Nombre del Entrenador:</label>
-            <input type="text" id="inputManagerName" class="input-text" value="Director Técnico" style="width: 100%; font-size: 0.85rem;" />
-          </div>
-
-          <div class="form-group mt-2 text-left">
-            <label class="form-label" style="font-size: 0.78rem; font-weight: 700;">Nacionalidad (Todos los Países):</label>
-            <select id="selectManagerCountry" class="input-select" style="width: 100%; font-size: 0.85rem;">
-              ${countriesInDB.map(c => `
-                <option value="${c}" ${c === 'Argentina' ? 'selected' : ''}>
-                  ${COUNTRY_FLAGS[c] || '🏳️'} ${c}
-                </option>
-              `).join('')}
-            </select>
-          </div>
-        </div>
-
-        <!-- LÍNEA DE TIEMPO NARRATIVA DE LA CARRERA (EDAD 35 A 60) -->
-        <div style="background: #0f172a; border: 1px solid var(--border-color); padding: 12px; border-radius: 10px; margin-top: 14px; text-align: left;">
-          <h4 style="color: var(--accent-gold); font-size: 0.85rem; margin-bottom: 8px;">📅 Trayectoria Profesional (35 a 60 años)</h4>
-          
-          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.75rem;">
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <span class="badge" style="background: var(--accent-green); color: #000; font-weight: 900; padding: 2px 6px;">35a</span>
-              <span><strong>2026:</strong> Debut & Elección de Club</span>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <span class="badge" style="background: #334155; color: #fff; padding: 2px 6px;">42a</span>
-              <span><strong>2033:</strong> Consolidación & Copas</span>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <span class="badge" style="background: #334155; color: #fff; padding: 2px 6px;">50a</span>
-              <span><strong>2041:</strong> Consagración Élite Mundial</span>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <span class="badge" style="background: var(--accent-gold); color: #000; font-weight: 900; padding: 2px 6px;">60a</span>
-              <span><strong>2051:</strong> Retiro & Vitrina Leyenda</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- COLUMNA DERECHA: ARQUETIPOS TÁCTICOS Y 3 OFERTAS INICIALES DE CLUB -->
-      <div>
-        <!-- SELECCIÓN INTERACTIVA DE ARQUETIPO DE ENTRENADOR -->
-        <div class="glass-panel mb-3" style="padding: 16px; border: 1px solid var(--border-color);">
-          <h2 style="font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 2px;">¿QUÉ CLASE DE DIRECTOR TÉCNICO SOS?</h2>
-          <p class="text-sub mb-3" style="font-size: 0.82rem;">Selecciona tu arquetipo táctico para definir la filosofía del equipo:</p>
-          
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;" id="archetypeGrid">
-            
-            <div class="archetype-card glass-panel text-center selected" data-id="GUARDIOLA" style="padding: 12px; cursor: pointer; border: 2px solid var(--accent-green); background: #141d2e;">
-              <span style="font-size: 1.6rem;">⚽</span>
-              <h4 style="font-size: 0.88rem; margin-top: 4px; color: #fff;">MAESTRO POSESIÓN</h4>
-              <span class="text-sub" style="font-size: 0.72rem;">Pep Guardiola / Xavi</span>
-              <div class="badge mt-2" style="background: rgba(0, 200, 133, 0.2); color: var(--accent-green); font-size: 0.7rem; font-weight: 800;">+8 PASES CORTOS</div>
-            </div>
-
-            <div class="archetype-card glass-panel text-center" data-id="XABI_ALONSO" style="padding: 12px; cursor: pointer; border: 2px solid transparent; background: #0f172a;">
-              <span style="font-size: 1.6rem;">⚡</span>
-              <h4 style="font-size: 0.88rem; margin-top: 4px; color: #fff;">REY CONTRAATAQUE</h4>
-              <span class="text-sub" style="font-size: 0.72rem;">Xabi Alonso / Klopp</span>
-              <div class="badge mt-2" style="background: rgba(0, 150, 199, 0.2); color: var(--accent-cyan); font-size: 0.7rem; font-weight: 800;">+8 VELOCIDAD ATAQUE</div>
-            </div>
-
-            <div class="archetype-card glass-panel text-center" data-id="DE_LA_FUENTE" style="padding: 12px; cursor: pointer; border: 2px solid transparent; background: #0f172a;">
-              <span style="font-size: 1.6rem;">🔥</span>
-              <h4 style="font-size: 0.88rem; margin-top: 4px; color: #fff;">POTRERO & BALÓN PARADO</h4>
-              <span class="text-sub" style="font-size: 0.72rem;">Luis de la Fuente / Simeone</span>
-              <div class="badge mt-2" style="background: rgba(229, 169, 60, 0.2); color: var(--accent-gold); font-size: 0.7rem; font-weight: 800;">+8 BALÓN PARADO</div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- SELECCIÓN DE REGIÓN/LIGA Y REJILLA DE 3 OFERTAS -->
-        <div class="glass-panel mb-3" style="padding: 16px; border: 1px solid var(--border-color);">
-          <div style="display: flex; gap: 14px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 180px;">
-              <label class="form-label" style="font-size: 0.78rem;">Región Continental:</label>
-              <select id="selectRegion" class="input-select" style="width: 100%; font-size: 0.85rem;">
-                <option value="Sudamérica" selected>Sudamérica (Argentina, Brasil, Col...)</option>
-                <option value="Europa">Europa (España, Ing, Ita, Ale...)</option>
-                <option value="Norteamérica">Norteamérica (Liga MX / MLS)</option>
-                <option value="Asia">Asia (Arabia Saudita / Japón)</option>
-              </select>
-            </div>
-
-            <div style="flex: 1; min-width: 180px;">
-              <label class="form-label" style="font-size: 0.78rem;">Liga / Competición:</label>
-              <select id="selectLeague" class="input-select" style="width: 100%; font-size: 0.85rem;"></select>
-            </div>
-          </div>
-        </div>
-
-        <!-- REJILLA DE LAS 3 OFERTAS DE CONTRATO INICIALES -->
-        <h3 class="mb-2" style="color: var(--accent-cyan); font-size: 1rem;">💼 Ofertas de Proyecto Deportivo Presentadas (Elige 1 de los 3 Clubes):</h3>
-        <div id="threeOffersGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;"></div>
-      </div>
-
-    </div>
-  `;
-
-  // Listener para cambio de arquetipo interactivo
-  document.querySelectorAll('.archetype-card').forEach(card => {
-    card.addEventListener('click', (e) => {
-      sfx.playClick();
-      selectedArchetype = e.currentTarget.dataset.id;
-      document.querySelectorAll('.archetype-card').forEach(c => {
-        c.classList.remove('selected');
-        c.style.borderColor = 'transparent';
-        c.style.background = '#0f172a';
-      });
-      e.currentTarget.classList.add('selected');
-      e.currentTarget.style.borderColor = 'var(--accent-green)';
-      e.currentTarget.style.background = '#141d2e';
-    });
-  });
-
-  document.getElementById('selectRegion').addEventListener('change', (e) => {
-    selectedRegion = e.target.value;
-    updateLeagueSelect();
-  });
-
-  document.getElementById('selectLeague').addEventListener('change', (e) => {
-    selectedLeagueId = e.target.value;
-    updateOffersGrid();
-  });
-
-  updateLeagueSelect();
+  renderStep();
 }
