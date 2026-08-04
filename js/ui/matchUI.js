@@ -275,7 +275,8 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
     const userStanding = gameState.standings?.find(s => s.teamId === userTeam.id);
     const rivalStanding = gameState.standings?.find(s => s.teamId === rival.id);
     if (userStanding && rivalStanding) {
-      userStanding.played++; rivalStanding.played++;
+      userStanding.played = Math.min(gameState.maxWeeks || 38, userStanding.played + 1);
+      rivalStanding.played = Math.min(gameState.maxWeeks || 38, rivalStanding.played + 1);
       userStanding.gf += engine.homeScore; userStanding.ga += engine.awayScore;
       userStanding.gd = userStanding.gf - userStanding.ga;
       rivalStanding.gf += engine.awayScore; rivalStanding.ga += engine.homeScore;
@@ -296,7 +297,9 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
     MatchEngine.simulateAllRivalMatches(userTeam.id, rival.id);
     CompetitionsEngine.processCupWeek(gameState.week);
     CompetitionsEngine.processNationalCupWeek(gameState.week);
-    gameState.week++;
+    if (gameState.week < gameState.maxWeeks) {
+      gameState.week++;
+    }
     gameState.standings.sort((a, b) => b.points - a.points || b.gd - a.gd);
     db.saveGame();
     if (isFinal && engine.homeScore === engine.awayScore) {

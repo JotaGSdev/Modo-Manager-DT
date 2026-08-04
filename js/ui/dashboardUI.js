@@ -20,7 +20,9 @@ export function renderDashboard(container, navigateTo) {
     ? otherTeams[(gameState.week - 1) % otherTeams.length]
     : { id: 'rival_gen', name: 'Rival FC', short: 'RIV', overall: 73, colors: ['#cc0000', '#000000'], stadium: 'Estadio Rival' };
 
-  const isFinalMatch = gameState.week === gameState.maxWeeks || gameState.week === 19;
+  const midSeasonWeek = Math.floor((gameState.maxWeeks || 38) / 2);
+  const isSeasonCompleted = gameState.week >= gameState.maxWeeks;
+  const isFinalMatch = isSeasonCompleted || gameState.week === midSeasonWeek;
   const topScorers = gameState.topScorers || [];
   const seasonLabel = `${gameState.season}/${gameState.season + 1}`;
 
@@ -67,7 +69,7 @@ export function renderDashboard(container, navigateTo) {
       <div class="card glass-panel" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
         <div class="card-header" style="margin-bottom: 8px;">
           <span class="badge ${isFinalMatch ? 'badge-final' : ''}" style="font-size: 0.75rem; padding: 3px 8px;">
-            ${gameState.week === 19 ? '❄️ PARÓN INVERNAL' : `JORNADA ${gameState.week} / ${gameState.maxWeeks}`}
+            ${isSeasonCompleted ? '🏆 TEMPORADA CONCLUIDA' : (gameState.week === midSeasonWeek ? '❄️ PARÓN INVERNAL' : `JORNADA ${gameState.week} / ${gameState.maxWeeks}`)}
           </span>
           <span class="league-name" style="font-size: 0.80rem;">${league.name} (${seasonLabel})</span>
         </div>
@@ -92,8 +94,14 @@ export function renderDashboard(container, navigateTo) {
         </div>
 
         <div class="match-actions" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
-          <button id="btnPlayMatch" class="btn-primary" style="width: 100%; padding: 10px; font-size: 0.88rem;">⚽ JUGAR PARTIDO EN VIVO</button>
-          <button id="btnSimBlock" class="btn-secondary" style="width: 100%; padding: 9px; font-size: 0.84rem;">⏩ SIMULAR HASTA MITAD / FINAL</button>
+          ${isSeasonCompleted ? `
+            <button id="btnFinishSeasonDirect" class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.95rem; background: var(--accent-gold); color: #000; font-weight: 900;">
+              🏆 VER EVALUACIÓN DE FIN DE TEMPORADA ➔
+            </button>
+          ` : `
+            <button id="btnPlayMatch" class="btn-primary" style="width: 100%; padding: 10px; font-size: 0.88rem;">⚽ JUGAR PARTIDO EN VIVO</button>
+            <button id="btnSimBlock" class="btn-secondary" style="width: 100%; padding: 9px; font-size: 0.84rem;">⏩ SIMULAR HASTA MITAD / FINAL</button>
+          `}
         </div>
       </div>
 
@@ -159,27 +167,33 @@ export function renderDashboard(container, navigateTo) {
     </div>
   `;
 
-  // Botón Jugar Partido (Verifica si hay evento narrativo pendiente)
-  document.getElementById('btnPlayMatch').addEventListener('click', () => {
-    sfx.playWhistle();
-    const event = EventsEngine.getEventForWeek(gameState.week);
-    if (event) {
-      EventsEngine.renderEventModal(event, () => {
+  if (isSeasonCompleted) {
+    document.getElementById('btnFinishSeasonDirect')?.addEventListener('click', () => {
+      sfx.playClick();
+      showEndOfSeasonModal();
+    });
+  } else {
+    // Botón Jugar Partido (Verifica si hay evento narrativo pendiente)
+    document.getElementById('btnPlayMatch')?.addEventListener('click', () => {
+      sfx.playWhistle();
+      const event = EventsEngine.getEventForWeek(gameState.week);
+      if (event) {
+        EventsEngine.renderEventModal(event, () => {
+          navigateTo('match', { rival: nextRival, mode: 'live' });
+        });
+      } else {
         navigateTo('match', { rival: nextRival, mode: 'live' });
-      });
-    } else {
-      navigateTo('match', { rival: nextRival, mode: 'live' });
-    }
-  });
+      }
+    });
 
-  // Simular bloque de fechas hasta la Semana 19 (Parón Invernal) o Semana 38 (Final)
-  document.getElementById('btnSimBlock').addEventListener('click', () => {
-    sfx.playWhistle();
-    const targetWeek = gameState.week < 19 ? 19 : gameState.maxWeeks;
+    // Simular bloque de fechas hasta el parón invernal o final de temporada
+    document.getElementById('btnSimBlock')?.addEventListener('click', () => {
+      sfx.playWhistle();
+      const targetWeek = gameState.week < midSeasonWeek ? midSeasonWeek : gameState.maxWeeks;
 
-    let pendingEvent = null;
+      let pendingEvent = null;
 
-    while (gameState.week < targetWeek) {
+      while (gameState.week < targetWeek && gameState.week < gameState.maxWeeks) {
       const event = EventsEngine.getEventForWeek(gameState.week);
       if (event && !pendingEvent) {
         pendingEvent = event;
@@ -246,7 +260,7 @@ export function renderDashboard(container, navigateTo) {
     db.saveGame();
 
     const proceedNextStep = () => {
-      if (gameState.week === 19) {
+      if (gameState.week === midSeasonWeek) {
         TransferEngine.resetWindowLocks();
         showMidSeasonModal();
       } else if (gameState.week >= gameState.maxWeeks) {

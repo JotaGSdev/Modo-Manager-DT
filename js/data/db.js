@@ -137,6 +137,10 @@ class DatabaseManager {
       points: 0
     }));
 
+    const userLeague = this.leagues.find(l => l.id === userTeam.leagueId);
+    const numTeams = userLeague && userLeague.teams ? userLeague.teams.length : 20;
+    const computedMaxWeeks = (numTeams - 1) * 2;
+
     this.gameState = {
       managerName: managerName,
       managerCountry: managerCountry,
@@ -150,7 +154,7 @@ class DatabaseManager {
       managerScore: 500,
       season: 2026,
       week: 1,
-      maxWeeks: 38,
+      maxWeeks: computedMaxWeeks,
       isCareerFinished: false,
       failedTransferPlayers: [],
       standings: leagueStandings,
@@ -397,15 +401,33 @@ class DatabaseManager {
         if (!this.gameState.cupPhaseReached) this.gameState.cupPhaseReached = 'Fase de Grupos';
 
         const userTeam = this.teams[this.gameState.userTeamId];
-        if (userTeam && this.gameState.standings.length === 0) {
+        if (userTeam) {
           const userLeague = this.leagues.find(l => l.id === userTeam.leagueId);
           if (userLeague && userLeague.teams) {
-            this.gameState.standings = userLeague.teams.map(t => ({
-              teamId: t.id,
-              name: t.name,
-              played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, points: 0
-            }));
+            const numTeams = userLeague.teams.length;
+            this.gameState.maxWeeks = (numTeams - 1) * 2;
+
+            if (this.gameState.standings.length === 0) {
+              this.gameState.standings = userLeague.teams.map(t => ({
+                teamId: t.id,
+                name: t.name,
+                played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, points: 0
+              }));
+            }
           }
+        }
+
+        // Sanitizar semana y partidos jugados si sobrepasaron el límite
+        if (this.gameState.week > this.gameState.maxWeeks) {
+          this.gameState.week = this.gameState.maxWeeks;
+        }
+
+        if (this.gameState.standings) {
+          this.gameState.standings.forEach(s => {
+            if (s.played > this.gameState.maxWeeks) {
+              s.played = this.gameState.maxWeeks;
+            }
+          });
         }
       }
       return true;
