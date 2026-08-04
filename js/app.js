@@ -1,4 +1,14 @@
-// Aplicación Principal, Ruteador de Vistas y Sincronización Global Instantánea de Estado
+/**
+ * ============================================================================
+ * ENTRENADOR LEYENDA - APLICACIÓN PRINCIPAL (Router & Global Layout)
+ * ============================================================================
+ * Módulo central que orquesta:
+ * 1. Inicialización de la Base de Datos (db.js) y verificación de guardado.
+ * 2. Carga de la pantalla inicial de Nueva Carrera (newCareerUI.js) o el Layout Principal.
+ * 3. Renderizado de la Navbar superior estilo EA FC (DT, Club, Presupuesto, Confianza, Temporada).
+ * 4. Navegación entre vistas sin recarga de página (Single Page Application - SPA).
+ * 5. Manejo defensivo de errores con sanitización y recuperación automática.
+ */
 
 import { db } from './data/db.js';
 import { renderNewCareer } from './ui/newCareerUI.js';
@@ -8,22 +18,30 @@ import { renderTactics } from './ui/tacticsUI.js';
 import { renderTransfers } from './ui/transfersUI.js';
 import { renderYouth } from './ui/youthUI.js';
 import { renderTrophyRoom } from './ui/trophyUI.js';
-import { renderTraining } from './ui/trainingUI.js';
 import { renderMatch } from './ui/matchUI.js';
 import { renderContractView } from './ui/contractUI.js';
+import { renderFinances } from './ui/financesUI.js';
 import { ContractEngine } from './engine/contracts.js';
 import { sfx } from '../assets/audio/sfx.js';
 
 class App {
   constructor() {
+    /** @type {string} Vista activa actual en pantalla */
     this.currentView = 'dashboard';
+
+    /** @type {HTMLElement|null} Referencia al contenedor HTML <main id="mainContent"> */
     this.mainContainer = null;
   }
 
+  /**
+   * Punto de entrada de la aplicación.
+   * Carga la BD y decide si mostrar la selección de carrera o el dashboard.
+   */
   async init() {
     await db.init();
     const appEl = document.getElementById('app');
     
+    // Si no hay guardado previo ni estado de juego activo, ir a Nueva Carrera
     if (!db.hasSave() && !db.gameState) {
       renderNewCareer(appEl, () => this.startMainLayout());
     } else {
@@ -32,6 +50,9 @@ class App {
     }
   }
 
+  /**
+   * Construye el marco principal (Navbar + Sidebar + Main Content)
+   */
   startMainLayout() {
     const appEl = document.getElementById('app');
     const userTeam = db.teams[db.gameState.userTeamId] || { name: 'Mi Club' };
@@ -39,7 +60,7 @@ class App {
     const seasonLabel = `${db.gameState.season}/${db.gameState.season + 1}`;
 
     appEl.innerHTML = `
-      <!-- Navbar Superior estilo EA FC -->
+      <!-- Navbar Superior estilo EA FC con KPIs en Tiempo Real -->
       <nav class="top-navbar">
         <div class="brand-logo">⚽ ENTRENADOR LEYENDA</div>
 
@@ -53,7 +74,7 @@ class App {
       </nav>
 
       <div class="main-wrapper">
-        <!-- Sidebar de Navegación -->
+        <!-- Sidebar de Navegación Lateral -->
         <aside class="sidebar-nav">
           <a class="nav-item active" data-view="dashboard">🏠 Dashboard</a>
           <a class="nav-item" data-view="contract" id="navItemContract">📜 Mi Contrato (${contract.yearsRemaining}a)</a>
@@ -61,15 +82,16 @@ class App {
           <a class="nav-item" data-view="tactics">🧩 Tácticas & Alineación</a>
           <a class="nav-item" data-view="transfers">📝 Mercado Fichajes</a>
           <a class="nav-item" data-view="youth">🌱 Cantera</a>
+          <a class="nav-item" data-view="finances">💶 Finanzas</a>
           <a class="nav-item" data-view="trophies">🏆 Palmarés</a>
           <a class="nav-item mt-4" id="btnResetCareer" style="color: var(--accent-red);">🔄 Nueva Carrera</a>
         </aside>
 
-        <!-- Contenedor de Vista Activa -->
+        <!-- Contenedor Dinámico para Renderizar Vistas -->
         <main id="mainContent" class="main-content"></main>
       </div>
 
-      <!-- Elemento del Botón de Propinas Voluntarias (Se activa ÚNICAMENTE al finalizar la carrera) -->
+      <!-- Botón de Apoyo Voluntario (Aparece ÚNICAMENTE al completar las 25 temporadas) -->
       <a id="supportTipBtn" 
          href="https://buymeacoffee.com" 
          target="_blank" 
@@ -81,10 +103,10 @@ class App {
 
     this.mainContainer = document.getElementById('mainContent');
 
-    // Registrar actualizador global de UI
+    // Registrar función global para refrescar la barra de estado superior desde cualquier módulo
     window.updateGlobalUI = () => this.updateTopStatusBar();
 
-    // Tab Event Listeners
+    // Event listeners para la navegación del Sidebar
     document.querySelectorAll('.nav-item[data-view]').forEach(item => {
       item.addEventListener('click', (e) => {
         sfx.playClick();
@@ -94,6 +116,7 @@ class App {
       });
     });
 
+    // Event listener para Reiniciar Carrera
     document.getElementById('btnResetCareer').addEventListener('click', () => {
       if (confirm('¿Estás seguro de reiniciar la carrera actual de DT? Se perderán los datos de guardado.')) {
         localStorage.removeItem('entrenador_leyenda_save');
@@ -106,12 +129,11 @@ class App {
   }
 
   /**
-   * Sincronización instantánea de los 4 valores superiores (DT, Club, Presupuesto, Confianza Directiva y Temporada)
+   * Sincronización instantánea de los KPIs en la barra superior (DT, Club, Presupuesto, Confianza, Temporada)
    */
   updateTopStatusBar() {
     if (!db.gameState) return;
 
-    // Recalcular KPIs y confianza de la directiva
     const contract = ContractEngine.evaluatePerformance();
 
     const mDisplay = document.getElementById('topManagerDisplay');
@@ -143,7 +165,7 @@ class App {
   }
 
   /**
-   * Controla la visibilidad del botón de propinas únicamente al finalizar la carrera
+   * Controla la visibilidad del botón de donaciones voluntarias al final de la trayectoria
    */
   checkSupportTipVisibility() {
     const tipBtn = document.getElementById('supportTipBtn');
@@ -157,6 +179,11 @@ class App {
     }
   }
 
+  /**
+   * Cambia la vista activa del juego (Router SPA)
+   * @param {string} viewName - Nombre de la vista destino
+   * @param {Object} [params={}] - Parámetros adicionales para la vista (ej. rival, mode, isFinal)
+   */
   navigateTo(viewName, params = {}) {
     this.currentView = viewName;
     if (!this.mainContainer) return;
@@ -176,20 +203,12 @@ class App {
         renderTransfers(this.mainContainer);
       } else if (viewName === 'youth') {
         renderYouth(this.mainContainer);
-      } else if (viewName === 'training') {
-        renderTraining(this.mainContainer, (v, p) => this.navigateTo(v, p));
+      } else if (viewName === 'finances') {
+        renderFinances(this.mainContainer, (v, p) => this.navigateTo(v, p));
       } else if (viewName === 'trophies') {
         renderTrophyRoom(this.mainContainer);
       } else if (viewName === 'match') {
-        renderMatch(this.mainContainer, params.rival, params.mode, (v, p) => this.navigateTo(v, p));
-      } else if (viewName === 'youth') {
-        renderYouth(this.mainContainer);
-      } else if (viewName === 'training') {
-        renderTraining(this.mainContainer, (v, p) => this.navigateTo(v, p));
-      } else if (viewName === 'trophies') {
-        renderTrophyRoom(this.mainContainer);
-      } else if (viewName === 'match') {
-        renderMatch(this.mainContainer, params.rival, params.mode, (v, p) => this.navigateTo(v, p));
+        renderMatch(this.mainContainer, params.rival, params.mode, params.isFinal, (v, p) => this.navigateTo(v, p));
       }
     } catch (err) {
       console.error(`Error al renderizar vista '${viewName}':`, err);
@@ -223,6 +242,7 @@ class App {
   }
 }
 
+// Inicialización cuando el DOM está completamente cargado
 document.addEventListener('DOMContentLoaded', () => {
   const app = new App();
   app.init();

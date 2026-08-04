@@ -189,16 +189,22 @@ export function renderDashboard(container, navigateTo) {
       const match = new MatchEngine(userTeam, currentRival, userTeam.overall, currentRival.overall, gameState.matchBonus?.moraleBonus || 0);
       const res = match.simulateFullMatch();
 
-      // Distribución Financiera Directiva EA FC: 25% Fichajes | 75% Gastos Operativos
+      // Distribución Financiera: 25% Fichajes, acumular nómina en finances
       const totalTicketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
       const transferAllocation = Math.round(totalTicketRevenue * 0.25);
       gameState.budget += transferAllocation;
 
-      // Deducción semanal de salarios de jugadores y gastos administrativos del club
-      const weeklySalaryExpenses = squad.reduce((sum, p) => sum + (p.salary || 5000), 0);
-      const weeklyAdminExpenses = Math.round(userTeam.overall * 2000 + squad.length * 1500);
-      gameState.budget = Math.max(0, gameState.budget - (weeklySalaryExpenses + weeklyAdminExpenses));
+      // Acumular nómina en finances (sin deducir del budget aquí)
+      if (gameState.finances) {
+        gameState.finances.ticketRevenue = (gameState.finances.ticketRevenue || 0) + totalTicketRevenue;
+        const squadLocal = db.getTeamPlayers(userTeam.id);
+        const weeklyWage = squadLocal.reduce((sum, p) => sum + (p.salary || 5000), 0);
+        gameState.finances.weeklyWageTotal = (gameState.finances.weeklyWageTotal || 0) + weeklyWage;
+      }
 
+      // Actualizar racha de victorias
+      const userStandingLocal = gameState.standings.find(s => s.teamId === userTeam.id);
+      const prevPoints = userStandingLocal ? userStandingLocal.points : 0;
       const userStanding = gameState.standings.find(s => s.teamId === userTeam.id);
       const rivalStanding = gameState.standings.find(s => s.teamId === currentRival.id);
 
@@ -211,11 +217,15 @@ export function renderDashboard(container, navigateTo) {
 
         if (res.homeScore > res.awayScore) {
           userStanding.won++; userStanding.points += 3; rivalStanding.lost++;
+          gameState.currentStreak = (gameState.currentStreak || 0) + 1;
+          if (gameState.currentStreak > (gameState.bestWinStreak || 0)) gameState.bestWinStreak = gameState.currentStreak;
         } else if (res.homeScore < res.awayScore) {
           rivalStanding.won++; rivalStanding.points += 3; userStanding.lost++;
+          gameState.currentStreak = 0;
         } else {
           userStanding.drawn++; userStanding.points += 1;
           rivalStanding.drawn++; rivalStanding.points += 1;
+          gameState.currentStreak = 0;
         }
       }
 
@@ -298,6 +308,9 @@ export function renderDashboard(container, navigateTo) {
     else if (userRank <= 8) prizeMoney = 18000000;
 
     gameState.budget += prizeMoney;
+    if (gameState.finances) {
+      gameState.finances.leaguePrize = (gameState.finances.leaguePrize || 0) + prizeMoney;
+    }
 
     if (isChampion) {
       TrophyRoomEngine.recordTrophy(`${league.name} - Campeón`, seasonLabel);
@@ -379,7 +392,9 @@ export function renderDashboard(container, navigateTo) {
           <p style="margin-bottom: 6px;">🌟 <strong>MVP del Club:</strong> ${mvpName}</p>
           <p style="margin-bottom: 6px;">🏆 <strong>Posición Final:</strong> Puesto #${userRank} (${userStanding ? userStanding.points : 0} Pts | ${userStanding ? userStanding.won : 0} Victorias)</p>
           <p style="margin-bottom: 6px;">💰 <strong>Premio por Posición:</strong> <strong class="text-highlight">+€${(prizeMoney / 1000000).toFixed(1)}M</strong></p>
-          <p style="margin-bottom: 0;">🔥 <strong>Racha de Victorias:</strong> Racha de victorias consecutivas mantenida durante el torneo.</p>
+          <p style="margin-bottom: 6px;">🔥 <strong>Racha Más Larga:</strong> ${gameState.bestWinStreak || 0} victorias consecutivas esta temporada.</p>
+          <p style="margin-bottom: 6px;">⚽ <strong>Victorias en el Clásico:</strong> ${gameState.classicWins || 0} triunfos ante el rival histórico.</p>
+          <p style="margin-bottom: 0;">📋 <strong>Fichajes de la Temporada:</strong> ${(gameState.seasonPlayersIn || []).length} entradas · ${(gameState.seasonPlayersOut || []).length} salidas.</p>
         </div>
 
         <!-- RUEDA DE PRENSA ESTILO MOURINHO -->

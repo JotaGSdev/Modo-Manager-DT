@@ -1,16 +1,45 @@
+/**
+ * ============================================================================
+ * ENTRENADOR LEYENDA - GESTOR BASE DE DATOS Y ESTADO GLOBAL (db.js)
+ * ============================================================================
+ * Este módulo es el NÚCLEO Y FUENTE ÚNICA DE VERDAD (Single Source of Truth) del juego.
+ * Administra:
+ * 1. Carga inicial de ligas y equipos desde ./assets/data/leagues.json.
+ * 2. Generación y almacenamiento de futbolistas por equipo (teamData.js).
+ * 3. Estado completo de la partida activa (`this.gameState`).
+ * 4. Persistencia automática en `localStorage` (clave: `entrenador_leyenda_save`).
+ * 5. Avance y envejecimiento de temporada (`processSeasonPlayerEvolution`).
+ * 6. Historial de carrera multi-club durante las 25 temporadas máximas de juego.
+ */
+
 import { generateTeamPlayers, calculatePositionOvr, calculatePlayerMarketValue, calculatePlayerSalary } from './teamData.js';
 import { TransferEngine } from '../engine/transfers.js';
+import { ContractEngine } from '../engine/contracts.js';
 
 class DatabaseManager {
   constructor() {
+    /** @type {Array<Object>} Lista de ligas cargadas */
     this.leagues = [];
+    
+    /** @type {Object.<string, Object>} Diccionario de equipos por ID */
     this.teams = {};
+    
+    /** @type {Object.<string, Array<Object>>} Diccionario de plantillas por ID de equipo */
     this.players = {};
-    this.standings = {};
+    
+    /** @type {Object|null} Objeto con el estado global de la partida del usuario */
     this.gameState = null;
+    
+    /** @type {boolean} Flag de carga completada */
     this.isLoaded = false;
+    
+    /** @type {boolean} Flag para prevenir guardados concurrentes */
+    this.isSaving = false;
   }
 
+  /**
+   * Carga asíncrona de las ligas desde el archivo JSON local.
+   */
   async init() {
     if (this.isLoaded) return;
     try {
@@ -34,6 +63,12 @@ class DatabaseManager {
     }
   }
 
+  /**
+   * Obtiene o genera la plantilla completa de futbolistas para un equipo dado.
+   * Limita la media inicial máxima a 91 OVR (estándar EA FC / FIFA).
+   * @param {string} teamId - ID del equipo
+   * @returns {Array<Object>} Lista de jugadores del equipo
+   */
   getTeamPlayers(teamId) {
     if (!this.players[teamId]) {
       const team = this.teams[teamId];
@@ -44,7 +79,6 @@ class DatabaseManager {
       }
     }
 
-    // Actualizar valor de mercado y limitar media inicial máxima a 91 OVR (estándar EA FC / FIFA)
     if (this.players[teamId]) {
       this.players[teamId].forEach(p => {
         if (p.overall > 91) {
@@ -61,6 +95,11 @@ class DatabaseManager {
     return this.players[teamId];
   }
 
+  /**
+   * Busca un jugador por su ID único en todas las plantillas cargadas.
+   * @param {string} playerId - ID del jugador
+   * @returns {Object|null}
+   */
   getPlayerById(playerId) {
     for (const teamId in this.players) {
       const p = this.players[teamId].find(player => player.id === playerId);
@@ -69,6 +108,12 @@ class DatabaseManager {
     return null;
   }
 
+  /**
+   * Inicializa un nuevo estado de carrera de 25 temporadas para el DT.
+   * @param {string} userTeamId - ID del equipo seleccionado
+   * @param {string} managerName - Nombre del entrenador
+   * @returns {Object} Estado inicial creado
+   */
   newCareer(userTeamId, managerName = 'Director Técnico') {
     const userTeam = this.teams[userTeamId];
     if (!userTeam) return null;
@@ -121,7 +166,23 @@ class DatabaseManager {
       youthAcademy: [],
       eventsLog: [
         { date: '01/08/2026', text: `¡Bienvenido a ${userTeam.name}! El consejo directivo espera luchar por los primeros puestos esta temporada.` }
-      ]
+      ],
+      finances: {
+        ticketRevenue: 0,
+        weeklyWageTotal: 0,
+        playerSales: 0,
+        playerPurchases: 0,
+        leaguePrize: 0,
+        balance: 0
+      },
+      careerHistory: [],
+      winStreak: 0,
+      currentStreak: 0,
+      bestWinStreak: 0,
+      classicWins: 0,
+      seasonPlayersIn: [],
+      seasonPlayersOut: [],
+      cupPhaseReached: 'Fase de Grupos'
     };
 
     this.saveGame();
@@ -129,11 +190,17 @@ class DatabaseManager {
   }
 
   /**
-   * Procesa el final de temporada: Evoluciona medias, reinicia tabla de posiciones, goles y pichichis
+   * Procesa la transición de fin de temporada:
+   * 1. Aumenta +1 año de edad a todos los jugadores y reduce -1 año de sus contratos.
+   * 2. Evoluciona o degrada medias según la edad.
+   * 3. Registra el resumen en `careerHistory[]` para el palmarés multi-club.
+   * 4. Reinicia tabla de posiciones, goles y contadores de la liga.
+   * 5. Incrementa el año de la temporada (`season++`).
    */
   processSeasonPlayerEvolution() {
     if (!this.gameState) return;
 
+    // Verificar si se alcanzaron las 25 temporadas (2026 - 2050)
     if (this.gameState.season >= 2050) {
       this.gameState.isCareerFinished = true;
       this.gameState.eventsLog.unshift({
@@ -143,6 +210,8 @@ class DatabaseManager {
       this.saveGame();
       return;
     }
+
+    const userTeamId = this.gameState.userTeamId;
 
     // 1. EVOLUCIÓN, ENVEJECIMIENTO (+1 AÑO) Y DECREMENTO DE CONTRATOS (-1 AÑO) EN TODOS LOS EQUIPOS
     for (const tId in this.players) {
@@ -169,7 +238,6 @@ class DatabaseManager {
 
           p.overall = calculatePositionOvr(p.pos, p.pac, p.sho, p.pas, p.dri, p.def, p.phy);
           
-          // ACTUALIZAR EDAD Y RESTAR UN AÑO DE CONTRATO VINCULANTE
           p.age++;
           const currentContract = p.contractYears !== undefined ? p.contractYears : 3;
           p.contractYears = Math.max(0, currentContract - 1);
@@ -177,7 +245,6 @@ class DatabaseManager {
           p.appearances = 0;
           p.seasonGoals = 0;
 
-          // Alerta si el contrato en tu club caduca
           if (p.contractYears === 0 && tId === userTeamId) {
             this.gameState.eventsLog.unshift({
               date: `Temporada ${this.gameState.season + 1}`,
@@ -188,12 +255,12 @@ class DatabaseManager {
       }
     }
 
-    // AUMENTAR EDAD DE CANTERANOS TAMBIÉN EN LA ACADEMIA
+    // Aumentar edad de canteranos en la academia
     if (this.gameState.youthAcademy) {
       this.gameState.youthAcademy.forEach(y => y.age++);
     }
 
-    // 2. REINICIAR TABLA DE POSICIONES PARA LA NUEVA TEMPORADA
+    // 2. REINICIAR TABLA DE POSICIONES
     if (this.gameState.standings) {
       this.gameState.standings.forEach(s => {
         s.played = 0;
@@ -207,16 +274,53 @@ class DatabaseManager {
       });
     }
 
-    // 3. REINICIAR TABLA DE GOLEADORES, BLOQUEOS DE FICHAJES Y CONTADORES DE TEMPORADA
+    // 3. REINICIAR TABLA DE GOLEADORES Y BLOQUEOS DE FICHAJES
     this.gameState.topScorers = [];
     this.gameState.youthTournamentPlayed = false;
     this.gameState.seasonEventsCount = 0;
     TransferEngine.resetWindowLocks();
 
-    // 4. PROCESAR VINCULO CONTRACTUAL DEL DT (RESTAR 1 AÑO AL CONTRATO DE 3 AÑOS)
+    // 4. PROCESAR VÍNCULO CONTRACTUAL DEL DT (-1 AÑO)
     ContractEngine.processContractYearEnd();
 
-    // 5. Avanzar año y semana
+    // 5. GUARDAR HISTORIAL DE TEMPORADA EN careerHistory[]
+    const userTeamForHistory = this.teams[this.gameState.userTeamId];
+    const userStandingForHistory = this.gameState.standings ? this.gameState.standings.find(s => s.teamId === this.gameState.userTeamId) : null;
+    const squadForHistory = this.players[this.gameState.userTeamId] || [];
+    const topScorerHistory = [...squadForHistory].sort((a, b) => (b.seasonGoals || 0) - (a.seasonGoals || 0))[0];
+    
+    this.gameState.careerHistory.push({
+      season: this.gameState.season,
+      club: userTeamForHistory ? userTeamForHistory.name : 'Desconocido',
+      leagueRank: userStandingForHistory ? (this.gameState.standings.indexOf(userStandingForHistory) + 1) : 0,
+      isTitleWon: userStandingForHistory && this.gameState.standings[0] && this.gameState.standings[0].teamId === this.gameState.userTeamId,
+      mvpPlayer: topScorerHistory ? `${topScorerHistory.name} (${topScorerHistory.seasonGoals || 0} goles)` : 'N/A',
+      budgetStart: this.gameState.finances ? this.gameState.finances.budgetAtSeasonStart || this.gameState.budget : this.gameState.budget,
+      budgetEnd: this.gameState.budget,
+      playersIn: this.gameState.seasonPlayersIn ? [...this.gameState.seasonPlayersIn] : [],
+      playersOut: this.gameState.seasonPlayersOut ? [...this.gameState.seasonPlayersOut] : [],
+      winStreak: this.gameState.bestWinStreak || 0,
+      classicWins: this.gameState.classicWins || 0,
+      cupPhase: this.gameState.cupPhaseReached || 'No clasificado'
+    });
+
+    // 6. REINICIAR CONTADORES FINANCIEROS Y ESTADÍSTICOS DE LA TEMPORADA
+    if (this.gameState.finances) {
+      this.gameState.finances.budgetAtSeasonStart = this.gameState.budget;
+      this.gameState.finances.ticketRevenue = 0;
+      this.gameState.finances.weeklyWageTotal = 0;
+      this.gameState.finances.playerSales = 0;
+      this.gameState.finances.playerPurchases = 0;
+      this.gameState.finances.leaguePrize = 0;
+    }
+    this.gameState.bestWinStreak = 0;
+    this.gameState.currentStreak = 0;
+    this.gameState.classicWins = 0;
+    this.gameState.seasonPlayersIn = [];
+    this.gameState.seasonPlayersOut = [];
+    this.gameState.cupPhaseReached = 'Fase de Grupos';
+
+    // 7. AVANZAR AÑO Y SEMANA
     this.gameState.season++;
     this.gameState.week = 1;
     this.gameState.eventsLog.unshift({
@@ -227,6 +331,9 @@ class DatabaseManager {
     this.saveGame();
   }
 
+  /**
+   * Guarda el estado actual en localStorage y notifica a la interfaz global.
+   */
   saveGame() {
     if (!this.gameState || this.isSaving) return;
     this.isSaving = true;
@@ -237,7 +344,6 @@ class DatabaseManager {
       };
       localStorage.setItem('entrenador_leyenda_save', JSON.stringify(saveObj));
 
-      // Disparar sincronización instantánea de la interfaz superior si existe el actualizador
       if (typeof window !== 'undefined' && typeof window.updateGlobalUI === 'function') {
         window.updateGlobalUI();
       }
@@ -248,6 +354,10 @@ class DatabaseManager {
     }
   }
 
+  /**
+   * Carga la partida guardada desde localStorage e inicializa defaults faltantes.
+   * @returns {boolean} True si se cargó con éxito
+   */
   loadGame() {
     const dataStr = localStorage.getItem('entrenador_leyenda_save');
     if (!dataStr) return false;
@@ -265,8 +375,16 @@ class DatabaseManager {
         if (!this.gameState.scoutLevel) this.gameState.scoutLevel = 1;
         if (!this.gameState.matchBonus) this.gameState.matchBonus = { moraleBonus: 0, tacticalBonus: 0, penaltyBonus: 0 };
         if (!this.gameState.tactics) this.gameState.tactics = { formation: '4-3-3', mentality: 'Ofensiva', style: 'Tiki-Taka', defensiveLine: 'Alta', passingStyle: 'Corto' };
+        if (!this.gameState.finances) this.gameState.finances = { ticketRevenue: 0, weeklyWageTotal: 0, playerSales: 0, playerPurchases: 0, leaguePrize: 0, balance: 0 };
+        if (!this.gameState.careerHistory) this.gameState.careerHistory = [];
+        if (this.gameState.winStreak === undefined) this.gameState.winStreak = 0;
+        if (this.gameState.currentStreak === undefined) this.gameState.currentStreak = 0;
+        if (this.gameState.bestWinStreak === undefined) this.gameState.bestWinStreak = 0;
+        if (this.gameState.classicWins === undefined) this.gameState.classicWins = 0;
+        if (!this.gameState.seasonPlayersIn) this.gameState.seasonPlayersIn = [];
+        if (!this.gameState.seasonPlayersOut) this.gameState.seasonPlayersOut = [];
+        if (!this.gameState.cupPhaseReached) this.gameState.cupPhaseReached = 'Fase de Grupos';
 
-        // Si la tabla de posiciones está vacía por un guardado anterior, reconstruirla
         const userTeam = this.teams[this.gameState.userTeamId];
         if (userTeam && this.gameState.standings.length === 0) {
           const userLeague = this.leagues.find(l => l.id === userTeam.leagueId);
@@ -286,9 +404,14 @@ class DatabaseManager {
     }
   }
 
+  /**
+   * Comprueba si existe una partida guardada en localStorage.
+   * @returns {boolean}
+   */
   hasSave() {
     return localStorage.getItem('entrenador_leyenda_save') !== null;
   }
 }
 
+/** Instancia única singleton del gestor de datos */
 export const db = new DatabaseManager();

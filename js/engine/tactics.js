@@ -1,4 +1,18 @@
-// Gestor de Tácticas, Alineaciones, Arquetipos de Entrenador (Guardiola, Xabi Alonso, De la Fuente / Potrero) y Niveles Tácticos
+/**
+ * ============================================================================
+ * ENTRENADOR LEYENDA - GESTOR DE TÁCTICAS Y ARQUETIPOS DE DT (tactics.js)
+ * ============================================================================
+ * Administra las alineaciones 2D, formaciones de juego y arquetipos tácticos de DT.
+ * Arquetipos disponibles:
+ * 1. Pep Guardiola / Xavi Hernández: Maestro de Posesión y Pase Corto.
+ * 2. Xabi Alonso / Klopp / Ancelotti: Rey del Contraataque y Velocidad Directa.
+ * 3. Luis de la Fuente / Cholo Simeone: Garra de Potrero, Balón Parado y Presión.
+ * 
+ * Además proporciona:
+ * - Diccionario de coordenadas para formaciones 2D en el campo (4-3-3, 4-4-2, 4-2-3-1, 3-5-2, 5-3-2).
+ * - Selección automática de los 11 mejores titulares por posición (`getBestStartingXI`).
+ * - Sistema de nivel táctico del entrenador por consumo de EXP (`upgradeManagerSkill`).
+ */
 
 import { db } from '../data/db.js';
 
@@ -129,7 +143,10 @@ export const FORMATIONS = {
 
 export class TacticsEngine {
   /**
-   * Obtiene la alineación titular ideal para un equipo de jugadores
+   * Obtiene la alineación titular ideal para una plantilla de jugadores y formación elegida.
+   * @param {Array<Object>} players - Plantilla de futbolistas
+   * @param {string} formationName - Nombre de la formación (ej. '4-3-3')
+   * @returns {{ startingXI: Array<Object>, substitutes: Array<Object> }}
    */
   static getBestStartingXI(players, formationName = '4-3-3') {
     const formation = FORMATIONS[formationName] || FORMATIONS['4-3-3'];
@@ -155,7 +172,9 @@ export class TacticsEngine {
   }
 
   /**
-   * Mejora el nivel de una habilidad táctica del DT consumiendo EXP
+   * Mejora el nivel de una habilidad táctica del DT consumiendo EXP acumulada.
+   * @param {string} skillKey - Clave de la habilidad ('skill1' o 'skill2')
+   * @returns {{ success: boolean, message?: string, reason?: string }}
    */
   static upgradeManagerSkill(skillKey) {
     const gameState = db.gameState;
@@ -183,7 +202,10 @@ export class TacticsEngine {
   }
 
   /**
-   * Calcula la química y el nivel táctico acumulado incorporando el nivel del DT
+   * Calcula la valoración táctica efectiva de la alineación titular.
+   * @param {Array<Object>} startingXI - Alineación titular en cancha
+   * @param {Object} tacticsConfig - Configuración de tácticas del estado
+   * @returns {number} Calificación táctica (0-99)
    */
   static calculateEffectiveRating(startingXI, tacticsConfig) {
     if (!startingXI || startingXI.length === 0) return 60;
@@ -209,7 +231,6 @@ export class TacticsEngine {
     const avgOvr = totalOvr / startingXI.length;
     const chemistry = Math.min(100, 75 + chemistryPoints);
 
-    // Bonificación por Arquetipo y Nivel del Entrenador
     const gameState = db.gameState;
     const mTac = gameState?.managerTactics || { skillLevels: { skill1: 1, skill2: 1 } };
     const skillBonus = ((mTac.skillLevels?.skill1 || 1) + (mTac.skillLevels?.skill2 || 1)) * 0.8;

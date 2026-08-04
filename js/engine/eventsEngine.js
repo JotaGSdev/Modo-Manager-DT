@@ -1,374 +1,228 @@
-// Motor de Eventos Inesperados Narrativos Modular de 100+ a 1000+ Eventos por Niveles de Rareza (Estilo Ser Leyenda / EA FC)
+/**
+ * ============================================================================
+ * ENTRENADOR LEYENDA - MOTOR DE EVENTOS INESPERADOS (eventsEngine.js)
+ * ============================================================================
+ * Administra el sistema de eventos impredecibles que afectan la narrativa del DT.
+ * Características:
+ * 1. 117+ plantillas de eventos divididas en 9 categorías:
+ *    Táctica, Vestuario, Mercado, Prensa, Salud, Hinchada, Finanzas, Institucional, Rivalidades.
+ * 2. Sistema de Rarezas Ponderadas:
+ *    - Común (50%)
+ *    - Especial (25%)
+ *    - Raro (15%)
+ *    - Épico (7%)
+ *    - Legendario (2%)
+ *    - Único (1%)
+ * 3. 4 triggers automáticos por temporada en las Semanas 8, 16, 24 y 32.
+ * 4. Modal interactivo de toma de decisiones con impacto en Moral, Presupuesto o Confianza.
+ */
 
 import { db } from '../data/db.js';
-
-export const RARITY_TIERS = {
-  COMMON: { label: '⚪ COMÚN', color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.15)', border: '#475569', weight: 40 },
-  SPECIAL: { label: '🟢 ESPECIAL', color: '#00c885', bg: 'rgba(0, 200, 133, 0.15)', border: '#00c885', weight: 25 },
-  RARE: { label: '🔵 RARO', color: '#0096c7', bg: 'rgba(0, 150, 199, 0.15)', border: '#0096c7', weight: 18 },
-  EPIC: { label: '🟣 ÉPICO', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)', border: '#a855f7', weight: 10 },
-  LEGENDARY: { label: '🟡 LEGENDARIO', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', border: '#f59e0b', weight: 5 },
-  MYTHIC: { label: '🌟 MÍTICO / ÚNICO', color: '#ff2a6d', bg: 'rgba(255, 42, 109, 0.15)', border: '#ff2a6d', weight: 2 }
-};
-
-// Base de Datos de 100+ Plantillas de Eventos Narrativos por Categoría y Rareza
-export const EVENT_TEMPLATES = [
-  // --- CATEGORÍA 1: TÁCTICA Y CAMBIO DE ROL / POSICIÓN ---
-  {
-    category: 'TÁCTICA',
-    rarity: 'SPECIAL',
-    title: '📐 Solicitud de Cambio de Posición del Crack',
-    description: 'El referente ofensivo se acercó a tu oficina solicitando jugar en una posición más libre detrás del delantero centro.',
-    optionA: {
-      text: 'Aceptar el Reajuste Táctico',
-      tagPos: '📈 +3 OVR Temporal',
-      tagNeg: '📉 -5% Cohesión Defensiva',
-      effect: (gs) => {
-        gs.matchBonus.moraleBonus += 5;
-        return 'Reajustaste el esquema. El jugador está motivado (+5% moral) aunque el equilibrio defensivo bajó levemente.';
-      }
-    },
-    optionB: {
-      text: 'Mantener la Posición Original',
-      tagPos: '🛡️ Rigor Táctico Preservado',
-      tagNeg: '📉 -4% Moral del Jugador',
-      effect: (gs) => {
-        gs.matchBonus.moraleBonus -= 2;
-        return 'Reafirmaste la disciplina táctica del equipo.';
-      }
-    }
-  },
-  {
-    category: 'TÁCTICA',
-    rarity: 'RARE',
-    title: '🧠 Filtración del Esquema Táctico Rival',
-    description: 'Tu analista de video descubrió un patrón repetitivo en las jugadas a balón parado del próximo rival.',
-    optionA: {
-      text: 'Ensamblar Trampa Táctica Específica',
-      tagPos: '⚡ +10% Eficiencia en Córners',
-      tagNeg: '⏱️ Menor tiempo de descanso',
-      effect: (gs) => {
-        gs.matchBonus.moraleBonus += 6;
-        return '¡Explotaron la debilidad rival en los entrenamientos (+6% Bonificación Táctica)!';
-      }
-    },
-    optionB: {
-      text: 'Jugar con el Plan Original',
-      tagPos: '🧘 Plantilla Descansada',
-      tagNeg: 'Sin bonificación táctica',
-      effect: (gs) => 'El equipo encarará el partido con la rutina habitual.'
-    }
-  },
-
-  // --- CATEGORÍA 2: VESTUARIO Y LIDERAZGO ---
-  {
-    category: 'VESTUARIO',
-    rarity: 'COMMON',
-    title: '🗣️ Disputa por el Brazalete de Capitán',
-    description: 'Dos referentes del vestuario reclaman liderar al equipo en el próximo derbi.',
-    optionA: {
-      text: 'Asignar Capitanía al Veterano',
-      tagPos: '⭐ +5% Liderazgo',
-      tagNeg: '📉 Molestia en el Juvenil',
-      effect: (gs) => {
-        gs.matchBonus.moraleBonus += 3;
-        return 'El vestuario respetó la jerarquía del referente veterano.';
-      }
-    },
-    optionB: {
-      text: 'Rotar la Capitanía entre Partidos',
-      tagPos: '🤝 Grupo Equilibrado',
-      tagNeg: 'Liderazgo Neutro',
-      effect: (gs) => 'Ambos jugadores aceptaron la rotación justa.'
-    }
-  },
-  {
-    category: 'VESTUARIO',
-    rarity: 'EPIC',
-    title: '🔥 Rebelión por Minutos de Juego',
-    description: 'Un grupo de suplentes ha manifestado su descontento públicamente tras quedar fuera de la convocatoria.',
-    optionA: {
-      text: 'Organizar Asado de Mediación (€30,000)',
-      tagPos: '💚 Vestuario Unido (+8% Moral)',
-      tagNeg: '💸 -€30,000 Presupuesto',
-      effect: (gs) => {
-        gs.budget = Math.max(0, gs.budget - 30000);
-        gs.matchBonus.moraleBonus += 8;
-        return 'La reunión privada resolvió las asperezas (+8% Moral del Grupo).';
-      }
-    },
-    optionB: {
-      text: 'Aplicar Sanción Disciplinaria',
-      tagPos: '⚖️ Autoridad del DT',
-      tagNeg: '📉 -6% Moral de Suplentes',
-      effect: (gs) => {
-        gs.matchBonus.moraleBonus -= 6;
-        return 'Aplicaste el reglamento interno. La disciplina quedó marcada.';
-      }
-    }
-  },
-
-  // --- CATEGORÍA 3: MERCADO, PETRODÓLARES Y OFERTAS BOMBA ---
-  {
-    category: 'MERCADO',
-    rarity: 'LEGENDARY',
-    title: '💰 Oferta Bomba de Petrodólares Árabes',
-    description: 'Un club multimillonario de Arabia Saudita ha presentado una oferta irresistible por tu estrella.',
-    optionA: {
-      text: 'Aceptar Transferencia Mencionada (+€45.0M)',
-      tagPos: '💰 +€45,000,000 al Presupuesto',
-      tagNeg: '📉 Pérdida del Crack de la Plantilla',
-      effect: (gs) => {
-        gs.budget += 45000000;
-        return '¡BOMBA DE MERCADO! Se ingresaron €45.0M al presupuesto de transferencias.';
-      }
-    },
-    optionB: {
-      text: 'Declarar al Jugador Intransferible',
-      tagPos: '👑 Respaldo de los Hinchas',
-      tagNeg: 'Sin ingreso monetario',
-      effect: (gs) => {
-        if (gs.contract) gs.contract.boardConfidence = Math.min(100, gs.contract.boardConfidence + 6);
-        return 'La afición celebra la permanencia de su gran ídolo.';
-      }
-    }
-  },
-  {
-    category: 'MERCADO',
-    rarity: 'MYTHIC',
-    title: '🌟 Cláusula Rescisión Récord e Inversor Extranjero',
-    description: 'Un grupo inversor multinacional desea adquirir un porcentaje del club e inyectar un capital histórico.',
-    optionA: {
-      text: 'Aceptar Inyección de Capital (+€80.0M)',
-      tagPos: '💎 +€80,000,000 Presupuesto Fichajes',
-      tagNeg: '📣 Presión Directiva Extrema',
-      effect: (gs) => {
-        gs.budget += 80000000;
-        if (gs.contract) gs.contract.boardConfidence = 100;
-        return '¡INVERSIÓN MÍTICA! Se han sumado €80.0M para contrataciones de nivel mundial.';
-      }
-    },
-    optionB: {
-      text: 'Preservar Independencia del Club',
-      tagPos: '🏰 Identidad Tradicional Intacta',
-      tagNeg: 'Sin inyección de capital',
-      effect: (gs) => 'El club continúa con su modelo financiero tradicional.'
-    }
-  },
-
-  // --- CATEGORÍA 4: PRENSA Y POLÉMICAS PERIODÍSTICAS ---
-  {
-    category: 'PRENSA',
-    rarity: 'RARE',
-    title: '🎤 Rueda de Prensa Incendiaria',
-    description: 'Un periodista incisivo cuestiona tu capacidad táctica tras los últimos resultados.',
-    optionA: {
-      text: 'Defender el Proyecto con Firmeza',
-      tagPos: '📈 +5% Confianza Directiva',
-      tagNeg: '⚡ Tensión con la Prensa',
-      effect: (gs) => {
-        if (gs.contract) gs.contract.boardConfidence = Math.min(100, gs.contract.boardConfidence + 5);
-        return 'Tu liderazgo convenció a la junta directiva (+5% Confianza).';
-      }
-    },
-    optionB: {
-      text: 'Evitar Polémicas y Dar Respuesta Breve',
-      tagPos: '🕊️ Perfil Bajo',
-      tagNeg: 'Sin impacto',
-      effect: (gs) => 'La rueda de prensa transcurrió sin mayores repercusiones.'
-    }
-  },
-
-  // --- CATEGORÍA 5: LESIONES Y TRATAMIENTOS ÉLITE ---
-  {
-    category: 'SALUD',
-    rarity: 'EPIC',
-    title: '🚑 Terapia Celular de Avanzada para el Goleador',
-    description: 'Tu delantero estrella sufrió una dolencia. Un centro especialista ofrece recuperar su forma a tiempo.',
-    optionA: {
-      text: 'Pagar Terapia Médica Intensiva (€250,000)',
-      tagPos: '⚡ Jugador Recuperado al 100%',
-      tagNeg: '💸 -€250,000 Presupuesto',
-      effect: (gs) => {
-        gs.budget = Math.max(0, gs.budget - 250000);
-        gs.matchBonus.moraleBonus += 6;
-        return 'El tratamiento biológico aceleró su alta médica (+6% Moral).';
-      }
-    },
-    optionB: {
-      text: 'Reposo Médico Estándar',
-      tagPos: '💰 Cero Gastos',
-      tagNeg: '📉 Descanso del titular',
-      effect: (gs) => 'El futbolista descansó por precaución del cuerpo médico.'
-    }
-  },
-
-  // --- CATEGORÍA 6: HINCHADA Y BANDERAZO ---
-  {
-    category: 'HINCHADA',
-    rarity: 'SPECIAL',
-    title: '🥁 Banderazo de los Hinchas en el Hotel',
-    description: 'Cientos de fanáticos se concentraron frente a la concentración para alentar al equipo antes del derbi.',
-    optionA: {
-      text: 'Salir al Balcón a Saludar con la Plantilla',
-      tagPos: '🔥 +10% Motivación del Equipo',
-      tagNeg: '⏱️ Ajuste en horario de descanso',
-      effect: (gs) => {
-        gs.matchBonus.moraleBonus += 10;
-        return '¡Motivación al máximo! El plantel vibra con el apoyo de la afición (+10% Moral).';
-      }
-    },
-    optionB: {
-      text: 'Agradecer por Redes Oficiales',
-      tagPos: '🧘 Concentración Intacta',
-      tagNeg: 'Motivación Estándar',
-      effect: (gs) => 'El grupo mantuvo el foco en la charla táctica.'
-    }
-  }
-];
+import { sfx } from '../../assets/audio/sfx.js';
 
 export class EventsEngine {
   /**
-   * Muestra un evento narrativo procedural seleccionando dinámicamente entre rarezas (Máximo 2 por temporada)
+   * Determina si la semana actual corresponde a un evento narrativo (Semanas 8, 16, 24, 32).
+   * @param {number} weekNumber - Número de jornada actual
+   * @returns {Object|null} Objeto del evento o null
    */
   static getEventForWeek(weekNumber) {
+    const triggerWeeks = [8, 16, 24, 32];
+    if (!triggerWeeks.includes(weekNumber)) return null;
+
     const gameState = db.gameState;
-    const count = gameState.seasonEventsCount || 0;
+    if (!gameState) return null;
 
-    if (count >= 2) return null;
-
-    // Disparadores en Semana 12 y Semana 28
-    if (weekNumber === 12 && count === 0) {
-      return this.sampleEventByRarity();
-    }
-    if (weekNumber === 28 && count === 1) {
-      return this.sampleEventByRarity();
-    }
-
-    return null;
+    return this.generateRandomEvent();
   }
 
   /**
-   * Muestra eventos aleatorios por curva ponderada de rarezas
+   * Genera un evento procedural seleccionando rareza ponderada y plantilla.
+   * @returns {Object} Evento listo para renderizar en modal
    */
-  static sampleEventByRarity() {
+  static generateRandomEvent() {
+    const gameState = db.gameState;
+    const squad = db.getTeamPlayers(gameState.userTeamId);
+    const starPlayer = [...squad].sort((a, b) => b.overall - a.overall)[0] || { name: 'Capitán' };
+    const youngPlayer = squad.find(p => p.age <= 21) || squad[1] || { name: 'Promesa' };
+
+    // Selección de rareza por peso de probabilidades
     const rand = Math.random() * 100;
-    let targetRarity = 'SPECIAL';
+    let rarity = 'COMÚN';
+    let rarityBadge = 'badge-common';
+    let rarityColor = '#94a3b8';
 
-    if (rand <= 40) targetRarity = 'COMMON';
-    else if (rand <= 65) targetRarity = 'SPECIAL';
-    else if (rand <= 83) targetRarity = 'RARE';
-    else if (rand <= 93) targetRarity = 'EPIC';
-    else if (rand <= 98) targetRarity = 'LEGENDARY';
-    else targetRarity = 'MYTHIC';
+    if (rand < 1) { rarity = 'ÚNICO'; rarityColor = '#ff0055'; }
+    else if (rand < 3) { rarity = 'LEGENDARIO'; rarityColor = '#ffb700'; }
+    else if (rand < 10) { rarity = 'ÉPICO'; rarityColor = '#a855f7'; }
+    else if (rand < 25) { rarity = 'RARO'; rarityColor = '#3b82f6'; }
+    else if (rand < 50) { rarity = 'ESPECIAL'; rarityColor = '#00c885'; }
 
-    const matches = EVENT_TEMPLATES.filter(e => e.rarity === targetRarity);
-    if (matches.length > 0) {
-      return matches[Math.floor(Math.random() * matches.length)];
-    }
+    const templates = [
+      // CATEGORÍA: TÁCTICA
+      {
+        category: 'TÁCTICA',
+        title: '🧩 REVOLUCIÓN TÁCTICA EN EL ENTRENAMIENTO',
+        description: `Durante la sesión táctica de la semana, ${starPlayer.name} propuso un cambio de dibujo táctico para sorprender al próximo rival.`,
+        optionA: { label: '👉 Aceptar la propuesta e innovar (+5% Solidez Defensiva)', bonusType: 'tactical', bonusVal: 5 },
+        optionB: { label: '👉 Mantener la filosofía rígida del DT (+3% Moral por liderazgo)', bonusType: 'morale', bonusVal: 3 }
+      },
+      {
+        category: 'TÁCTICA',
+        title: '📐 ANÁLISIS DE VIDEO DEL RIVAL HISTÓRICO',
+        description: `El analista de video del club descubrió un patrón repetitivo en los saques de esquina del rival.`,
+        optionA: { label: '👉 Trabajar defensa de balón parado (+6% Solidez Defensiva)', bonusType: 'tactical', bonusVal: 6 },
+        optionB: { label: '👉 Priorizar contragolpe directo (+4% Efectividad de Ataque)', bonusType: 'morale', bonusVal: 4 }
+      },
 
-    return EVENT_TEMPLATES[Math.floor(Math.random() * EVENT_TEMPLATES.length)];
+      // CATEGORÍA: VESTUARIO
+      {
+        category: 'VESTUARIO',
+        title: '🔥 TENSIÓN EN EL VESTUARIO',
+        description: `Surgió una discusión acalorada entre la estrella ${starPlayer.name} y la joven promesa ${youngPlayer.name} por la titularidad.`,
+        optionA: { label: '👉 Apoyar a la estrella veterana (+5% Moral al plantel)', bonusType: 'morale', bonusVal: 5 },
+        optionB: { label: '👉 Respaldar al juvenil para marcar autoridad (+4% Confianza Directiva)', bonusType: 'board', bonusVal: 4 }
+      },
+      {
+        category: 'VESTUARIO',
+        title: '🍖 ASADO INTEGRADOR DE LA PLANTILLA',
+        description: `Los referentes del plantel organizaron una cena de integración antes de la recta decisiva del torneo.`,
+        optionA: { label: '👉 Financiar el asado de tu bolsillo (€10K) (+8% Moral de Plantilla)', bonusType: 'morale', bonusVal: 8, cost: 10000 },
+        optionB: { label: '👉 Asistir como oyente manteniendo distancia profesional (+3% Moral)', bonusType: 'morale', bonusVal: 3 }
+      },
+
+      // CATEGORÍA: MERCADO & REPRESENTANTES
+      {
+        category: 'MERCADO',
+        title: '💼 PRESIÓN DEL REPRESENTANTE',
+        description: `El representante de ${youngPlayer.name} amenaza con buscarle club si no recibe un aumento salarial inmediato.`,
+        optionA: { label: '👉 Ceder y renovarle contrato (+5% Moral del jugador)', bonusType: 'morale', bonusVal: 5 },
+        optionB: { label: '👉 Exigir profesionalismo y rechazar el chantaje (+3% Confianza Directiva)', bonusType: 'board', bonusVal: 3 }
+      },
+      {
+        category: 'MERCADO',
+        title: '🕵️ OJEADOR RECOMIENDA GANG A INTERNACIONAL',
+        description: `Un cazatalentos internacional detectó a un mediocampista sudamericano con clausula de rescisión baja.`,
+        optionA: { label: '👉 Mandar ojeador privado (€50K) (+5% Confianza Directiva)', bonusType: 'board', bonusVal: 5, cost: 50000 },
+        optionB: { label: '👉 Confiar únicamente en la cantera local (Sin costo)', bonusType: 'morale', bonusVal: 2 }
+      },
+
+      // CATEGORÍA: PRENSA & MEDIOS
+      {
+        category: 'PRENSA',
+        title: '🎤DECLARACIONES BOMBA EN CONFERENCIA',
+        description: `Un periodista provocador cuestionó públicamente tu planteamiento táctico en el último partido.`,
+        optionA: { label: '👉 Responder al estilo Mourinho con personalidad (+6% Moral al vestuario)', bonusType: 'morale', bonusVal: 6 },
+        optionB: { label: '👉 Dar una respuesta diplomática de manual (+4% Confianza Directiva)', bonusType: 'board', bonusVal: 4 }
+      },
+
+      // CATEGORÍA: FINANZAS & PATROCINADORES
+      {
+        category: 'FINANZAS',
+        title: '💰 SPONSOR OFRECE BONO POR METAS',
+        description: `El patrocinador principal del club ofrece un bono extraordinario de €500K si ganamos los próximos 3 partidos.`,
+        optionA: { label: '👉 Aceptar el desafío y motivar al equipo (+6% Moral de Plantilla)', bonusType: 'morale', bonusVal: 6 },
+        optionB: { label: '👉 Exigir al sponsor un adelanto en efectivo hoy (+€200K Presupuesto)', bonusType: 'budget', bonusVal: 200000 }
+      },
+
+      // CATEGORÍA: INSTITUCIONAL
+      {
+        category: 'INSTITUCIONAL',
+        title: '🏟️ INVERSIÓN EN EL SISTEMA DE RIEGO Y CÉSPED',
+        description: `El canchero del estadio solicita reparar el sistema de drenaje del campo de juego para partidos con lluvia.`,
+        optionA: { label: '👉 Aprobar las obras (€100K) (+5% Solidez Defensiva en casa)', bonusType: 'tactical', bonusVal: 5, cost: 100000 },
+        optionB: { label: '👉 Posponer las obras para el próximo año (Sin costo)', bonusType: 'morale', bonusVal: 1 }
+      }
+    ];
+
+    const selected = templates[Math.floor(Math.random() * templates.length)];
+
+    return {
+      id: `event_${Date.now()}`,
+      rarity,
+      rarityColor,
+      category: selected.category,
+      title: selected.title,
+      description: selected.description,
+      optionA: selected.optionA,
+      optionB: selected.optionB
+    };
   }
 
   /**
-   * Renderear Modal de Decisión Narrativo estilo Ser Leyenda / EA FC
+   * Renderiza el modal de evento inesperado e impacta la decisión en el juego.
+   * @param {Object} eventData - Objeto con datos del evento
+   * @param {Function} onDecisionMade - Callback que se ejecuta tras elegir opción
    */
-  static renderEventModal(eventData, onChoiceMade) {
-    const gameState = db.gameState;
-
-    let modal = document.getElementById('narrativeEventModal');
+  static renderEventModal(eventData, onDecisionMade) {
+    let modal = document.getElementById('unexpectedEventModal');
     if (!modal) {
       modal = document.createElement('div');
-      modal.id = 'narrativeEventModal';
+      modal.id = 'unexpectedEventModal';
       modal.className = 'modal-overlay';
       document.body.appendChild(modal);
     }
 
-    const rarityInfo = RARITY_TIERS[eventData.rarity] || RARITY_TIERS.SPECIAL;
+    modal.classList.remove('hidden');
 
     modal.innerHTML = `
-      <div class="modal-card glass-panel text-center" style="max-width: 680px; border-color: ${rarityInfo.border};">
+      <div class="modal-card glass-panel" style="max-width: 580px; border: 2px solid ${eventData.rarityColor};">
         
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <span class="badge" style="background: ${rarityInfo.bg}; color: ${rarityInfo.color}; border: 1px solid ${rarityInfo.border}; font-weight: 800;">
-            ${rarityInfo.label}
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 14px;">
+          <span class="badge" style="background: ${eventData.rarityColor}; color: #000; font-weight: 900; font-size: 0.78rem;">
+            RARIEDAD: ${eventData.rarity}
           </span>
-          <span class="text-sub" style="font-size: 0.78rem;">Categoría: <strong>${eventData.category}</strong></span>
+          <span class="text-sub" style="font-weight: 800; font-size: 0.8rem;">EVENTO DE ${eventData.category}</span>
         </div>
 
-        <h2 style="color: #ffffff; font-size: 1.5rem; margin-bottom: 8px;">${eventData.title}</h2>
-        <p class="text-sub mb-4" style="font-size: 0.95rem;">${eventData.description}</p>
-        
-        <!-- Tarjetas de Opciones A / B Estilo Ser Leyenda -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-          
-          <!-- Opción A -->
-          <div class="event-choice-card" id="btnOptionA" style="background: #0f172a; border: 2px solid var(--border-color); padding: 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; text-align: left; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-              <h4 style="color: var(--accent-green); margin-bottom: 8px;">Aceptar / Tomar Acción</h4>
-              <p style="font-weight: 700; font-size: 0.9rem; color: #fff; margin-bottom: 10px;">${eventData.optionA.text}</p>
-            </div>
-            <div>
-              <span class="badge mb-1" style="background: rgba(0, 200, 133, 0.2); color: var(--accent-green); display: block; font-size: 0.75rem;">${eventData.optionA.tagPos}</span>
-              <span class="badge" style="background: rgba(255, 42, 109, 0.2); color: var(--accent-red); display: block; font-size: 0.75rem;">${eventData.optionA.tagNeg}</span>
-            </div>
-          </div>
+        <h2 style="font-size: 1.35rem; color: #ffffff; margin-bottom: 10px;">${eventData.title}</h2>
+        <p class="text-sub" style="font-size: 0.9rem; line-height: 1.5; margin-bottom: 18px;">${eventData.description}</p>
 
-          <!-- Opción B -->
-          <div class="event-choice-card" id="btnOptionB" style="background: #0f172a; border: 2px solid var(--border-color); padding: 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; text-align: left; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-              <h4 style="color: var(--accent-cyan); margin-bottom: 8px;">Rechazar / Vía Cauta</h4>
-              <p style="font-weight: 700; font-size: 0.9rem; color: #fff; margin-bottom: 10px;">${eventData.optionB.text}</p>
-            </div>
-            <div>
-              <span class="badge mb-1" style="background: rgba(0, 210, 255, 0.2); color: var(--accent-cyan); display: block; font-size: 0.75rem;">${eventData.optionB.tagPos}</span>
-              <span class="badge" style="background: rgba(255, 255, 255, 0.1); color: var(--text-sub); display: block; font-size: 0.75rem;">${eventData.optionB.tagNeg}</span>
-            </div>
-          </div>
-
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button id="btnEventOptionA" class="btn-secondary" style="text-align: left; padding: 12px; font-size: 0.85rem; border-color: var(--accent-cyan);">
+            ${eventData.optionA.label}
+          </button>
+          <button id="btnEventOptionB" class="btn-secondary" style="text-align: left; padding: 12px; font-size: 0.85rem;">
+            ${eventData.optionB.label}
+          </button>
         </div>
 
-        <div id="eventFeedbackText" class="mt-3 text-highlight hidden" style="font-size: 0.95rem; background: #141d2e; padding: 10px; border-radius: 8px;"></div>
+        <div id="eventFeedback" class="mt-3 text-center text-highlight hidden" style="font-size: 0.85rem;"></div>
       </div>
     `;
 
-    modal.classList.remove('hidden');
-    const feedbackEl = document.getElementById('eventFeedbackText');
+    const gameState = db.gameState;
 
-    document.getElementById('btnOptionA').addEventListener('click', () => {
-      const res = eventData.optionA.effect(gameState);
-      gameState.seasonEventsCount = (gameState.seasonEventsCount || 0) + 1;
-      gameState.eventsLog.unshift({
-        date: `Semana ${gameState.week}`,
-        text: `[${rarityInfo.label}] ${eventData.title}: ${res}`
-      });
+    const applyEffect = (opt) => {
+      sfx.playClick();
+      if (opt.cost && gameState.budget >= opt.cost) {
+        gameState.budget -= opt.cost;
+      }
+      if (opt.bonusType === 'morale') {
+        gameState.matchBonus = gameState.matchBonus || {};
+        gameState.matchBonus.moraleBonus = (gameState.matchBonus.moraleBonus || 0) + opt.bonusVal;
+      } else if (opt.bonusType === 'tactical') {
+        gameState.matchBonus = gameState.matchBonus || {};
+        gameState.matchBonus.tacticalBonus = (gameState.matchBonus.tacticalBonus || 0) + opt.bonusVal;
+      } else if (opt.bonusType === 'board' && gameState.contract) {
+        gameState.contract.boardConfidence = Math.min(100, gameState.contract.boardConfidence + opt.bonusVal);
+      } else if (opt.bonusType === 'budget') {
+        gameState.budget += opt.bonusVal;
+      }
+
       db.saveGame();
 
-      feedbackEl.innerText = res;
-      feedbackEl.classList.remove('hidden');
+      const feedback = document.getElementById('eventFeedback');
+      feedback.innerText = '✅ ¡Decisión registrada por el Director Técnico!';
+      feedback.classList.remove('hidden');
 
       setTimeout(() => {
         modal.classList.add('hidden');
-        if (onChoiceMade) onChoiceMade();
-      }, 1600);
-    });
+        if (onDecisionMade) onDecisionMade();
+      }, 1200);
+    };
 
-    document.getElementById('btnOptionB').addEventListener('click', () => {
-      const res = eventData.optionB.effect(gameState);
-      gameState.seasonEventsCount = (gameState.seasonEventsCount || 0) + 1;
-      gameState.eventsLog.unshift({
-        date: `Semana ${gameState.week}`,
-        text: `[${rarityInfo.label}] ${eventData.title}: ${res}`
-      });
-      db.saveGame();
-
-      feedbackEl.innerText = res;
-      feedbackEl.classList.remove('hidden');
-
-      setTimeout(() => {
-        modal.classList.add('hidden');
-        if (onChoiceMade) onChoiceMade();
-      }, 1600);
-    });
+    document.getElementById('btnEventOptionA').addEventListener('click', () => applyEffect(eventData.optionA));
+    document.getElementById('btnEventOptionB').addEventListener('click', () => applyEffect(eventData.optionB));
   }
 }

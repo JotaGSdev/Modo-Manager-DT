@@ -1,9 +1,27 @@
-// Motor de Simulación de Partidos e Integración de Simulación Completa de la Liga
+/**
+ * ============================================================================
+ * ENTRENADOR LEYENDA - MOTOR DE SIMULACIÓN DE PARTIDOS (matchEngine.js)
+ * ============================================================================
+ * Administra la simulación minuto a minuto de cada encuentro:
+ * 1. Simulación tick-by-tick (0' a 90') con probabilidad de tiros y goles.
+ * 2. Acumulación dinámica de goles esperados (xG) y tiros a portería.
+ * 3. Cálculo dinámico de posesión de balón (homePossession vs awayPossession).
+ * 4. Atribución automática de goles a los futbolistas de la plantilla.
+ * 5. Simulación completa de los partidos de los rivales de la liga (`simulateAllRivalMatches`).
+ */
 
 import { ProbabilityEngine } from './probability.js';
 import { db } from '../data/db.js';
 
 export class MatchEngine {
+  /**
+   * Inicializa un partido entre dos equipos
+   * @param {Object} homeTeam - Objeto del equipo local
+   * @param {Object} awayTeam - Objeto del equipo visitante
+   * @param {number} homeRating - Valoración global (OVR) local + bonificaciones
+   * @param {number} awayRating - Valoración global (OVR) visitante
+   * @param {number} [userBonus=0] - Bonificación de moral/táctica adicional
+   */
   constructor(homeTeam, awayTeam, homeRating, awayRating, userBonus = 0) {
     this.homeTeam = homeTeam;
     this.awayTeam = awayTeam;
@@ -25,6 +43,9 @@ export class MatchEngine {
     this.initMatch();
   }
 
+  /**
+   * Configura las probabilidades iniciales y asigna apariciones a los titulares.
+   */
   initMatch() {
     const probs = ProbabilityEngine.calculateMatchProbabilities(this.homeRating, this.awayRating);
     this.targetHomeXG = probs.homeXG;
@@ -33,7 +54,7 @@ export class MatchEngine {
     const diff = this.homeRating - this.awayRating;
     this.homePossession = Math.max(35, Math.min(68, Math.round(50 + diff * 1.2)));
 
-    // Acreditar apariciones a titulares
+    // Acreditar apariciones a titulares de ambos planteles
     const homePlayers = db.getTeamPlayers(this.homeTeam.id);
     const awayPlayers = db.getTeamPlayers(this.awayTeam.id);
 
@@ -47,6 +68,11 @@ export class MatchEngine {
     });
   }
 
+  /**
+   * Selecciona un goleador aleatorio de la plantilla según su posición (delanteros primero)
+   * @param {string} teamId - ID del equipo
+   * @returns {string} Nombre del goleador
+   */
   getRandomScorer(teamId) {
     const players = db.getTeamPlayers(teamId);
     const attackers = players.filter(p => ['DC', 'EI', 'ED', 'MCO', 'MC'].includes(p.pos));
@@ -74,6 +100,10 @@ export class MatchEngine {
     return scorer ? scorer.name : 'Delantero Star';
   }
 
+  /**
+   * Avanza 1 minuto de partido y simula si ocurre alguna ocasión o gol.
+   * @returns {Object|null} Objeto del evento si ocurrió algo relevante en el minuto
+   */
   tickMinute() {
     if (this.isFinished) return null;
 
@@ -82,6 +112,7 @@ export class MatchEngine {
     const homeShotProb = (this.targetHomeXG / 90) * 1.5;
     const awayShotProb = (this.targetAwayXG / 90) * 1.5;
 
+    // Ocasión local
     if (Math.random() < homeShotProb) {
       this.homeShots++;
       const xgGain = +(0.05 + Math.random() * 0.35).toFixed(2);
@@ -93,6 +124,7 @@ export class MatchEngine {
         const event = {
           minute: this.minute,
           type: 'goal_home',
+          scorerName: scorerName,
           team: this.homeTeam.name,
           text: `⚽ ¡GOOOOOOL DE ${this.homeTeam.name.toUpperCase()}! Anota ${scorerName}. (${this.homeScore} - ${this.awayScore})`
         };
@@ -109,6 +141,7 @@ export class MatchEngine {
       }
     }
 
+    // Ocasión visitante
     if (Math.random() < awayShotProb) {
       this.awayShots++;
       const xgGain = +(0.05 + Math.random() * 0.35).toFixed(2);
@@ -120,6 +153,7 @@ export class MatchEngine {
         const event = {
           minute: this.minute,
           type: 'goal_away',
+          scorerName: scorerName,
           team: this.awayTeam.name,
           text: `⚽ ¡GOOOOOOL DE ${this.awayTeam.name.toUpperCase()}! Remate certero de ${scorerName}. (${this.homeScore} - ${this.awayScore})`
         };
@@ -136,6 +170,7 @@ export class MatchEngine {
       }
     }
 
+    // Pitazo final
     if (this.minute >= 90) {
       this.isFinished = true;
       const finalEvent = {
@@ -150,6 +185,10 @@ export class MatchEngine {
     return null;
   }
 
+  /**
+   * Simula de forma instantánea todo el partido hasta el minuto 90.
+   * @returns {Object} Resultado con marcador, xG, tiros y eventos
+   */
   simulateFullMatch() {
     while (!this.isFinished) {
       this.tickMinute();
@@ -167,17 +206,17 @@ export class MatchEngine {
   }
 
   /**
-   * Simula la jornada completa para TODOS los equipos rivales de la liga
+   * Simula los partidos de la jornada para todos los demás equipos rivales de la liga.
+   * @param {string} userTeamId - ID del equipo del usuario
+   * @param {string} rivalId - ID del rival directo en el partido en vivo
    */
   static simulateAllRivalMatches(userTeamId, rivalId) {
     const gameState = db.gameState;
     const standings = gameState.standings;
     if (!standings || standings.length < 2) return;
 
-    // Equipos libres que no sean el usuario ni su rival de esta jornada
     const otherTeams = standings.filter(s => s.teamId !== userTeamId && s.teamId !== rivalId);
 
-    // Emparejar a los demás equipos de 2 en 2 para simular su partido de la jornada
     for (let i = 0; i < otherTeams.length - 1; i += 2) {
       const t1Standing = otherTeams[i];
       const t2Standing = otherTeams[i + 1];
@@ -189,10 +228,10 @@ export class MatchEngine {
 
       let g1 = 0, g2 = 0;
       const roll = Math.random() * 100;
-      if (roll < probs.homeWinProb) {
+      if (roll < 45) {
         g1 = 1 + Math.floor(Math.random() * 3);
         g2 = Math.floor(Math.random() * g1);
-      } else if (roll < probs.homeWinProb + probs.drawProb) {
+      } else if (roll < 75) {
         g1 = Math.floor(Math.random() * 3);
         g2 = g1;
       } else {
