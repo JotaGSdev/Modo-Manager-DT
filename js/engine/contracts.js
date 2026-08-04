@@ -1,4 +1,4 @@
-// Motor de Contratos Laborales (3-5 Años), KPIs de Evaluación y 25 Años de Carrera
+// Motor de Contratos Laborales (3-5 Años), KPIs de Evaluación, Ofertas de Clubes y Selecciones Nacionales
 
 import { db } from '../data/db.js';
 
@@ -99,7 +99,7 @@ export class ContractEngine {
 
     contract.yearsRemaining--;
 
-    // Si el contrato expiró o la directiva perdió la confianza
+    // Si la directiva perdió la confianza por completo
     if (contract.boardConfidence < 35) {
       contract.status = 'DESPEDIDO';
       gameState.eventsLog.unshift({
@@ -119,7 +119,7 @@ export class ContractEngine {
   }
 
   /**
-   * Genera 3 ofertas de empleo de clubes interesados según la reputación del DT
+   * Genera 3 ofertas de empleo de clubes y selecciones nacionales interesadas según la reputación del DT
    */
   static generateJobOffers() {
     const gameState = db.gameState;
@@ -129,16 +129,36 @@ export class ContractEngine {
     const availableTeams = Object.values(db.teams).filter(t => t.id !== gameState.userTeamId);
     availableTeams.sort((a, b) => Math.abs(a.reputation - rep) - Math.abs(b.reputation - rep));
 
-    for (let i = 0; i < Math.min(3, availableTeams.length); i++) {
+    for (let i = 0; i < Math.min(2, availableTeams.length); i++) {
       const t = availableTeams[i];
       offers.push({
+        type: 'CLUB',
         teamId: t.id,
         teamName: t.name,
         leagueId: t.leagueId,
+        country: t.country,
         budget: t.budget,
         reputation: t.reputation,
         contractDuration: 3 + Math.floor(Math.random() * 3), // 3 - 5 años
         salary: Math.round(t.budget * 0.003)
+      });
+    }
+
+    // OFERTA DE SELECCIÓN NACIONAL (Si la reputación es >= 60)
+    if (rep >= 60) {
+      const homeCountry = gameState.managerCountry || 'Argentina';
+      const isWorldCupYear = (gameState.season % 4 === 2); // 2026, 2030, 2034, etc.
+      const tournamentTarget = isWorldCupYear ? 'Copa Mundial de Fútbol FIFA' : 'Copa de la Confederación (Continental)';
+
+      offers.push({
+        type: 'NATIONAL_TEAM',
+        teamId: `nat_${homeCountry.toLowerCase()}`,
+        teamName: `Selección de ${homeCountry}`,
+        country: homeCountry,
+        targetTournament: tournamentTarget,
+        contractDuration: 4,
+        salary: 1500000,
+        description: `La Federación de Fútbol de ${homeCountry} requiere tus servicios como Selección Nacional para disputar la ${tournamentTarget}.`
       });
     }
 

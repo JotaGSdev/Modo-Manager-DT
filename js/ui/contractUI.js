@@ -1,7 +1,8 @@
-// Vista de Evaluación de Contrato y Selección de Ofertas de Clubes Estilo EA FC
+// Vista de Evaluación de Contrato, Renovaciones y Ofertas de Clubes & Selecciones Nacionales
 
 import { db } from '../data/db.js';
 import { ContractEngine } from '../engine/contracts.js';
+import { renderTeamBadgeSVG, getCountryFlag } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
 export function renderContractView(container, navigateTo) {
@@ -13,26 +14,33 @@ export function renderContractView(container, navigateTo) {
   }
 
   const team = db.teams[gameState.userTeamId];
+  const nationalTeam = gameState.nationalTeamContract ? gameState.nationalTeamContract.teamName : null;
 
   container.innerHTML = `
     <div class="contract-layout">
-      <!-- Encabezado Directivo -->
+      <!-- Encabezado Directivo con Escudos -->
       <div class="glass-panel mb-4" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-        <div>
-          <h2>📜 Evaluación del Vínculo contractual y Junta Directiva</h2>
-          <p class="text-sub">Club Actual: <strong>${team.name}</strong> | Período: <strong>${contract.yearsRemaining} de ${contract.duration} Años Restantes</strong></p>
+        <div style="display: flex; align-items: center; gap: 14px;">
+          ${renderTeamBadgeSVG(team, 56)}
+          <div>
+            <h2 style="margin:0;">📜 Vínculo Contractual & Despacho del DT</h2>
+            <p class="text-sub" style="margin-top:4px;">
+              Club Actual: <strong>${team.name}</strong> | Período: <strong>${contract.yearsRemaining} de ${contract.duration} Años Restantes</strong>
+              ${nationalTeam ? ` | 🇦🇷 Cargo Selección: <strong style="color:var(--accent-cyan);">${nationalTeam}</strong>` : ''}
+            </p>
+          </div>
         </div>
         <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px; text-align: center;">
-          <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">OBJETIVO DE LA TEMPORADA</span>
-          <h4 style="margin: 0; color: var(--accent-gold);">Quedar entre los Top ${contract.targetPosition}</h4>
+          <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">OBJETIVO TEMPORAL</span>
+          <h4 style="margin: 0; color: var(--accent-gold);">Top ${contract.targetPosition} en Liga</h4>
         </div>
       </div>
 
-      <!-- KPIs del Contrato con Barras de Progreso -->
+      <!-- KPIs del Contrato -->
       <div class="dashboard-grid">
         <div class="card glass-panel">
           <h3>🏆 Resultados Deportivos</h3>
-          <p class="text-sub">Puntuación en Liga y Competiciones</p>
+          <p class="text-sub">Desempeño en tabla y torneos</p>
           <div class="prob-container">
             <div class="prob-bar-track">
               <div class="prob-bar-fill" style="width: ${contract.sportingScore}%;"></div>
@@ -43,7 +51,7 @@ export function renderContractView(container, navigateTo) {
 
         <div class="card glass-panel">
           <h3>📣 Aprobación de la Hinchada</h3>
-          <p class="text-sub">Respaldo popular en el estadio</p>
+          <p class="text-sub">Popularidad e identidad del club</p>
           <div class="prob-container">
             <div class="prob-bar-track">
               <div class="prob-bar-fill" style="width: ${contract.fanSatisfaction}%; background: var(--accent-cyan);"></div>
@@ -53,8 +61,8 @@ export function renderContractView(container, navigateTo) {
         </div>
 
         <div class="card glass-panel">
-          <h3>💰 Balance Económico</h3>
-          <p class="text-sub">Salud financiera y presupuesto salarial</p>
+          <h3>💰 Salud Financiera</h3>
+          <p class="text-sub">Cumplimiento del margen presupuestario</p>
           <div class="prob-container">
             <div class="prob-bar-track">
               <div class="prob-bar-fill" style="width: ${contract.financialBalance}%; background: var(--accent-gold);"></div>
@@ -64,12 +72,12 @@ export function renderContractView(container, navigateTo) {
         </div>
 
         <div class="card glass-panel">
-          <h3>👔 Confianza de la Directiva</h3>
-          <p class="text-sub">Probabilidad de renovación automática</p>
+          <h3>👔 Confianza Directiva</h3>
+          <p class="text-sub">Probabilidad de renovación de contrato</p>
           <div class="prob-container">
             <div class="prob-bar-track">
               <div class="prob-bar-fill" style="width: ${contract.renewalChance}%;"></div>
-              <div class="prob-bar-text">${contract.renewalChance}% Probabilidad</div>
+              <div class="prob-bar-text">${contract.renewalChance}% Confianza</div>
             </div>
           </div>
         </div>
@@ -80,7 +88,7 @@ export function renderContractView(container, navigateTo) {
         <button id="btnRenewContract" class="btn-primary btn-large" ${contract.renewalChance < 60 ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
           ✍️ SOLICITAR RENOVACIÓN DE CONTRATO (3 AÑOS MÁS)
         </button>
-        <button id="btnSearchJobOffers" class="btn-secondary btn-large">💼 EXPLORAR OFERTAS DE OTROS CLUBES</button>
+        <button id="btnSearchJobOffers" class="btn-secondary btn-large">💼 EXPLORAR OFERTAS DE CLUBES Y SELECCIONES</button>
       </div>
 
       <div id="jobOffersContainer" class="mt-4 hidden"></div>
@@ -89,12 +97,12 @@ export function renderContractView(container, navigateTo) {
 
   document.getElementById('btnRenewContract').addEventListener('click', () => {
     if (contract.renewalChance < 60) {
-      alert('La directiva no está dispuesta a renovar tu contrato en este momento por falta de resultados.');
+      alert('La directiva no renovará tu contrato por falta de resultados en la temporada.');
       return;
     }
     sfx.playTransferChime();
     ContractEngine.startClubContract(gameState.userTeamId, 3);
-    alert(`¡CONTRATO RENOVADO! Has extendido tu vínculo con ${team.name} por 3 temporadas adicionales.`);
+    alert(`¡CONTRATO RENOVADO! Has extendido tu contrato con ${team.name} por 3 temporadas adicionales.`);
     renderContractView(container, navigateTo);
   });
 
@@ -106,39 +114,61 @@ export function renderContractView(container, navigateTo) {
 
     containerEl.innerHTML = `
       <div class="glass-panel">
-        <h3>💼 Ofertas de Trabajo Disponibles de Otros Clubes</h3>
-        <div class="market-list mt-3">
-          ${offers.map(o => `
-            <div class="player-market-card">
-              <div class="player-card-left">
-                <div class="player-info">
-                  <h4>🏰 ${o.teamName}</h4>
-                  <span class="club-subtext">Duración Ofrecida: ${o.contractDuration} Años | Presupuesto: €${(o.budget / 1000000).toFixed(1)}M</span>
-                </div>
-              </div>
+        <h3 style="margin-bottom: 12px;">💼 Propuestas Formales de Trabajo Recepcionadas</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          ${offers.map(o => {
+            const isNational = o.type === 'NATIONAL_TEAM';
+            const offerTeam = isNational ? null : db.teams[o.teamId];
 
-              <button class="btn-primary btn-accept-job" data-id="${o.teamId}">✍️ FIRMAR POR ESTE CLUB</button>
-            </div>
-          `).join('')}
+            return `
+              <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  ${isNational ? `<span style="font-size: 2.2rem;">${getCountryFlag(o.country)}</span>` : renderTeamBadgeSVG(offerTeam, 48)}
+                  <div>
+                    <h4 style="margin: 0; font-size: 1.05rem; color: #fff;">${o.teamName}</h4>
+                    <span class="text-sub" style="font-size: 0.8rem;">
+                      ${isNational ? `🏆 <strong>${o.targetTournament}</strong>` : `Duración: ${o.contractDuration} Años | Presupuesto: €${(o.budget / 1000000).toFixed(1)}M`}
+                    </span>
+                  </div>
+                </div>
+
+                <button class="btn-primary btn-accept-job" data-id="${o.teamId}" data-type="${o.type}" data-name="${o.teamName}">
+                  ${isNational ? '🌎 ASUMIR SELECCIÓN NACIONAL' : '✍️ FIRMAR CONTRATO POR ESTE CLUB'}
+                </button>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     `;
 
     document.querySelectorAll('.btn-accept-job').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const newTeamId = e.target.dataset.id;
-        const newTeam = db.teams[newTeamId];
+        const type = e.target.dataset.type;
+        const targetId = e.target.dataset.id;
+        const targetName = e.target.dataset.name;
         sfx.playWhistle();
 
-        gameState.userTeamId = newTeamId;
-        gameState.userLeagueId = newTeam.leagueId;
-        gameState.budget = newTeam.budget;
-        gameState.wageBudget = newTeam.wageBudget;
-        gameState.reputation = newTeam.reputation;
+        if (type === 'NATIONAL_TEAM') {
+          gameState.nationalTeamContract = {
+            teamId: targetId,
+            teamName: targetName,
+            startYear: gameState.season
+          };
+          alert(`¡CARGO ASUMIDO! Ahora eres el Seleccionador Oficial de la ${targetName} para competir en Eliminatorias y el Mundial.`);
+          renderContractView(container, navigateTo);
+        } else {
+          const newTeam = db.teams[targetId];
+          gameState.userTeamId = targetId;
+          gameState.userLeagueId = newTeam.leagueId;
+          gameState.budget = newTeam.budget;
+          gameState.wageBudget = newTeam.wageBudget;
+          gameState.reputation = newTeam.reputation;
 
-        ContractEngine.startClubContract(newTeamId, 3);
-        alert(`¡NUEVO DESAFÍO! Has firmado contrato con ${newTeam.name}.`);
-        navigateTo('dashboard');
+          ContractEngine.startClubContract(targetId, 3);
+          alert(`¡NUEVO DESAFÍO PROFESIONAL! Has asumido el cargo de DT en ${newTeam.name}.`);
+          navigateTo('dashboard');
+        }
       });
     });
   });
