@@ -1,5 +1,5 @@
 // Generador e Integrador de Escudos de Equipos y Banderas de Países
-// Compatible con API-Football CDN (https://media.api-sports.io) y Assets Locales de Reserva SVG
+// Compatible con API-Football CDN (https://media.api-sports.io) y Assets Locales PNG / SVG
 
 const COUNTRY_FLAG_CODES = {
   'Argentina': 'ar', 'Brasil': 'br', 'Colombia': 'co', 'Chile': 'cl', 'Uruguay': 'uy',
@@ -38,16 +38,13 @@ export function getCountryFlag(countryName) {
   return COUNTRY_FLAGS_EMOJI[countryName] || '🏳️';
 }
 
-/**
- * Obtiene el código ISO del país para banderas
- */
 export function getCountryCode(countryName) {
   return COUNTRY_FLAG_CODES[countryName] || 'ar';
 }
 
 /**
  * Renderiza la imagen vectorial oficial SVG de la bandera de un país
- * @param {string} countryName - Nombre del país (ej: 'Perú', 'Argentina')
+ * @param {string} countryName - Nombre del país
  * @param {number} [height=20] - Altura en px
  */
 export function renderCountryFlagSVG(countryName, height = 20) {
@@ -67,10 +64,10 @@ export function renderCountryFlagSVG(countryName, height = 20) {
 }
 
 /**
- * Renderiza el escudo heráldico vectorial o la imagen oficial de API-Football
+ * Renderiza el escudo oficial en PNG o el escudo heráldico vectorial SVG de reserva
  * @param {Object} team - Objeto del equipo
  * @param {number} [size=52] - Tamaño en px
- * @returns {string} Markup HTML/SVG
+ * @returns {string} Markup HTML
  */
 export function renderTeamBadgeSVG(team, size = 52) {
   if (!team) return '';
@@ -115,20 +112,16 @@ export function renderTeamBadgeSVG(team, size = 52) {
     </svg>
   `;
 
-  // Si se cuenta con ID registrado de API-Football, intentar cargar primero la imagen oficial
-  if (apiId) {
-    const localBadge = `./assets/badges/${team.id}.png`;
-    const cdnUrl = `https://media.api-sports.io/football/teams/${apiId}.png`;
-    return `
-      <div style="display: inline-block; position: relative;">
-        <img src="${localBadge}" 
-             alt="${team.name}" 
-             style="width: ${size}px; height: ${size}px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6)); vertical-align: middle;" 
-             onerror="this.src='${cdnUrl}'; this.onerror=function(){ this.style.display='none'; this.nextElementSibling.style.display='inline-block'; };" />
-        <div style="display: none;">${vectorBadge}</div>
-      </div>
-    `;
-  }
+  const localBadge = `./assets/badges/${team.id}.png`;
+  const cdnUrl = apiId ? `https://media.api-sports.io/football/teams/${apiId}.png` : localBadge;
 
-  return vectorBadge;
+  return `
+    <div style="display: inline-block; position: relative;">
+      <img src="${localBadge}" 
+           alt="${team.name}" 
+           style="width: ${size}px; height: ${size}px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6)); vertical-align: middle;" 
+           onerror="this.src='${cdnUrl}'; this.onerror=function(){ this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-block'; };" />
+      <div style="display: none;">${vectorBadge}</div>
+    </div>
+  `;
 }
