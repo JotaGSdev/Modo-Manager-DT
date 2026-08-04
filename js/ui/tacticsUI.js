@@ -64,12 +64,13 @@ export function renderTactics(container) {
         </div>
 
         <div class="form-group mb-3">
-          <label>Estilo de Juego:</label>
+          <label>Estilo de Juego Real:</label>
           <select id="selectStyle" class="input-select">
-            <option value="Tiki-Taka" ${gameState.tactics.style === 'Tiki-Taka' ? 'selected' : ''}>Tiki-Taka (Posesión)</option>
-            <option value="Contraataque" ${gameState.tactics.style === 'Contraataque' ? 'selected' : ''}>Contraataque Veloz</option>
-            <option value="Balón Largo" ${gameState.tactics.style === 'Balón Largo' ? 'selected' : ''}>Balón Largo / Directo</option>
-            <option value="Presión Alta" ${gameState.tactics.style === 'Presión Alta' ? 'selected' : ''}>Presión Asfixiante</option>
+            <option value="Tiki-Taka" ${gameState.tactics.style === 'Tiki-Taka' ? 'selected' : ''}>⚽ Tiki-Taka & Juego de Posición</option>
+            <option value="Gegenpressing" ${gameState.tactics.style === 'Gegenpressing' ? 'selected' : ''}>⚡ Gegenpressing & Presión Alta</option>
+            <option value="Catenaccio" ${gameState.tactics.style === 'Catenaccio' ? 'selected' : ''}>🚌 Catenaccio & Bloque Bajo (El Autobús)</option>
+            <option value="Juego por Bandas" ${gameState.tactics.style === 'Juego por Bandas' ? 'selected' : ''}>🌊 Juego por Bandas & Centros</option>
+            <option value="Contraataque" ${gameState.tactics.style === 'Contraataque' ? 'selected' : ''}>🎯 Contraataque Directo & Balón Largo</option>
           </select>
         </div>
 

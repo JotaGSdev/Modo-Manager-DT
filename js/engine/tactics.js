@@ -17,44 +17,70 @@
 import { db } from '../data/db.js';
 
 export const MANAGER_ARCHETYPES = {
-  GUARDIOLA: {
-    id: 'GUARDIOLA',
-    name: 'EL MAESTRO DE POSESIÓN',
-    coachStyle: 'Estilo Pep Guardiola / Xavi Hernández',
-    description: 'Posesión asfixiante, pase corto, triangulaciones y control absoluto del ritmo.',
+  TIKI_TAKA: {
+    id: 'TIKI_TAKA',
+    name: 'TIKI-TAKA & JUEGO DE POSICIÓN',
+    coachStyle: 'Posesión Prolongada & Triangulación',
+    description: 'Construcción paciente desde el fondo, pases cortos, triangulaciones de apoyo y control del espacio.',
     badgeColor: '#00c885',
     icon: '⚽',
     skills: {
       possession: { name: 'Control de Posesión y Triangulación', level: 1, maxLevel: 10 },
       shortPassing: { name: 'Precisión de Pase Corto en Salida', level: 1, maxLevel: 10 }
     },
-    bonusSummary: '+8 Pases Cortos | +5% Control de Partido | +3% Victoria'
+    bonusSummary: '+8 Pases Cortos | +5% Control del Balón'
   },
-  XABI_ALONSO: {
-    id: 'XABI_ALONSO',
-    name: 'EL REY DEL CONTRAATAQUE',
-    coachStyle: 'Estilo Xabi Alonso / Klopp / Ancelotti',
-    description: 'Transición vertical relámpago, velocidad desbocada en extremos y ataque directo.',
+  GEGENPRESSING: {
+    id: 'GEGENPRESSING',
+    name: 'GEGENPRESSING & PRESIÓN ALTA',
+    coachStyle: 'Presión Tras Pérdida & Vértigo',
+    description: 'Presión asfixiante en campo rival inmediatamente tras perder el balón y zarpazo vertical al espacio.',
     badgeColor: '#0096c7',
     icon: '⚡',
     skills: {
       counterSpeed: { name: 'Velocidad de Transición al Espacio', level: 1, maxLevel: 10 },
-      directAttacking: { name: 'Efectividad en Ataque Relámpago', level: 1, maxLevel: 10 }
+      directAttacking: { name: 'Efectividad en Recuperación Alta', level: 1, maxLevel: 10 }
     },
-    bonusSummary: '+8 Velocidad de Ataque | +6% Eficiencia Contraataque'
+    bonusSummary: '+8 Recuperación Alta | +6% Transición Rápida'
   },
-  DE_LA_FUENTE: {
-    id: 'DE_LA_FUENTE',
-    name: 'ESTRATEGA DE POTRERO & BALÓN PARADO',
-    coachStyle: 'Estilo Luis de la Fuente / Cholo Simeone',
-    description: 'Garra de potrero, balón parado letal, presión física sofocante y templanza en finales.',
+  CATENACCIO: {
+    id: 'CATENACCIO',
+    name: 'CATENACCIO & BLOQUE BAJO',
+    coachStyle: 'El Autobús & Cerrojo Defensivo',
+    description: 'Organización defensiva impenetrable en área propia, marcaje estricto, garra y córners letales.',
     badgeColor: '#e5a93c',
-    icon: '🔥',
+    icon: '🚌',
     skills: {
       setPiece: { name: 'Jugadas de Balón Parado & Córners', level: 1, maxLevel: 10 },
-      potreroGrit: { name: 'Garra de Potrero & Presión Física', level: 1, maxLevel: 10 }
+      potreroGrit: { name: 'Garra de Cerrojo & Marca Física', level: 1, maxLevel: 10 }
     },
-    bonusSummary: '+8 Balón Parado | +6% Cohesión | +4% Victoria en Finales'
+    bonusSummary: '+8 Solidez Defensiva | +6% Cerrojo en Área'
+  },
+  WING_PLAY: {
+    id: 'WING_PLAY',
+    name: 'JUEGO POR BANDAS & CENTROS',
+    coachStyle: 'Amplitud Total & Desborde',
+    description: 'Laterales proyectados en ataque, uno contra uno por los costados y centros al área para rematadores.',
+    badgeColor: '#a855f7',
+    icon: '🌊',
+    skills: {
+      crossing: { name: 'Precisión de Centros al Área', level: 1, maxLevel: 10 },
+      wingPace: { name: 'Desborde de Extremos', level: 1, maxLevel: 10 }
+    },
+    bonusSummary: '+8 Centros & Desborde | +5% Remate Aéreo'
+  },
+  DIRECT_ATTACK: {
+    id: 'DIRECT_ATTACK',
+    name: 'CONTRAATAQUE DIRECTO',
+    coachStyle: 'Transición Relámpago al Espacio',
+    description: 'Ceder la iniciativa al rival para explotar la espalda de su defensa con zarpazos a alta velocidad.',
+    badgeColor: '#ff0055',
+    icon: '🎯',
+    skills: {
+      counterPace: { name: 'Ataque Relámpago', level: 1, maxLevel: 10 },
+      longBalls: { name: 'Balón Largo al Espacio', level: 1, maxLevel: 10 }
+    },
+    bonusSummary: '+8 Contraataque | +6% Eficiencia al Espacio'
   }
 };
 
