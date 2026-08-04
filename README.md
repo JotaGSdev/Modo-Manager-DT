@@ -1,147 +1,164 @@
-# Entrenador Leyenda - Juego de Gestion de Futbol (DT)
+# ⚽ Entrenador Leyenda — Simulador Profesional de Carrera de Director Técnico (DT)
 
-Entrenador Leyenda es un videojuego de gestion deportiva en HTML5 y JavaScript orientado a simular la carrera profesional de un Director Tecnico (DT) a lo largo de un periodo de 25 años. Inspirado en las mecanicas clasicas de modo carrera de franquicias de futbol, el proyecto combina gestion tactica, mercado de fichajes, cantera de jovenes promesas, dinamicas financieras y evaluacion de contratos por la junta directiva.
+<div align="center">
 
----
+![Entrenador Leyenda Banner](https://img.shields.io/badge/Entrenador_Leyenda-Simulador_de_DT_2.5-00c885?style=for-the-badge&logo=soccer&logoColor=white)
+![Build Status](https://img.shields.io/badge/Estado-100%25_Funcional-0096c7?style=for-the-badge)
+![License](https://img.shields.io/badge/Licencia-MIT-e5a93c?style=for-the-badge)
+![Offline First](https://img.shields.io/badge/Arquitectura-Offline_First_&_Local_Batch-3b82f6?style=for-the-badge)
 
-## Jugar en Linea
+**Un simulador profundo, adictivo y realista de gestión futbolística para navegador web (2026 - 2051).**  
+Dirige clubes de todo el mundo, desarrolla canteranos, gestiona selecciones nacionales en Copas del Mundo y domina el vestuario en una trayectoria profesional de **hasta 25 temporadas**.
 
-Puedes jugar directamente desde tu navegador en el siguiente enlace oficial del proyecto:
+[🎮 JUGAR AHORA EN LÍNEA](https://jotagsdev.github.io/Modo-Manager-DT/) • [☕ APOYAR EL PROYECTO](https://ko-fi.com/jotags)
 
-**[https://jotagsdev.github.io/Modo-Manager-DT/](https://jotagsdev.github.io/Modo-Manager-DT/)**
-
----
-
-## Colaborar con el Proyecto
-
-Si disfrutas de Entrenador Leyenda y deseas apoyar su desarrollo continuo, mantenimiento e inclusion de nuevas caracteristicas, puedes realizar una contribucion voluntaria en el siguiente enlace:
-
-**[https://ko-fi.com/jotags](https://ko-fi.com/jotags)**
-
-Tu apoyo ayuda a mantener el proyecto activo, libre de publicidad e impulsado por la comunidad.
+</div>
 
 ---
 
-## Descripcion General del Juego
+## 🌟 Características Destacadas (Key Features)
 
-En Entrenador Leyenda, asumes el rol de un entrenador principal al mando de un club profesional. A lo largo de tu trayectoria deberas gestionar el rendimiento en el terreno de juego, planificar la plantilla a corto y largo plazo, tomar decisiones financieras en el mercado de pases y cumplir con las expectativas planteadas por la directiva del equipo.
-
-El juego esta estructurado para ofrecer una experiencia dinamica con parones estrategicos, resumenes estadisticos y competiciones continentales integradas.
-
----
-
-## Caracteristicas Principales
-
-### 1. Trayectoria Profesional de 25 Años
-- Duracion maxima de carrera desde la temporada 2026/2027 hasta la temporada 2050/2051.
-- Contratos laborales con duracion de 3 a 5 años por club.
-- Ofertas de trabajo de equipos rivales al finalizar cada contrato o al alcanzar una reputacion destacada.
-- Registro historico de titulos y estadisticas acumuladas en el Palmares del entrenador.
-
-### 2. Sistema de Evaluacion de la Directiva (4 KPIs)
-La permanencia en el club y la probabilidad de renovacion de contrato se miden a traves de cuatro indicadores clave:
-- Resultados Deportivos: Rendimiento en liga respecto al objetivo fijado por el club.
-- Satisfaccion de la Aficion: Porcentaje de respaldo de los hinchas basado en resultados y regularidad.
-- Balance Economico: Control del presupuesto salarial y liquidez financiera del equipo.
-- Confianza Global de la Directiva: Indice de aprobacion general que determina alertas de despido o propuestas de renovacion.
-
-### 3. Cobertura de Ligas y Competiciones Continentales
-- Inclusión de ligas profesionales de Sudamerica, Europa, Norteamerica y Asia (La Liga, Premier League, Serie A, Bundesliga, Ligue 1, Liga Profesional Argentina, Brasileirão, Liga MX, MLS, Saudi Pro League, Liga 1 de Peru, entre otras).
-- Simulación simultanea de todos los partidos de la jornada para cada equipo de la liga, garantizando una tabla de posiciones equitativa y competitiva.
-- Competiciones Continentales integradas según la región del club:
-  - Europa: UEFA Champions League.
-  - Sudamerica: Copa CONMEBOL Libertadores.
-  - Norteamerica: CONCACAF Champions Cup.
-- Recompensas financieras por avanzar de ronda y premios especiales por consagrarse campeon continental.
-
-### 4. Modelo de Mercado de Fichajes
-- Limitacion estricta a dos ventanas de transferencias por temporada:
-  - Ventana de Verano: Semanas 1 a 4.
-  - Ventana de Invierno: Semanas 19 a 22.
-- El mercado permanece cerrado en las demas semanas de la temporada.
-- Negociaciones mediante calculo de probabilidad de aceptacion basado en la oferta de traspaso, salario propuesto, reputacion del club y ofertas de clubes rivales.
-- Mecanica de negociacion por pasos con bloqueo de ofertas rechazadas durante el resto de la ventana activa.
-
-### 5. Cantera y Desarrollo de Jovenes Promesas
-- Envio de ojeadores a regiones como Sudamerica y Europa con costo deducible del presupuesto del club.
-- Promocion de canteranos al primer equipo mediante el pago de su ficha contractual profesional.
-
-### 6. Ponderacion de Medias (OVR) por Posicion
-Las medias generales de los futbolistas se calculan según pesos especificos para cada demarcación:
-- Porteros (POR): 40% Defensivo/Reflejos + 35% Fisico + 15% Pase + 10% Ritmo.
-- Defensas Centrales (DFC): 40% Defensivo + 35% Fisico + 15% Ritmo + 10% Pase.
-- Laterales (LI/LD): 30% Ritmo + 30% Defensivo + 20% Pase + 20% Fisico.
-- Mediocampistas (MC/MCD/MCO): Distribucion entre pase, regate, vision y trabajo defensivo.
-- Delanteros (DC/EI/ED): 40% Tiro/Ritmo + 30% Regate + 15% Fisico + 15% Pase.
-
-### 7. Evolucion Dinamica de Plantilla
-- Jugadores jovenes (menores de 23 años): Crecimiento progresivo de media en funcion de los minutos y partidos disputados.
-- Jugadores veteranos (mayores de 29 años): Declive natural anual con reduccion progresiva en atributos fisicos y velocidad.
-
-### 8. Interfaz Tactica con Cancha 2D y Drag and Drop
-- Alineacion visual sobre campo de juego 2D.
-- Funcionalidad HTML5 Drag and Drop para intercambiar posiciones y sustituir jugadores directamente arrastrando sus fichas.
-
-### 9. Economia Fluctuante y Parón de Invierno
-- Recaudacion automatica de ingresos por taquilla en partidos como local.
-- Prestigio y bonificaciones financieras al final de la temporada según la posicion alcanzada.
-- Parón intertemporal en la Semana 19 con revision de clasificacion, tabla de goleadores (Pichichi) y apertura del mercado invernal.
+### 🎙️ 1. Narrativa Estilo FIFA / EA FC & Inicio Realista de Carrera
+- **Perfil Completo del DT**: Nombre, edad (30-65 años), nacionalidad y país de origen.
+- **Regla Nacional para DTs Principiantes**: Todo entrenador inicia obligatoriamente como **DT Novato de Cantera (0 años de experiencia)**. Tus primeras 3 ofertas de contrato (ciclo de 3 años) provendrán **exclusivamente de tu país natal**, compitiendo en clubes humildes antes de dar el salto al continente o Europa.
 
 ---
 
-## Estructura del Proyecto
+### 🧠 2. Filosofías Tácticas Reales del Fútbol Mundial
+En lugar de nombres propios, el sistema táctico implementa las 5 grandes escuelas del fútbol moderno:
+- ⚽ **Tiki-Taka & Juego de Posición**: Posesión prolongada, pase corto y control del campo (`+8 Pases Cortos | +5% Posesión`).
+- ⚡ **Gegenpressing & Presión Alta**: Presión asfixiante tras pérdida y ataques verticales a gran velocidad (`+8 Recuperación Alta | +6% Vértigo`).
+- 🚌 **Catenaccio & Bloque Bajo (El Autobús)**: Solidez defensiva en área propia, cerrojo, garra y córners (`+8 Solidez Defensiva | +6% Cerrojo`).
+- 🌊 **Juego por Bandas & Centros**: Amplitud total, desborde de laterales y remates aéreos (`+8 Centros & Desborde | +5% Remate Aéreo`).
+- 🎯 **Contraataque Directo**: Balones largos a las espaldas de la defensa rival (`+8 Balón Largo | +6% Eficiencia`).
+
+---
+
+### 📺 3. Marcador Dinámico en Vivo Estilo Pro Evolution Soccer (PES)
+- **Motor de Partido en Tiempo Real**: Visualiza posicionalmente la posesión del balón, **Expected Goals (xG)**, tiros al arco, faltas y tarjetas.
+- **Narración Automatizada e Inteligente**: Relatores en vivo que comentan cada jugada clave, atajadas del arquero, decisiones del VAR e interrupciones.
+- **Control de Velocidad de Simulación**: Botones interactivos para alternar entre velocidad normal (1x), rápida (2x), súper rápida (4x) y **Modo Automático**.
+- **Efectos Visuales & Celebraciones**: Modales cinematográficos, flashes de gol en pantalla completa y partículas vectoriales de victoria/derrota.
+
+---
+
+### 👔 4. Evaluación Contratual de la Directiva (4 KPIs) & Selecciones Nacionales
+Tu permanencia y reputación laboral se evalúan mediante 4 indicadores en tiempo real:
+1. 🏆 **Resultados Deportivos**: Rendimiento en liga versus los objetivos fijados por el club.
+2. 📣 **Satisfacción de la Hinchada**: Nivel de respaldo y aprobación popular en el estadio.
+3. 💰 **Balance Económico**: Salud financiera, presupuesto salarial e ingresos por taquilla.
+4. 👔 **Confianza Global Directiva**: Índice que determina propuestas de renovación de contrato o alertas de despido.
+
+> **🇦🇷 ✈️ Cargos en Selecciones Nacionales:** Al alcanzar la reputación adecuada o cumplir tu ciclo de 3 años, recibirás la propuesta formal de la Federación de Fútbol de tu país para asumir como **Seleccionador Nacional** y disputar **Eliminatorias, Copa América, Eurocopa, Copa de Oro y la Copa Mundial de la FIFA (cada 4 años)**.
+
+---
+
+### 📊 5. Mercado de Fichajes, Cantera & Finanzas Tipo FIFA / FC
+- **2 Ventanas Estrictas por Temporada**: Mercado de Verano (Semanas 1 a 4) e Invierno (Semanas 19 a 22).
+- **Algoritmo de Probabilidad de Transferencia**: Cálculo probabilístico basado en valor de mercado del jugador, salario ofertado, prestigio del club y competencia rival.
+- **Academia de Cantera (Youth Academy)**: Ojeadores regionales en Sudamérica y Europa para descubrir jóvenes promesas y promoverlas al primer equipo.
+- **Pestaña de Finanzas**: Desglose contable de ingresos por taquilla, salarios semanales, ventas, compras y premios económicos de liga y copas internacionales.
+
+---
+
+## 🌍 Cobertura de Ligas y Competiciones
+
+El simulador incluye ligas y torneos internacionales integrados con el motor de simulación paralela de jornadas:
+
+| Ámbito | Competición / Liga | ID API-Football (v3) |
+|---|---|---|
+| 🇦🇷 **Argentina** | Liga Profesional de Fútbol | `128` |
+| 🇪🇸 **España** | LaLiga EA Sports | `140` |
+| 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **Inglaterra** | Premier League | `39` |
+| 🇮🇹 **Italia** | Serie A | `135` |
+| 🇩🇪 **Alemania** | Bundesliga | `78` |
+| 🇫🇷 **Francia** | Ligue 1 | `61` |
+| 🇧🇷 **Brasil** | Brasileirão Série A | `71` |
+| 🇨🇴 **Colombia** | Liga BetPlay Dimayor | `239` |
+| 🇨🇱 **Chile** | Campeonato Nacional Itaú | `265` |
+| 🇵🇪 **Perú** | Liga 1 Te Apuesto | `281` |
+| 🇲🇽 **México** | Liga MX | `262` |
+| 🇺🇸 **Estados Unidos** | Major League Soccer (MLS) | `253` |
+| 🇪🇺 **Europa** | UEFA Champions League / Europa League | `2` / `3` |
+| 🌎 **Sudamérica** | CONMEBOL Libertadores / Sudamericana | `13` / `11` |
+| 🌐 **Mundial** | Copa Mundial de la FIFA | `1` |
+
+---
+
+## 🏗️ Arquitectura Técnica del Proyecto
+
+El videojuego está construido bajo una arquitectura modular en **JavaScript Moderno (ES6+)**, sin frameworks pesados, garantizando máxima velocidad de carga (60 FPS) y persistencia de partida en `localStorage`:
 
 ```
 Modo Manager DT/
-├── index.html                  # Punto de entrada HTML5
-├── README.md                   # Documentacion del proyecto
+├── index.html                   # Punto de entrada de la aplicación HTML5
+├── README.md                    # Documentación oficial del proyecto
+├── .gitignore                   # Protección de seguridad (.env y claves)
 ├── css/
-│   ├── main.css                # Estilos base y variables de diseño
-│   ├── components.css          # Tablas, tarjetas y componentes de interfaz
-│   ├── pitch.css               # Cancha 2D tactica y fichas de jugadores
-│   └── minigames.css           # Estilos para minijuegos
+│   ├── main.css                 # Sistema de diseño base y tokens CSS
+│   ├── components.css           # Tablas, tarjetas glassmorphism y modales
+│   └── pitch.css                # Terreno de juego 2D táctico Drag and Drop
 ├── assets/
 │   ├── audio/
-│   │   └── sfx.js              # Sintetizador de audio Web Audio API
+│   │   └── sfx.js               # Sintetizador de audio Web Audio API
+│   ├── badges/                  # Escudos oficiales HD en PNG
+│   ├── flags/                   # Banderas oficiales de países en SVG
+│   └── data/
+│       ├── leagues.json         # Base de datos global de ligas y clubes
+│       └── api_extracted_data.json # Datos extraídos en batch local
+├── js/
+│   ├── app.js                   # Ruteador principal y sincronizador de UI
 │   ├── data/
-│   │   └── leagues.json        # Base de datos de ligas y clubes
-│   └── images/
-│       └── badgeGenerator.js   # Generador de escudos vectoriales SVG
-└── js/
-    ├── app.js                  # Inicializador y enrutador principal
-    ├── data/
-    │   ├── db.js               # Gestor de base de datos LocalStorage
-    │   └── teamData.js         # Generador de plantillas y formulas de OVR
-    ├── engine/
-    │   ├── contracts.js        # Motor de contratos y evaluacion de KPIs
-    │   ├── competitionsEngine.js # Motor de copas continentales y premios
-    │   ├── matchEngine.js      # Motor de partidos y simulacion de ligas
-    │   ├── probability.js      # Motor de probabilidades y analisis
-    │   ├── tactics.js          # Formaciones y calculo de quimica
-    │   ├── transfers.js        # Mercado de pases y ofertas rivales
-    │   ├── youthAcademy.js     # Gestion de la cantera
-    │   ├── eventsEngine.js     # Motor de eventos aleatorios
-    │   └── trophyRoom.js       # Registro de palmares e historial
-    ├── minigames/              # Minijuegos de habilidad
-    └── ui/                     # Componentes de interfaz de usuario
+│   │   ├── db.js                # Gestor de persistencia e historial
+│   │   └── teamData.js          # Generación de plantillas y fórmulas OVR
+│   ├── engine/
+│   │   ├── tactics.js           # Formaciones, química y estilos de juego
+│   │   ├── matchEngine.js       # Motor de partidos PES con xG y posesión
+│   │   ├── contracts.js         # Motor de contratos y KPIs de directiva
+│   │   ├── competitionsEngine.js # Motor de copas nacionales y continentales
+│   │   ├── transfers.js         # Mercado de pases e IA de negociaciones
+│   │   ├── youthAcademy.js      # Cantera y ojeadores
+│   │   ├── eventsEngine.js      # Motor de 117 eventos aleatorios
+│   │   └── penaltyEngine.js     # Definición de penales por tanda
+│   ├── services/
+│   │   └── apiFootballService.js # Servicio de lectura de assets e imágenes
+│   └── ui/                      # Componentes de Interfaz de Usuario
+└── scripts/
+    ├── download_assets.js       # Script de descarga directa de badges y banderas
+    └── batch_data_extractor.js  # Extractor Batch Local en Node.js
 ```
 
 ---
 
-## Ejecución Local (Opcional)
+## 🛡️ Seguridad & Extracción Batch Local
 
-Si deseas ejecutar el proyecto localmente:
-
-1. Clona o descarga el repositorio en tu equipo local.
-2. Abre una terminal de comandos en la carpeta raiz del proyecto.
-3. Inicia un servidor HTTP local (por ejemplo usando Python):
-   ```bash
-   python -m http.server 8080
-   ```
-4. Abre tu navegador web e ingresa a `http://localhost:8080` o accede directamente a la version alojada en **[https://jotagsdev.github.io/Modo-Manager-DT/](https://jotagsdev.github.io/Modo-Manager-DT/)**.
+Para proteger la privacidad de las claves de API y garantizar un rendimiento impecable sin costos de red:
+1. **Extracción en Lote Local**: Utiliza `scripts/batch_data_extractor.js` en tu máquina para actualizar escudos, plantillas y estadios desde API-Football.
+2. **Protección `.gitignore`**: Los archivos `.env` y configuraciones privadas están excluidos de las cargas a GitHub.
 
 ---
 
-## Licencia
+## 🎮 Ejecución Local
 
-Este proyecto esta desarrollado con fines educativos y de entretenimiento. Todos los escudos y nombres genericos son generados de forma vectorial mediante SVG sin infraccion de derechos de autor.
+Si deseas ejecutar o modificar el proyecto en tu máquina local:
+
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/JotaGSdev/Modo-Manager-DT.git
+   cd Modo-Manager-DT
+   ```
+2. Ejecuta un servidor local en Python o Node:
+   ```bash
+   python -m http.server 8080
+   ```
+3. Abre tu navegador en `http://localhost:8080` o juega la versión alojada en [GitHub Pages](https://jotagsdev.github.io/Modo-Manager-DT/).
+
+---
+
+## 🤝 Licencia & Contribuciones
+
+Este proyecto fue desarrollado con pasión para brindar la experiencia de gestión de fútbol definitiva en web.  
+¡Las contribuciones, reportes de bugs y sugerencias son siempre bienvenidos!
+
+- **Enlace de Apoyo (Ko-fi):** [https://ko-fi.com/jotags](https://ko-fi.com/jotags)
+- **Desarrollado por:** JotaDev (2026)
