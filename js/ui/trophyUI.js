@@ -2,6 +2,7 @@
 
 import { db } from '../data/db.js';
 import { TrophyRoomEngine } from '../engine/trophyRoom.js';
+import { renderCountryFlagSVG, renderTeamBadgeSVG } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
 // SVG Vectoriales con sombras 3D por Tipo de Trofeo
@@ -58,54 +59,76 @@ const TROPHY_SVGS = {
         </linearGradient>
       </defs>
     </svg>
+  `,
+  MUNDIAL: `
+    <svg viewBox="0 0 100 120" style="filter: drop-shadow(0 10px 14px rgba(245,158,11,0.6)); width: 85px; height: 105px;">
+      <!-- Base Verde Malaquita -->
+      <rect x="25" y="94" width="50" height="18" rx="4" fill="#047857" stroke="#10b981" stroke-width="2"/>
+      <rect x="28" y="85" width="44" height="10" rx="2" fill="#065f46"/>
+      <!-- Atletas Sosteniendo el Mundo -->
+      <path d="M 38 45 L 34 85 L 66 85 L 62 45 Z" fill="url(#goldGrad)" stroke="#f59e0b" stroke-width="2"/>
+      <!-- Globo Terráqueo Dorado -->
+      <circle cx="50" cy="30" r="22" fill="url(#worldGrad)" stroke="#fbbf24" stroke-width="2"/>
+      <path d="M 32 30 Q 50 20 68 30 Q 50 40 32 30" fill="none" stroke="#d97706" stroke-width="2"/>
+      <defs>
+        <linearGradient id="worldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fef08a"/>
+          <stop offset="50%" stop-color="#f59e0b"/>
+          <stop offset="100%" stop-color="#78350f"/>
+        </linearGradient>
+      </defs>
+    </svg>
   `
 };
 
 export function renderTrophyRoom(container) {
-  const career = TrophyRoomEngine.getCareerSummary();
   const gameState = db.gameState;
+  const trophies = gameState.trophies || [];
+  const careerHistory = gameState.careerHistory || [];
   const userTeam = db.teams[gameState.userTeamId];
-
-  const trophies = career.trophies || [];
-  const clubHistory = gameState.managedClubsHistory || [
-    { teamName: userTeam.name, seasons: `${gameState.season}/${gameState.season + 1}`, trophiesWon: trophies.length }
-  ];
 
   container.innerHTML = `
     <div class="trophy-layout">
-      <!-- Encabezado de la Sala de Trofeos -->
-      <div class="trophy-header glass-panel" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-        <div>
-          <h2>🏆 Vitrina 3D de Trofeos & Palmarés de ${career.managerName}</h2>
-          <p class="text-sub">Puntuación de Manager: <strong class="text-highlight">${career.managerScore} PTS</strong> | Reputación Mundial: <strong style="color: var(--accent-gold);">${career.reputation}/99</strong></p>
+      <!-- Encabezado de Leyenda -->
+      <div class="glass-panel mb-4 text-center" style="background: linear-gradient(135deg, #0d1320 0%, #162032 100%); padding: 24px;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 8px;">
+          ${renderCountryFlagSVG(gameState.managerCountry, 28)}
+          <h2 style="font-size: 1.8rem; margin: 0; color: #fff;">🏆 Salón de la Fama & Palmarés del Entrenador</h2>
         </div>
-        <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px;">
-          <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">TÍTULOS TOTALES GANADOS</span>
-          <h2 style="margin: 0; color: var(--accent-green); text-align: center;">${trophies.length} 🏆</h2>
-        </div>
+        <p class="text-sub" style="font-size: 0.9rem;">
+          Director Técnico: <strong style="color: var(--accent-gold);">${gameState.managerName}</strong> | 
+          Años de Carrera: <strong>${gameState.season - 2026 + 1} de 25 Temporadas</strong> | 
+          Títulos Conquistados: <strong style="color: var(--accent-green);">${trophies.length} Títulos</strong>
+        </p>
       </div>
 
-      <!-- Vitrina 3D con Estantería y Sombras -->
-      <div class="glass-panel mt-4" style="background: linear-gradient(180deg, #101726 0%, #0a0d14 100%); border: 1px solid var(--border-color); padding: 32px 24px;">
-        <h3 style="margin-bottom: 20px; color: var(--accent-gold); text-align: center;">✨ Vitrina de Trofeos del Director Técnico (Haz clic en una copa para ver detalles)</h3>
+      <!-- Vitrina de Trofeos Conquistados -->
+      <div class="glass-panel mb-4" style="padding: 20px;">
+        <h3 style="color: var(--accent-gold); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+          🏛️ Vitrina de Trofeos Conquistados (${trophies.length})
+        </h3>
 
         ${trophies.length === 0 ? `
-          <div class="empty-cabinet text-center py-5">
-            <div style="font-size: 4rem; opacity: 0.4;">🏆</div>
-            <h3 class="mt-2">Vitrina en Espera de tu Primer Título</h3>
-            <p class="text-sub">Conquista la liga o copa esta temporada para exhibir tus trofeos originales con peana de granito.</p>
+          <div class="text-center py-5" style="background: #0f172a; border: 1px dashed var(--border-color); border-radius: 12px;">
+            <div style="font-size: 3rem; margin-bottom: 8px; opacity: 0.5;">🏆</div>
+            <h4 class="text-sub">Aún no has conquistado trofeos en tu carrera.</h4>
+            <p class="text-sub" style="font-size: 0.8rem;">Lucha por la Liga, la Copa Nacional y la Champions/Libertadores para llenar tu vitrina.</p>
           </div>
         ` : `
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 24px; justify-items: center;">
-            ${trophies.map((t, idx) => {
-              const svgType = t.title.toLowerCase().includes('liga') ? 'LIGA' : (t.title.toLowerCase().includes('continental') || t.title.toLowerCase().includes('libertadores') ? 'CONTINENTAL' : 'COPA');
-              const svgMarkup = TROPHY_SVGS[svgType];
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;">
+            ${trophies.map(t => {
+              const isMundial = t.title.toLowerCase().includes('mundial');
+              const isCont = t.title.toLowerCase().includes('champions') || t.title.toLowerCase().includes('libertadores');
+              const isCup = t.title.toLowerCase().includes('copa') && !isCont;
+              const trophyType = isMundial ? 'MUNDIAL' : (isCont ? 'CONTINENTAL' : (isCup ? 'COPA' : 'LIGA'));
 
               return `
-                <div class="trophy-item-card" data-idx="${idx}" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; background: #141d2e; border: 1px solid var(--border-color); padding: 20px 14px; border-radius: 12px; transition: transform 0.2s ease, border-color 0.2s ease; width: 100%;">
-                  ${svgMarkup}
-                  <h4 style="margin-top: 14px; font-size: 0.92rem; text-align: center; color: #ffffff;">${t.title}</h4>
-                  <span class="text-sub" style="font-size: 0.78rem;">Temporada ${t.season}</span>
+                <div class="glass-panel text-center trophy-card" style="padding: 16px; border: 1px solid var(--accent-gold); background: #0f172a; border-radius: 12px; transition: transform 0.2s ease;">
+                  <div style="margin-bottom: 8px;">
+                    ${TROPHY_SVGS[trophyType] || TROPHY_SVGS.LIGA}
+                  </div>
+                  <h4 style="font-size: 0.88rem; color: #fff; margin-bottom: 4px;">${t.title}</h4>
+                  <span class="badge" style="background: var(--accent-gold); color: #000; font-weight: 900; font-size: 0.72rem;">${t.season}</span>
                 </div>
               `;
             }).join('')}
@@ -113,46 +136,41 @@ export function renderTrophyRoom(container) {
         `}
       </div>
 
-      <!-- Historial de Clubes Dirigidos y Palmarés por Equipo -->
-      <div class="glass-panel mt-4">
-        <h3>🏢 Historial de Equipos Dirigidos y Títulos por Club</h3>
-        <p class="text-sub mb-3">Registro de instituciones comandadas durante los 25 años de carrera profesional:</p>
+      <!-- HISTORIAL MULTI-CLUB DE TEMPORADAS PASADAS -->
+      <div class="glass-panel" style="padding: 20px;">
+        <h3 style="color: var(--accent-cyan); margin-bottom: 16px;">📋 Historial Anual de Trayectoria</h3>
         
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Club Dirigido</th>
-                <th>Período / Temporadas</th>
-                <th>Títulos Conquistados</th>
-                <th>Estado del Vínculo</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${clubHistory.map(c => `
-                <tr class="${c.teamName === userTeam.name ? 'highlight-row' : ''}">
-                  <td><strong>🏰 ${c.teamName}</strong></td>
-                  <td>${c.seasons}</td>
-                  <td><span class="stat-ovr">${c.trophiesWon} 🏆</span></td>
-                  <td>${c.teamName === userTeam.name ? '<span class="text-highlight">Club Actual (DT Activo)</span>' : '<span class="text-sub">Ex-Equipo</span>'}</td>
+        ${careerHistory.length === 0 ? `
+          <p class="text-sub">Completarás tu primer registro al finalizar la Temporada 2026/2027.</p>
+        ` : `
+          <div class="table-responsive">
+            <table class="data-table" style="font-size: 0.82rem;">
+              <thead>
+                <tr>
+                  <th>Año</th>
+                  <th>Club Dirigido</th>
+                  <th>Posición</th>
+                  <th>Paso Copa</th>
+                  <th>MVP del Club</th>
+                  <th>Presupuesto Fin</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                ${careerHistory.map(h => `
+                  <tr>
+                    <td><strong>${h.season}/${h.season + 1}</strong></td>
+                    <td><strong>${h.club}</strong> ${h.isTitleWon ? '🏆' : ''}</td>
+                    <td><span class="badge ${h.isTitleWon ? 'badge-final' : ''}">Puesto #${h.leagueRank}</span></td>
+                    <td>${h.cupPhase || 'N/A'}</td>
+                    <td>${h.mvpPlayer || 'N/A'}</td>
+                    <td><strong class="text-highlight">€${((h.budgetEnd || 0) / 1000000).toFixed(1)}M</strong></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `}
       </div>
     </div>
   `;
-
-  // Evento de clic en trofeos para ver modal de detalles
-  document.querySelectorAll('.trophy-item-card').forEach(card => {
-    card.addEventListener('click', (e) => {
-      sfx.playClick();
-      const idx = e.currentTarget.dataset.idx;
-      const trophy = trophies[idx];
-      if (trophy) {
-        alert(`🏆 DETALLES DEL TÍTULO:\n\nTrofeo: ${trophy.title}\nClub Campeón: ${trophy.teamName || userTeam.name}\nTemporada: ${trophy.season}\nFecha de Conquista: ${trophy.date}`);
-      }
-    });
-  });
 }
