@@ -1,4 +1,5 @@
 // Vista Principal (Dashboard Integrado en 1 Sola Pantalla - Zero Scroll)
+// Incluye Tabla de Posiciones Interactiva por Competición & Carrusel de Fases de Copas
 
 import { db } from '../data/db.js';
 import { MatchEngine } from '../engine/matchEngine.js';
@@ -7,11 +8,16 @@ import { CompetitionsEngine } from '../engine/competitionsEngine.js';
 import { TransferEngine } from '../engine/transfers.js';
 import { EventsEngine } from '../engine/eventsEngine.js';
 import { ContractEngine } from '../engine/contracts.js';
-import { renderTeamBadgeSVG } from './badgeHelper.js';
+import { renderTeamBadgeSVG, renderCountryFlagSVG } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
+
+let activeCompTab = 'LEAGUE'; // 'LEAGUE' | 'NATIONAL_CUP' | 'CONTINENTAL_CUP'
+let currentCupPhaseIdx = 0;
 
 export function renderDashboard(container, navigateTo) {
   const gameState = db.gameState;
+  CompetitionsEngine.initCupProgressIfMissing();
+
   const userTeam = db.teams[gameState.userTeamId] || { name: 'Mi Club', short: 'DT', overall: 75, colors: ['#00aaff', '#00ffaa'], stadium: 'Estadio Principal', leagueId: 'arg_1' };
   const league = db.leagues.find(l => l.id === userTeam.leagueId) || db.leagues[0] || { name: 'Liga Principal', country: 'Sudamérica' };
 
@@ -33,6 +39,11 @@ export function renderDashboard(container, navigateTo) {
   const squad = db.getTeamPlayers(userTeam.id);
   const topClubScorer = [...squad].sort((a, b) => (b.seasonGoals || 0) - (a.seasonGoals || 0))[0] || { name: 'Sin registros', seasonGoals: 0 };
   const topClubAssister = squad[1] || squad[0] || { name: 'Sin registros', overall: 75 };
+
+  const natCupName = CompetitionsEngine.getNationalCupName(userTeam.country);
+  let contCupName = 'Copa CONMEBOL Libertadores';
+  if (userTeam.region === 'Europa') contCupName = 'UEFA Champions League';
+  else if (userTeam.region === 'Norteamérica') contCupName = 'Concacaf Champions Cup';
 
   container.innerHTML = `
     <!-- 1. BANDA SUPERIOR DE KPIs DEL CLUB -->
@@ -62,8 +73,8 @@ export function renderDashboard(container, navigateTo) {
       </div>
     </div>
 
-    <!-- 2. REJILLA TRI-COLUMNA EN 1 SOLA PANTALLA (PRÓXIMO PARTIDO + TABLA POSICIONES + PICHICHI) -->
-    <div style="display: grid; grid-template-columns: 1.1fr 1fr 0.9fr; gap: 14px; align-items: stretch;">
+    <!-- 2. REJILLA TRI-COLUMNA EN 1 SOLA PANTALLA -->
+    <div style="display: grid; grid-template-columns: 1.1fr 1.1fr 0.8fr; gap: 14px; align-items: stretch;">
       
       <!-- Columna 1: Tarjeta de Partido -->
       <div class="card glass-panel" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
@@ -105,31 +116,24 @@ export function renderDashboard(container, navigateTo) {
         </div>
       </div>
 
-      <!-- Columna 2: Tabla de Posiciones -->
-      <div class="card glass-panel" style="padding: 14px 16px;">
-        <h4 style="margin-bottom: 8px; font-size: 0.92rem; color: #ffffff;">📊 Tabla de Posiciones</h4>
-        <div class="table-responsive">
-          <table class="data-table" style="font-size: 0.80rem;">
-            <thead>
-              <tr>
-                <th style="padding: 4px 6px;">#</th>
-                <th style="padding: 4px 6px;">Club</th>
-                <th style="padding: 4px 6px;">PJ</th>
-                <th style="padding: 4px 6px;">PTS</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${(gameState.standings || []).slice(0, 8).map((item, idx) => `
-                <tr class="${item.teamId === userTeam.id ? 'highlight-row' : ''}">
-                  <td style="padding: 5px 6px;">${idx + 1}</td>
-                  <td style="padding: 5px 6px;"><strong>${item.name}</strong></td>
-                  <td style="padding: 5px 6px;">${item.played}</td>
-                  <td style="padding: 5px 6px;"><strong>${item.points}</strong></td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+      <!-- Columna 2: Panel Interactivo de Tabla / Copas con Carrusel de Fases -->
+      <div class="card glass-panel" style="padding: 14px 16px; display: flex; flex-direction: column; justify-content: space-between;">
+        
+        <!-- SELECTOR DE COMPETICIÓN (LIGA / COPA NACIONAL / COPA CONTINENTAL) -->
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
+            <h4 style="margin:0; font-size: 0.92rem; color: #ffffff;">📊 Competición</h4>
+            <select id="selectCompetitionTab" class="input-select" style="font-size: 0.76rem; padding: 3px 8px; border-radius: 6px; background: #0f172a; color: var(--accent-cyan); font-weight: 800;">
+              <option value="LEAGUE" ${activeCompTab === 'LEAGUE' ? 'selected' : ''}>🏆 ${league.name}</option>
+              <option value="NATIONAL_CUP" ${activeCompTab === 'NATIONAL_CUP' ? 'selected' : ''}>🥊 ${natCupName}</option>
+              <option value="CONTINENTAL_CUP" ${activeCompTab === 'CONTINENTAL_CUP' ? 'selected' : ''}>🌐 ${contCupName}</option>
+            </select>
+          </div>
+
+          <!-- CONTENIDO DINÁMICO: TABLA LIGA O CARRUSEL DE COPAS -->
+          <div id="compTabContent"></div>
         </div>
+
       </div>
 
       <!-- Columna 3: Tabla de Goleadores (Pichichi) -->
@@ -167,13 +171,116 @@ export function renderDashboard(container, navigateTo) {
     </div>
   `;
 
+  // RENDERIZAR VISTA DE TABLA O CARRUSEL SEGÚN LA PESTAÑA ACTIVA
+  const renderCompTab = () => {
+    const contentEl = document.getElementById('compTabContent');
+    if (!contentEl) return;
+
+    if (activeCompTab === 'LEAGUE') {
+      contentEl.innerHTML = `
+        <div class="table-responsive">
+          <table class="data-table" style="font-size: 0.80rem;">
+            <thead>
+              <tr>
+                <th style="padding: 4px 6px;">#</th>
+                <th style="padding: 4px 6px;">Club</th>
+                <th style="padding: 4px 6px;">PJ</th>
+                <th style="padding: 4px 6px;">PTS</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(gameState.standings || []).slice(0, 8).map((item, idx) => `
+                <tr class="${item.teamId === userTeam.id ? 'highlight-row' : ''}">
+                  <td style="padding: 5px 6px;">${idx + 1}</td>
+                  <td style="padding: 5px 6px;"><strong>${item.name}</strong></td>
+                  <td style="padding: 5px 6px;">${item.played}</td>
+                  <td style="padding: 5px 6px;"><strong>${item.points}</strong></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    } else {
+      const progressList = activeCompTab === 'NATIONAL_CUP' ? gameState.nationalCupProgress : gameState.continentalCupProgress;
+      const totalPhases = progressList ? progressList.length : 0;
+      currentCupPhaseIdx = Math.max(0, Math.min(currentCupPhaseIdx, totalPhases - 1));
+
+      const phase = progressList[currentCupPhaseIdx] || { phaseName: 'Fase Inicial', status: 'PENDIENTE', score: '- -', rivalName: 'Por definir' };
+
+      let statusBadge = '<span style="background: #334155; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">PENDIENTE ⏳</span>';
+      if (phase.status === 'CLASIFICADO' || phase.status === 'VICTORIA') {
+        statusBadge = '<span style="background: var(--accent-green); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 900; font-size: 0.72rem;">CLASIFICADO 🟢</span>';
+      } else if (phase.status === 'ELIMINADO' || phase.status === 'DERROTA') {
+        statusBadge = '<span style="background: var(--accent-red); color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">ELIMINADO 🔴</span>';
+      } else if (phase.status === 'CAMPEÓN') {
+        statusBadge = '<span style="background: var(--accent-gold); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 900; font-size: 0.72rem;">🥇 ¡CAMPEÓN!</span>';
+      }
+
+      contentEl.innerHTML = `
+        <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; text-align: center;">
+          
+          <!-- CONTROLES NAVEGADORES DEL CARRUSEL DE FASES -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <button id="btnPrevCupPhase" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" ${currentCupPhaseIdx === 0 ? 'disabled style="opacity:0.3;"' : ''}>◀ Anterior</button>
+            <span style="font-size: 0.82rem; font-weight: 900; color: var(--accent-cyan);">${phase.phaseName}</span>
+            <button id="btnNextCupPhase" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" ${currentCupPhaseIdx === totalPhases - 1 ? 'disabled style="opacity:0.3;"' : ''}>Siguiente ▶</button>
+          </div>
+
+          <!-- TARJETA DEL CRUCE DE LA FASE -->
+          <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+            <div style="font-size: 0.75rem; color: var(--text-sub); margin-bottom: 4px;">Semana ${phase.week} — ${phase.cupName}</div>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 8px 0;">
+              <strong style="font-size: 0.95rem; color: #fff;">${userTeam.name}</strong>
+              <span style="background: #090d16; padding: 4px 10px; border-radius: 6px; font-weight: 900; font-size: 1rem; color: var(--accent-gold);">${phase.score}</span>
+              <strong style="font-size: 0.95rem; color: var(--text-sub);">${phase.rivalName}</strong>
+            </div>
+            <div style="margin-top: 6px;">${statusBadge}</div>
+          </div>
+
+          <!-- PUNTOS INDICADORES DE FASES DE COPA -->
+          <div style="display: flex; gap: 6px; justify-content: center;">
+            ${progressList.map((p, idx) => `
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: ${idx === currentCupPhaseIdx ? 'var(--accent-green)' : '#334155'}; transition: background 0.2s ease;"></div>
+            `).join('')}
+          </div>
+
+        </div>
+      `;
+
+      document.getElementById('btnPrevCupPhase')?.addEventListener('click', () => {
+        if (currentCupPhaseIdx > 0) {
+          sfx.playClick();
+          currentCupPhaseIdx--;
+          renderCompTab();
+        }
+      });
+
+      document.getElementById('btnNextCupPhase')?.addEventListener('click', () => {
+        if (currentCupPhaseIdx < totalPhases - 1) {
+          sfx.playClick();
+          currentCupPhaseIdx++;
+          renderCompTab();
+        }
+      });
+    }
+  };
+
+  renderCompTab();
+
+  document.getElementById('selectCompetitionTab')?.addEventListener('change', (e) => {
+    sfx.playClick();
+    activeCompTab = e.target.value;
+    currentCupPhaseIdx = 0;
+    renderCompTab();
+  });
+
   if (isSeasonCompleted) {
     document.getElementById('btnFinishSeasonDirect')?.addEventListener('click', () => {
       sfx.playClick();
       showEndOfSeasonModal();
     });
   } else {
-    // Botón Jugar Partido (Verifica si hay evento narrativo pendiente)
     document.getElementById('btnPlayMatch')?.addEventListener('click', () => {
       sfx.playWhistle();
       const event = EventsEngine.getEventForWeek(gameState.week);
@@ -186,7 +293,6 @@ export function renderDashboard(container, navigateTo) {
       }
     });
 
-    // Simular bloque de fechas hasta el parón invernal o final de temporada
     document.getElementById('btnSimBlock')?.addEventListener('click', () => {
       sfx.playWhistle();
       const targetWeek = gameState.week < midSeasonWeek ? midSeasonWeek : gameState.maxWeeks;
@@ -194,88 +300,88 @@ export function renderDashboard(container, navigateTo) {
       let pendingEvent = null;
 
       while (gameState.week < targetWeek && gameState.week < gameState.maxWeeks) {
-      const event = EventsEngine.getEventForWeek(gameState.week);
-      if (event && !pendingEvent) {
-        pendingEvent = event;
-      }
+        const event = EventsEngine.getEventForWeek(gameState.week);
+        if (event && !pendingEvent) {
+          pendingEvent = event;
+        }
 
-      const squad = db.getTeamPlayers(userTeam.id);
-      const currentRival = otherTeams[(gameState.week - 1) % otherTeams.length] || nextRival;
-      const match = new MatchEngine(userTeam, currentRival, userTeam.overall, currentRival.overall, gameState.matchBonus?.moraleBonus || 0);
-      const res = match.simulateFullMatch();
+        const squad = db.getTeamPlayers(userTeam.id);
+        const currentRival = otherTeams[(gameState.week - 1) % otherTeams.length] || nextRival;
+        const match = new MatchEngine(userTeam, currentRival, userTeam.overall, currentRival.overall, gameState.matchBonus?.moraleBonus || 0);
+        const res = match.simulateFullMatch();
 
-      // Distribución Financiera: 25% Fichajes, acumular nómina en finances
-      const totalTicketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
-      const transferAllocation = Math.round(totalTicketRevenue * 0.25);
-      gameState.budget += transferAllocation;
+        const totalTicketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
+        const transferAllocation = Math.round(totalTicketRevenue * 0.25);
+        gameState.budget += transferAllocation;
 
-      // Acumular nómina en finances (sin deducir del budget aquí)
-      if (gameState.finances) {
-        gameState.finances.ticketRevenue = (gameState.finances.ticketRevenue || 0) + totalTicketRevenue;
-        const squadLocal = db.getTeamPlayers(userTeam.id);
-        const weeklyWage = squadLocal.reduce((sum, p) => sum + (p.salary || 5000), 0);
-        gameState.finances.weeklyWageTotal = (gameState.finances.weeklyWageTotal || 0) + weeklyWage;
-      }
+        if (gameState.finances) {
+          gameState.finances.ticketRevenue = (gameState.finances.ticketRevenue || 0) + totalTicketRevenue;
+          const squadLocal = db.getTeamPlayers(userTeam.id);
+          const weeklyWage = squadLocal.reduce((sum, p) => sum + (p.salary || 5000), 0);
+          gameState.finances.weeklyWageTotal = (gameState.finances.weeklyWageTotal || 0) + weeklyWage;
+        }
 
-      // Actualizar racha de victorias
-      const userStandingLocal = gameState.standings.find(s => s.teamId === userTeam.id);
-      const prevPoints = userStandingLocal ? userStandingLocal.points : 0;
-      const userStanding = gameState.standings.find(s => s.teamId === userTeam.id);
-      const rivalStanding = gameState.standings.find(s => s.teamId === currentRival.id);
+        const userStandingLocal = gameState.standings.find(s => s.teamId === userTeam.id);
+        const userStanding = gameState.standings.find(s => s.teamId === userTeam.id);
+        const rivalStanding = gameState.standings.find(s => s.teamId === currentRival.id);
 
-      if (userStanding && rivalStanding) {
-        userStanding.played++; rivalStanding.played++;
-        userStanding.gf += res.homeScore; userStanding.ga += res.awayScore;
-        userStanding.gd = userStanding.gf - userStanding.ga;
-        rivalStanding.gf += res.awayScore; rivalStanding.ga += res.homeScore;
-        rivalStanding.gd = rivalStanding.gf - rivalStanding.ga;
+        if (userStanding && rivalStanding) {
+          userStanding.played = Math.min(gameState.maxWeeks, userStanding.played + 1);
+          rivalStanding.played = Math.min(gameState.maxWeeks, rivalStanding.played + 1);
+          userStanding.gf += res.homeScore; userStanding.ga += res.awayScore;
+          userStanding.gd = userStanding.gf - userStanding.ga;
+          rivalStanding.gf += res.awayScore; rivalStanding.ga += res.homeScore;
+          rivalStanding.gd = rivalStanding.gf - rivalStanding.ga;
 
-        if (res.homeScore > res.awayScore) {
-          userStanding.won++; userStanding.points += 3; rivalStanding.lost++;
-          gameState.currentStreak = (gameState.currentStreak || 0) + 1;
-          if (gameState.currentStreak > (gameState.bestWinStreak || 0)) gameState.bestWinStreak = gameState.currentStreak;
-        } else if (res.homeScore < res.awayScore) {
-          rivalStanding.won++; rivalStanding.points += 3; userStanding.lost++;
-          gameState.currentStreak = 0;
-        } else {
-          userStanding.drawn++; userStanding.points += 1;
-          rivalStanding.drawn++; rivalStanding.points += 1;
-          gameState.currentStreak = 0;
+          if (res.homeScore > res.awayScore) {
+            userStanding.won++; userStanding.points += 3; rivalStanding.lost++;
+            gameState.currentStreak = (gameState.currentStreak || 0) + 1;
+            if (gameState.currentStreak > (gameState.bestWinStreak || 0)) gameState.bestWinStreak = gameState.currentStreak;
+          } else if (res.homeScore < res.awayScore) {
+            rivalStanding.won++; rivalStanding.points += 3; userStanding.lost++;
+            gameState.currentStreak = 0;
+          } else {
+            userStanding.drawn++; userStanding.points += 1;
+            rivalStanding.drawn++; rivalStanding.points += 1;
+            gameState.currentStreak = 0;
+          }
+        }
+
+        MatchEngine.simulateAllRivalMatches(userTeam.id, currentRival.id);
+
+        CompetitionsEngine.processCupWeek(gameState.week);
+        CompetitionsEngine.processNationalCupWeek(gameState.week);
+
+        if (gameState.week < gameState.maxWeeks) {
+          gameState.week++;
+        }
+
+        if (pendingEvent) {
+          break;
         }
       }
 
-      MatchEngine.simulateAllRivalMatches(userTeam.id, currentRival.id);
+      gameState.standings.sort((a, b) => b.points - a.points || b.gd - a.gd);
+      db.saveGame();
 
-      CompetitionsEngine.processCupWeek(gameState.week);
-      CompetitionsEngine.processNationalCupWeek(gameState.week);
-
-      gameState.week++;
+      const proceedNextStep = () => {
+        if (gameState.week === midSeasonWeek) {
+          TransferEngine.resetWindowLocks();
+          showMidSeasonModal();
+        } else if (gameState.week >= gameState.maxWeeks) {
+          showEndOfSeasonModal();
+        } else {
+          renderDashboard(container, navigateTo);
+        }
+      };
 
       if (pendingEvent) {
-        break;
-      }
-    }
-
-    gameState.standings.sort((a, b) => b.points - a.points || b.gd - a.gd);
-    db.saveGame();
-
-    const proceedNextStep = () => {
-      if (gameState.week === midSeasonWeek) {
-        TransferEngine.resetWindowLocks();
-        showMidSeasonModal();
-      } else if (gameState.week >= gameState.maxWeeks) {
-        showEndOfSeasonModal();
+        EventsEngine.renderEventModal(pendingEvent, proceedNextStep);
       } else {
-        renderDashboard(container, navigateTo);
+        proceedNextStep();
       }
-    };
-
-    if (pendingEvent) {
-      EventsEngine.renderEventModal(pendingEvent, proceedNextStep);
-    } else {
-      proceedNextStep();
-    }
-  });
+    });
+  }
 
   function showMidSeasonModal() {
     const modal = document.getElementById('seasonModal');
@@ -283,7 +389,7 @@ export function renderDashboard(container, navigateTo) {
     modal.classList.remove('hidden');
 
     content.innerHTML = `
-      <h2>❄️ Parón de Mitad de Temporada ${seasonLabel} (Semana 19)</h2>
+      <h2>❄️ Parón de Mitad de Temporada ${seasonLabel} (Semana ${midSeasonWeek})</h2>
       <p class="text-sub mt-2">¡Ha comenzado el receso invernal! La <strong>Ventana de Fichajes de Invierno</strong> está abierta. Las negociaciones bloqueadas previamente han sido liberadas.</p>
       
       <div class="mt-3">
@@ -292,17 +398,12 @@ export function renderDashboard(container, navigateTo) {
       </div>
 
       <div class="modal-actions mt-4" style="display: flex; gap: 14px; justify-content: center;">
-        <button id="btnGoTransfersModal" class="btn-primary">📝 IR AL MERCADO DE INVIERNO</button>
-        <button id="btnCloseSeasonModal" class="btn-secondary">CONTINUAR TEMPORADA</button>
+        <button id="btnContinueFromMidSeason" class="btn-primary btn-large">CONTINUAR TEMPORADA ⚽</button>
       </div>
     `;
 
-    document.getElementById('btnGoTransfersModal').addEventListener('click', () => {
-      modal.classList.add('hidden');
-      navigateTo('transfers');
-    });
-
-    document.getElementById('btnCloseSeasonModal').addEventListener('click', () => {
+    document.getElementById('btnContinueFromMidSeason').addEventListener('click', () => {
+      sfx.playClick();
       modal.classList.add('hidden');
       renderDashboard(container, navigateTo);
     });
@@ -313,44 +414,18 @@ export function renderDashboard(container, navigateTo) {
     const content = document.getElementById('seasonModalContent');
     modal.classList.remove('hidden');
 
-    const champion = gameState.standings[0];
-    const isChampion = champion.teamId === userTeam.id;
-
-    const userRank = gameState.standings.findIndex(s => s.teamId === userTeam.id) + 1;
-    let prizeMoney = 10000000;
-    if (userRank === 1) prizeMoney = 40000000;
-    else if (userRank <= 4) prizeMoney = 25000000;
-    else if (userRank <= 8) prizeMoney = 18000000;
-
+    const isChampion = userRank === 1;
+    const prizeMoney = isChampion ? 15000000 : (userRank <= 4 ? 8000000 : 3000000);
     gameState.budget += prizeMoney;
-    if (gameState.finances) {
-      gameState.finances.leaguePrize = (gameState.finances.leaguePrize || 0) + prizeMoney;
-    }
 
-    if (isChampion) {
-      TrophyRoomEngine.recordTrophy(`${league.name} - Campeón`, seasonLabel);
-    }
-
-    const is25YearCareerFinished = gameState.season >= 2050;
-
-    if (is25YearCareerFinished) {
-      gameState.isCareerFinished = true;
-      db.saveGame();
-
-      const tipBtn = document.getElementById('supportTipBtn');
-      if (tipBtn) tipBtn.classList.remove('hidden');
-
+    if (gameState.season >= 2050) {
+      db.gameState.isCareerFinished = true;
       content.innerHTML = `
-        <h2>🏆 ¡CARRERA PROFESIONAL FINALIZADA (25 AÑOS)!</h2>
-        <p class="text-sub mt-2">Has completado tu trayectoria histórica como Director Técnico (2026 - 2051).</p>
-        
-        <div class="mt-3">
-          <p>Títulos Conquistados: <strong class="text-highlight">${gameState.trophies ? gameState.trophies.length : 0} Títulos</strong></p>
-          <p>Premio de Fin de Carrera: <strong class="text-highlight">+€${(prizeMoney / 1000000).toFixed(1)}M</strong></p>
-        </div>
-
-        <div class="modal-actions mt-4">
-          <button id="btnFinish25Years" class="btn-primary btn-large">📜 VER PALMARÉS FINAL DE MI CARRERA</button>
+        <div style="font-size: 3rem; margin-bottom: 10px;">🏆👑</div>
+        <h2>¡CARRERA PROFESIONAL COMPLETADA DE 25 TEMPORADAS!</h2>
+        <p class="text-sub mt-2">Has culminado tu brillante trayectoria de 25 años como Director Técnico (2026 - 2051).</p>
+        <div class="mt-4">
+          <button id="btnFinish25Years" class="btn-primary btn-large" style="width: 100%;">VER PALMARÉS Y REGISTRO DE LEYENDA 📜</button>
         </div>
       `;
 
@@ -364,15 +439,12 @@ export function renderDashboard(container, navigateTo) {
     const contract = ContractEngine.evaluatePerformance();
     const isContractExpired = (contract.yearsRemaining || 0) <= 0;
 
-    // 1. Obtener MVP del Club de la Temporada
     const squad = db.getTeamPlayers(userTeam.id);
     const topScorer = [...squad].sort((a, b) => (b.seasonGoals || 0) - (a.seasonGoals || 0))[0] || squad[0];
     const mvpName = topScorer ? `${topScorer.name} (${topScorer.pos}, ${topScorer.seasonGoals || 0} Goles)` : 'Sin destacar';
 
-    // 2. Calcular Nota de la Temporada (1.0 a 10.0)
     const seasonGrade = (Math.min(10, Math.max(1, (10 - userRank * 0.4) + (isChampion ? 2.5 : 0)))).toFixed(1);
 
-    // 3. Titular de Periódico Impactante
     let headline = 'EL RIVAL LE PASÓ EL TRAPO';
     let headlineColor = 'var(--accent-red)';
     if (isChampion) {
@@ -396,13 +468,11 @@ export function renderDashboard(container, navigateTo) {
         <h1 style="font-size: 1.8rem; font-weight: 900; color: ${headlineColor}; margin-bottom: 6px;">${headline}</h1>
         <p class="text-sub mb-3" style="font-size: 0.88rem;">${userTeam.name} concluyó la temporada regular en el <strong>Puesto #${userRank}</strong> de la tabla general.</p>
 
-        <!-- NOTA DE LA TEMPORADA -->
         <div style="background: #0f172a; border: 1px solid var(--border-color); padding: 12px 18px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
           <span style="font-weight: 800; font-size: 0.95rem; color: #fff;">NOTA DE LA TEMPORADA</span>
           <strong style="font-size: 2.2rem; color: ${seasonGrade >= 7 ? 'var(--accent-green)' : 'var(--accent-gold)'}; font-weight: 900;">${seasonGrade}</strong>
         </div>
 
-        <!-- HIGHLIGHTS DE RENDIMIENTO -->
         <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 14px; border-radius: 10px; margin-bottom: 16px; font-size: 0.85rem;">
           <p style="margin-bottom: 6px;">🌟 <strong>MVP del Club:</strong> ${mvpName}</p>
           <p style="margin-bottom: 6px;">🏆 <strong>Posición Final:</strong> Puesto #${userRank} (${userStanding ? userStanding.points : 0} Pts | ${userStanding ? userStanding.won : 0} Victorias)</p>
@@ -412,7 +482,6 @@ export function renderDashboard(container, navigateTo) {
           <p style="margin-bottom: 0;">📋 <strong>Fichajes de la Temporada:</strong> ${(gameState.seasonPlayersIn || []).length} entradas · ${(gameState.seasonPlayersOut || []).length} salidas.</p>
         </div>
 
-        <!-- RUEDA DE PRENSA ESTILO MOURINHO -->
         <div style="background: #0f172a; border: 1px solid var(--accent-cyan); padding: 14px; border-radius: 10px; margin-bottom: 16px;">
           <h4 style="color: var(--accent-cyan); font-size: 0.9rem; margin-bottom: 6px;">🎤 Rueda de Prensa de Cierre (Estilo José Mourinho)</h4>
           <p style="font-size: 0.82rem;" class="text-sub mb-3">La prensa internacional te pregunta: <em>"¿Cuál es su respuesta a las críticas tras esta campaña?"</em></p>
