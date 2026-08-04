@@ -6,6 +6,7 @@ import { TrophyRoomEngine } from '../engine/trophyRoom.js';
 import { CompetitionsEngine } from '../engine/competitionsEngine.js';
 import { TransferEngine } from '../engine/transfers.js';
 import { EventsEngine } from '../engine/eventsEngine.js';
+import { ContractEngine } from '../engine/contracts.js';
 import { renderTeamBadgeSVG } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
