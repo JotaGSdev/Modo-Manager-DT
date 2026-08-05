@@ -15,6 +15,8 @@ export function renderSquad(container) {
   let currentFilter = 'ALL';
   let searchQuery = '';
 
+  const expiringCount = squad.filter(p => (p.contractYears !== undefined ? p.contractYears : 3) <= 1).length;
+
   const renderTable = () => {
     const listEl = document.getElementById('squadTableBody');
     if (!listEl) return;
@@ -32,6 +34,7 @@ export function renderSquad(container) {
       else if (currentFilter === 'DEF') filtered = filtered.filter(p => ['DFC', 'LI', 'LD'].includes(p.pos));
       else if (currentFilter === 'MED') filtered = filtered.filter(p => ['MCD', 'MC', 'MCO', 'MI', 'MD'].includes(p.pos));
       else if (currentFilter === 'DEL') filtered = filtered.filter(p => ['EI', 'ED', 'DC'].includes(p.pos));
+      else if (currentFilter === 'EXPIRING') filtered = filtered.filter(p => (p.contractYears !== undefined ? p.contractYears : 3) <= 1);
     }
 
     if (searchQuery) {
@@ -150,6 +153,7 @@ export function renderSquad(container) {
         <button class="btn-secondary btn-filter-pos" data-pos="DEF">DEFENSAS</button>
         <button class="btn-secondary btn-filter-pos" data-pos="MED">MEDIOCAMPISTAS</button>
         <button class="btn-secondary btn-filter-pos" data-pos="DEL">DELANTEROS</button>
+        <button class="btn-secondary btn-filter-pos" data-pos="EXPIRING" style="color: ${expiringCount > 0 ? 'var(--accent-red)' : 'var(--accent-gold)'}; font-weight: 800; border: 1px solid ${expiringCount > 0 ? 'var(--accent-red)' : 'var(--accent-gold)'};">⚠️ CONTRATOS POR VENCER (${expiringCount})</button>
       </div>
 
       <!-- Tabla Organizada de la Plantilla -->

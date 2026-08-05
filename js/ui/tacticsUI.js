@@ -224,6 +224,40 @@ export function renderTactics(container) {
 
     row.addEventListener('dragstart', handleDragStart);
     row.addEventListener('dragend', handleDragEnd);
+
+    row.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      row.style.background = 'rgba(0, 200, 133, 0.25)';
+      row.style.outline = '1px solid var(--accent-green)';
+    });
+
+    row.addEventListener('dragleave', () => {
+      row.style.background = '';
+      row.style.outline = '';
+    });
+
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      row.style.background = '';
+      row.style.outline = '';
+      const targetId = row.dataset.id;
+
+      if (draggedPlayerId && targetId && draggedPlayerId !== targetId) {
+        const p1 = squad.find(p => p.id === draggedPlayerId);
+        const p2 = squad.find(p => p.id === targetId);
+
+        if (p1 && p2) {
+          const idx1 = squad.indexOf(p1);
+          const idx2 = squad.indexOf(p2);
+          squad[idx1] = p2;
+          squad[idx2] = p1;
+
+          sfx.playClick();
+          db.saveGame();
+          renderTactics(container);
+        }
+      }
+    });
   });
 
   document.querySelectorAll('.btn-upgrade-skill').forEach(btn => {

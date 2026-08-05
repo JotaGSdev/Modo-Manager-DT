@@ -285,7 +285,7 @@ class DatabaseManager {
       return;
     }
 
-    const userTeamId = this.gameState.userTeamId;
+    const userTeamEvolutionReport = [];
 
     // 1. EVOLUCIÓN, ENVEJECIMIENTO (+1 AÑO) Y DECREMENTO DE CONTRATOS (-1 AÑO) EN TODOS LOS EQUIPOS
     for (const tId in this.players) {
@@ -293,25 +293,64 @@ class DatabaseManager {
       if (Array.isArray(roster)) {
         roster.forEach(p => {
           const appearances = p.appearances || 0;
+          const oldOvr = p.overall || 70;
           let deltaOvr = 0;
 
           if (p.age < 23) {
             if (appearances >= 12) deltaOvr = 3 + Math.floor(Math.random() * 3);
             else deltaOvr = 1 + Math.floor(Math.random() * 2);
           } else if (p.age >= 23 && p.age <= 28) {
-            if (appearances >= 15 && p.overall < p.potential) deltaOvr = 1 + Math.floor(Math.random() * 2);
+            if (appearances >= 15 && p.overall < (p.potential || 90)) deltaOvr = 1 + Math.floor(Math.random() * 2);
+            else deltaOvr = Math.random() < 0.4 ? 1 : 0;
           } else if (p.age >= 29 && p.age <= 32) {
             deltaOvr = -1;
-            p.pac = Math.max(40, p.pac - 2);
-            p.phy = Math.max(40, p.phy - 1);
           } else if (p.age >= 33) {
             deltaOvr = - (2 + Math.floor(Math.random() * 3));
-            p.pac = Math.max(35, p.pac - 3);
-            p.phy = Math.max(35, p.phy - 3);
           }
 
+          // Aplicar incremento/decremento a los atributos individuales según la posición
+          if (deltaOvr > 0) {
+            const boost = deltaOvr;
+            if (['EI', 'ED', 'DC'].includes(p.pos)) {
+              p.pac = Math.min(99, (p.pac || 70) + Math.ceil(boost * 0.8));
+              p.sho = Math.min(99, (p.sho || 70) + Math.ceil(boost * 0.9));
+              p.dri = Math.min(99, (p.dri || 70) + Math.ceil(boost * 0.7));
+            } else if (['MCO', 'MC', 'MI', 'MD'].includes(p.pos)) {
+              p.pas = Math.min(99, (p.pas || 70) + Math.ceil(boost * 0.9));
+              p.dri = Math.min(99, (p.dri || 70) + Math.ceil(boost * 0.8));
+              p.sho = Math.min(99, (p.sho || 70) + Math.ceil(boost * 0.6));
+            } else if (['DFC', 'MCD', 'LI', 'LD'].includes(p.pos)) {
+              p.def = Math.min(99, (p.def || 70) + Math.ceil(boost * 0.9));
+              p.phy = Math.min(99, (p.phy || 70) + Math.ceil(boost * 0.8));
+              p.pac = Math.min(99, (p.pac || 70) + Math.ceil(boost * 0.5));
+            } else {
+              p.def = Math.min(99, (p.def || 70) + Math.ceil(boost * 0.9));
+              p.phy = Math.min(99, (p.phy || 70) + Math.ceil(boost * 0.9));
+            }
+          } else if (deltaOvr < 0) {
+            const drop = Math.abs(deltaOvr);
+            p.pac = Math.max(35, (p.pac || 70) - Math.ceil(drop * 1.2));
+            p.phy = Math.max(35, (p.phy || 70) - Math.ceil(drop * 1.0));
+            p.sho = Math.max(35, (p.sho || 70) - Math.ceil(drop * 0.5));
+            p.dri = Math.max(35, (p.dri || 70) - Math.ceil(drop * 0.5));
+          }
+
+          // Recalcular media general (OVR)
           p.overall = calculatePositionOvr(p.pos, p.pac, p.sho, p.pas, p.dri, p.def, p.phy);
-          
+          const newOvr = p.overall;
+          const actualDelta = newOvr - oldOvr;
+
+          if (tId === userTeamId) {
+            userTeamEvolutionReport.push({
+              name: p.name,
+              pos: p.pos,
+              age: p.age + 1,
+              oldOvr: oldOvr,
+              newOvr: newOvr,
+              delta: actualDelta
+            });
+          }
+
           p.age++;
           const currentContract = p.contractYears !== undefined ? p.contractYears : 3;
           p.contractYears = Math.max(0, currentContract - 1);
@@ -359,6 +398,7 @@ class DatabaseManager {
     if (this.gameState.youthAcademy) {
       this.gameState.youthAcademy.forEach(y => y.age++);
     }
+    this.gameState.lastSeasonEvolutionReport = userTeamEvolutionReport;
 
     // 2. REINICIAR TABLA DE POSICIONES
     if (this.gameState.standings) {

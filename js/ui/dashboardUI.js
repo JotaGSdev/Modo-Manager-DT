@@ -567,9 +567,9 @@ export function renderDashboard(container, navigateTo) {
       sfx.playGoal();
       ContractEngine.startClubContract(gameState.userTeamId, 3);
       db.processSeasonPlayerEvolution();
-      alert(`¡CONTRATO RENOVADO! Has extendido tu vínculo con ${userTeam.name} por 3 temporadas adicionales.`);
-      modal.classList.add('hidden');
-      renderDashboard(container, navigateTo);
+      showEvolutionReportModal(db.gameState.lastSeasonEvolutionReport, () => {
+        renderDashboard(container, navigateTo);
+      });
     });
 
     document.getElementById('btnSearchJobOffersSeason')?.addEventListener('click', () => {
@@ -581,8 +581,65 @@ export function renderDashboard(container, navigateTo) {
     document.getElementById('btnAdvanceSeason')?.addEventListener('click', () => {
       sfx.playGoal();
       db.processSeasonPlayerEvolution();
+      showEvolutionReportModal(db.gameState.lastSeasonEvolutionReport, () => {
+        renderDashboard(container, navigateTo);
+      });
+    });
+  }
+
+  function showEvolutionReportModal(report, onContinue) {
+    const modal = document.getElementById('seasonModal');
+    const content = document.getElementById('seasonModalContent');
+    modal.classList.remove('hidden');
+
+    content.innerHTML = `
+      <div style="text-align: left;">
+        <h2 style="color: var(--accent-green); margin-bottom: 6px;">📈 REPORTE DE EVOLUCIÓN DE PLANTILLA (${db.gameState.season}/${db.gameState.season + 1})</h2>
+        <p class="text-sub mb-3">Tus futbolistas han envejecido +1 año. Revisa los crecimientos de media y desarrollos alcanzados:</p>
+
+        <div class="table-responsive mb-4" style="max-height: 280px; overflow-y: auto;">
+          <table class="data-table" style="font-size: 0.80rem;">
+            <thead>
+              <tr>
+                <th>POS</th>
+                <th>Jugador</th>
+                <th>Edad</th>
+                <th>OVR Previo</th>
+                <th>Nuevo OVR</th>
+                <th>Progreso</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(report || []).map(p => `
+                <tr>
+                  <td><span class="pos-tag pos-${p.pos}">${p.pos}</span></td>
+                  <td><strong>${p.name}</strong></td>
+                  <td>${p.age}a</td>
+                  <td>${p.oldOvr}</td>
+                  <td><strong style="color: var(--accent-cyan);">${p.newOvr}</strong></td>
+                  <td>
+                    ${p.delta > 0 
+                      ? `<span class="stat-ovr" style="background: var(--accent-green); color: #000; font-weight: 900; padding: 2px 6px;">+${p.delta} 🚀</span>`
+                      : (p.delta < 0 ? `<span style="background: var(--accent-red); color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 800;">${p.delta} 🔻</span>` : `<span class="text-sub">= CERO</span>`)}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="modal-actions text-center">
+          <button id="btnContinueToNewSeasonDashboard" class="btn-primary btn-large" style="width: 100%;">
+            🚀 INICIAR NUEVA TEMPORADA ${db.gameState.season}/${db.gameState.season + 1}
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('btnContinueToNewSeasonDashboard')?.addEventListener('click', () => {
+      sfx.playClick();
       modal.classList.add('hidden');
-      renderDashboard(container, navigateTo);
+      if (onContinue) onContinue();
     });
   }
 }
