@@ -74,21 +74,42 @@ export class ProbabilityEngine {
   }
 
   /**
-   * Genera las probabilidades de partido (xG) según valoración, táctica y bonificaciones de minijuegos
+   * Genera las probabilidades de partido (xG y posesión) según valoración, táctica y choque probabilístico de estilos
    */
-  static calculateMatchProbabilities(homeTeamOvr, awayTeamOvr, homeTacticsBonus = 0, awayTacticsBonus = 0) {
+  static calculateMatchProbabilities(homeTeamOvr, awayTeamOvr, homeTacticsBonus = 0, awayTacticsBonus = 0, homeStyle = 'Tiki-Taka', awayStyle = 'Tiki-Taka') {
     const ovrDiff = (homeTeamOvr + homeTacticsBonus + 3) - (awayTeamOvr + awayTacticsBonus);
     
-    // Base xG
-    let homeXG = 1.4 + (ovrDiff * 0.08);
-    let awayXG = 1.1 - (ovrDiff * 0.07);
+    let matchupBonusXG = 0;
+    let basePossession = 50;
+
+    const hStyleClean = (homeStyle || '').includes('Tiki') ? 'Tiki-Taka' : ((homeStyle || '').includes('Gegen') || (homeStyle || '').includes('Presión') ? 'Gegenpressing' : ((homeStyle || '').includes('Catena') || (homeStyle || '').includes('Autobús') ? 'Catenaccio' : ((homeStyle || '').includes('Bandas') ? 'Juego por Bandas' : 'Contraataque')));
+    const aStyleClean = (awayStyle || '').includes('Tiki') ? 'Tiki-Taka' : ((awayStyle || '').includes('Gegen') || (awayStyle || '').includes('Presión') ? 'Gegenpressing' : ((awayStyle || '').includes('Catena') || (awayStyle || '').includes('Autobús') ? 'Catenaccio' : ((awayStyle || '').includes('Bandas') ? 'Juego por Bandas' : 'Contraataque')));
+
+    const matrix = {
+      'Tiki-Taka': { 'Catenaccio': { bonusXG: 0.35, possession: 62 }, 'Juego por Bandas': { bonusXG: 0.25, possession: 58 }, 'Gegenpressing': { bonusXG: -0.20, possession: 46 }, 'Contraataque': { bonusXG: 0.10, possession: 60 }, 'Tiki-Taka': { bonusXG: 0, possession: 50 } },
+      'Gegenpressing': { 'Tiki-Taka': { bonusXG: 0.38, possession: 54 }, 'Juego por Bandas': { bonusXG: 0.22, possession: 55 }, 'Contraataque': { bonusXG: -0.30, possession: 58 }, 'Catenaccio': { bonusXG: -0.15, possession: 56 }, 'Gegenpressing': { bonusXG: 0, possession: 50 } },
+      'Catenaccio': { 'Contraataque': { bonusXG: 0.35, possession: 40 }, 'Gegenpressing': { bonusXG: 0.20, possession: 42 }, 'Tiki-Taka': { bonusXG: -0.25, possession: 38 }, 'Juego por Bandas': { bonusXG: -0.20, possession: 41 }, 'Catenaccio': { bonusXG: 0, possession: 50 } },
+      'Juego por Bandas': { 'Catenaccio': { bonusXG: 0.30, possession: 54 }, 'Contraataque': { bonusXG: 0.15, possession: 55 }, 'Tiki-Taka': { bonusXG: -0.18, possession: 42 }, 'Gegenpressing': { bonusXG: -0.20, possession: 45 }, 'Juego por Bandas': { bonusXG: 0, possession: 50 } },
+      'Contraataque': { 'Gegenpressing': { bonusXG: 0.40, possession: 42 }, 'Tiki-Taka': { bonusXG: 0.15, possession: 40 }, 'Catenaccio': { bonusXG: -0.30, possession: 48 }, 'Juego por Bandas': { bonusXG: -0.12, possession: 45 }, 'Contraataque': { bonusXG: 0, possession: 50 } }
+    };
+
+    const matchup = matrix[hStyleClean]?.[aStyleClean] || { bonusXG: 0, possession: 50 };
+    matchupBonusXG = matchup.bonusXG;
+    basePossession = matchup.possession;
+
+    // Base xG impulsada por OVR y choque de estilos de juego
+    let homeXG = 1.4 + (ovrDiff * 0.08) + matchupBonusXG;
+    let awayXG = 1.1 - (ovrDiff * 0.07) - (matchupBonusXG * 0.8);
 
     homeXG = Math.max(0.3, Math.min(4.5, homeXG));
     awayXG = Math.max(0.2, Math.min(4.0, awayXG));
 
+    const possession = Math.max(30, Math.min(75, Math.round(basePossession + ovrDiff * 0.8)));
+
     return {
       homeXG: Number(homeXG.toFixed(2)),
-      awayXG: Number(awayXG.toFixed(2))
+      awayXG: Number(awayXG.toFixed(2)),
+      homePossession: possession
     };
   }
 

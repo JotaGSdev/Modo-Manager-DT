@@ -52,12 +52,14 @@ export class MatchEngine {
    * Configura las probabilidades iniciales y asigna apariciones a los titulares.
    */
   initMatch() {
-    const probs = ProbabilityEngine.calculateMatchProbabilities(this.homeRating, this.awayRating);
+    const gameState = db.gameState;
+    const homeStyle = gameState?.userTeamId === this.homeTeam.id ? (gameState?.tactics?.style || 'Tiki-Taka') : 'Tiki-Taka';
+    const awayStyle = gameState?.userTeamId === this.awayTeam.id ? (gameState?.tactics?.style || 'Tiki-Taka') : 'Contraataque';
+
+    const probs = ProbabilityEngine.calculateMatchProbabilities(this.homeRating, this.awayRating, 0, 0, homeStyle, awayStyle);
     this.targetHomeXG = probs.homeXG;
     this.targetAwayXG = probs.awayXG;
-    
-    const diff = this.homeRating - this.awayRating;
-    this.homePossession = Math.max(35, Math.min(68, Math.round(50 + diff * 1.2)));
+    this.homePossession = probs.homePossession;
 
     // Acreditar apariciones a titulares de ambos planteles
     const homePlayers = db.getTeamPlayers(this.homeTeam.id);
@@ -69,7 +71,7 @@ export class MatchEngine {
     this.events.push({
       minute: 0,
       type: 'start',
-      text: `¡Pitazo inicial en el estadio ${this.homeTeam.stadium}! ${this.homeTeam.name} vs ${this.awayTeam.name}.`
+      text: `¡Pitazo inicial en el estadio ${this.homeTeam.stadium}! ${this.homeTeam.name} (${homeStyle}) vs ${this.awayTeam.name} (${awayStyle}).`
     });
   }
 
@@ -277,6 +279,10 @@ export class MatchEngine {
     while (!this.isFinished) {
       this.tickMinute();
     }
+
+    MatchEngine.awardInSeasonPlayerEXP(this.homeTeam.id, this.homeScore > this.awayScore);
+    MatchEngine.awardInSeasonPlayerEXP(this.awayTeam.id, this.awayScore > this.homeScore);
+
     return {
       homeScore: this.homeScore,
       awayScore: this.awayScore,
@@ -290,7 +296,38 @@ export class MatchEngine {
   }
 
   /**
-   * Simula los partidos de la jornada para todos los demás equipos rivales de la liga.
+   * Otorga EXP en tiempo real a los futbolistas titulares tras cada partido jugado
+   */
+  static awardInSeasonPlayerEXP(teamId, isWinner) {
+    const squad = db.getTeamPlayers(teamId);
+    if (!squad || squad.length === 0) return;
+
+    const baseExp = isWinner ? 18 : 10;
+
+    squad.slice(0, 11).forEach(p => {
+      p.matchExp = (p.matchExp || 0) + baseExp;
+      if (p.seasonGoals && p.seasonGoals > 0) p.matchExp += 10;
+
+      if (p.matchExp >= 100) {
+        p.matchExp -= 100;
+        p.overall = Math.min(99, p.overall + 1);
+
+        if (['EI', 'ED', 'DC'].includes(p.pos)) p.sho = Math.min(99, (p.sho || 70) + 2);
+        else if (['MCO', 'MC', 'MI', 'MD'].includes(p.pos)) p.pas = Math.min(99, (p.pas || 70) + 2);
+        else p.def = Math.min(99, (p.def || 70) + 2);
+
+        if (db.gameState && db.gameState.eventsLog) {
+          db.gameState.eventsLog.unshift({
+            date: `Semana ${db.gameState.week || 1}`,
+            text: `⚡ MEJORA EN TIEMPO REAL: ¡${p.name} alcanzó 100 EXP por su rendimiento y subió a ${p.overall} OVR!`
+          });
+        }
+      }
+    });
+  }
+
+  /**
+   * Simula los partidos de la jornada para todos los demás equipos rivales de la liga según probabilidades tácticas.
    * @param {string} userTeamId - ID del equipo del usuario
    * @param {string} rivalId - ID del rival directo en el partido en vivo
    */
@@ -308,22 +345,14 @@ export class MatchEngine {
       const t1 = db.teams[t1Standing.teamId] || { overall: 74 };
       const t2 = db.teams[t2Standing.teamId] || { overall: 74 };
 
-      const probs = ProbabilityEngine.calculateMatchProbabilities(t1.overall, t2.overall);
+      const probs = ProbabilityEngine.calculateMatchProbabilities(t1.overall, t2.overall, 0, 0, 'Tiki-Taka', 'Contraataque');
 
-      let g1 = 0, g2 = 0;
-      const roll = Math.random() * 100;
-      if (roll < 45) {
-        g1 = 1 + Math.floor(Math.random() * 3);
-        g2 = Math.floor(Math.random() * g1);
-      } else if (roll < 75) {
-        g1 = Math.floor(Math.random() * 3);
-        g2 = g1;
-      } else {
-        g2 = 1 + Math.floor(Math.random() * 3);
-        g1 = Math.floor(Math.random() * g2);
-      }
+      // Goles impulsados por la expectativa táctica (xG) y variación realista
+      let g1 = Math.max(0, Math.round(probs.homeXG + (Math.random() * 1.6 - 0.8)));
+      let g2 = Math.max(0, Math.round(probs.awayXG + (Math.random() * 1.6 - 0.8)));
 
-      t1Standing.played++; t2Standing.played++;
+      t1Standing.played = Math.min(gameState.maxWeeks || 38, t1Standing.played + 1);
+      t2Standing.played = Math.min(gameState.maxWeeks || 38, t2Standing.played + 1);
       t1Standing.gf += g1; t1Standing.ga += g2; t1Standing.gd = t1Standing.gf - t1Standing.ga;
       t2Standing.gf += g2; t2Standing.ga += g1; t2Standing.gd = t2Standing.gf - t2Standing.ga;
 

@@ -495,6 +495,23 @@ class DatabaseManager {
   }
 
   /**
+   * Recalcula dinámicamente el OVR general del equipo del usuario según la media de sus 11 titulares
+   */
+  updateUserTeamOverall() {
+    if (!this.gameState || !this.gameState.userTeamId) return;
+    const squad = this.getTeamPlayers(this.gameState.userTeamId);
+    if (!squad || squad.length === 0) return;
+
+    const top11 = squad.slice(0, 11);
+    const avgOvr = Math.round(top11.reduce((sum, p) => sum + (p.overall || 70), 0) / top11.length);
+    const streakBonus = Math.min(3, Math.floor((this.gameState.currentStreak || 0) / 3));
+
+    if (this.teams[this.gameState.userTeamId]) {
+      this.teams[this.gameState.userTeamId].overall = Math.min(99, avgOvr + streakBonus);
+    }
+  }
+
+  /**
    * Carga la partida guardada desde localStorage e inicializa defaults faltantes.
    * @returns {boolean} True si se cargó con éxito
    */
@@ -555,6 +572,8 @@ class DatabaseManager {
             if (p.ratingAvg === undefined) p.ratingAvg = 0;
           });
         }
+
+        this.updateUserTeamOverall();
 
         const userTeam = this.teams[this.gameState.userTeamId];
         if (userTeam) {

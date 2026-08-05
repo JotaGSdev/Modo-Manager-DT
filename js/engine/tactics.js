@@ -397,4 +397,69 @@ export class TacticsEngine {
 
     return Math.round(avgOvr * 0.80 + (chemistry * 0.15) + skillBonus + spiritBonus + fcIqBonus);
   }
+
+  /**
+   * Obtiene la bonificación probabilística por enfrentamiento táctico
+   */
+  static getTacticalMatchup(homeStyle = 'Tiki-Taka', awayStyle = 'Tiki-Taka') {
+    const hStyleClean = (homeStyle || '').includes('Tiki') ? 'Tiki-Taka' : ((homeStyle || '').includes('Gegen') || (homeStyle || '').includes('Presión') ? 'Gegenpressing' : ((homeStyle || '').includes('Catena') || (homeStyle || '').includes('Autobús') ? 'Catenaccio' : ((homeStyle || '').includes('Bandas') ? 'Juego por Bandas' : 'Contraataque')));
+    const aStyleClean = (awayStyle || '').includes('Tiki') ? 'Tiki-Taka' : ((awayStyle || '').includes('Gegen') || (awayStyle || '').includes('Presión') ? 'Gegenpressing' : ((awayStyle || '').includes('Catena') || (awayStyle || '').includes('Autobús') ? 'Catenaccio' : ((awayStyle || '').includes('Bandas') ? 'Juego por Bandas' : 'Contraataque')));
+
+    const matchup = TACTICAL_MATCHUP_MATRIX[hStyleClean]?.[aStyleClean] || { bonusXG: 0, possession: 50, desc: 'Encuentro táctico nivelado' };
+    return matchup;
+  }
+
+  /**
+   * Actualiza dinámicamente la media (OVR) de un equipo en db según los 11 titulares activos
+   */
+  static updateTeamOverall(teamId) {
+    const squad = db.getTeamPlayers(teamId);
+    if (!squad || squad.length === 0) return 70;
+
+    const top11 = squad.slice(0, 11);
+    const avgOvr = Math.round(top11.reduce((sum, p) => sum + (p.overall || 70), 0) / top11.length);
+
+    if (db.teams[teamId]) {
+      db.teams[teamId].overall = avgOvr;
+    }
+    return avgOvr;
+  }
 }
+
+export const TACTICAL_MATCHUP_MATRIX = {
+  'Tiki-Taka': {
+    'Catenaccio': { bonusXG: 0.35, possession: 62, desc: 'Posesión paciente desarmó el cerrojo' },
+    'Juego por Bandas': { bonusXG: 0.25, possession: 58, desc: 'Triangulaciones por el centro superaron el juego exterior' },
+    'Gegenpressing': { bonusXG: -0.20, possession: 46, desc: 'La presión alta rival asfixió la salida de balón' },
+    'Contraataque': { bonusXG: 0.10, possession: 60, desc: 'Dominio de balón pero vulnerabilidad al espacio' },
+    'Tiki-Taka': { bonusXG: 0, possession: 50, desc: 'Duelo equilibrado de posesión' }
+  },
+  'Gegenpressing': {
+    'Tiki-Taka': { bonusXG: 0.38, possession: 54, desc: 'Presión tras pérdida provocó pérdidas peligrosas' },
+    'Juego por Bandas': { bonusXG: 0.22, possession: 55, desc: 'Intensidad física cortó los avances por banda' },
+    'Contraataque': { bonusXG: -0.30, possession: 58, desc: 'Espaldas desprotegidas castigadas al contraataque' },
+    'Catenaccio': { bonusXG: -0.15, possession: 56, desc: 'Choque contra un muro defensivo impenetrable' },
+    'Gegenpressing': { bonusXG: 0, possession: 50, desc: 'Vértigo e intensidad de ida y vuelta' }
+  },
+  'Catenaccio': {
+    'Contraataque': { bonusXG: 0.35, possession: 40, desc: 'Bloque bajo anuló los espacios de contraataque' },
+    'Gegenpressing': { bonusXG: 0.20, possession: 42, desc: 'Atrinchertamiento en área forzó tiros desviados' },
+    'Tiki-Taka': { bonusXG: -0.25, possession: 38, desc: 'Desgaste defensivo ante el toque paciente' },
+    'Juego por Bandas': { bonusXG: -0.20, possession: 41, desc: 'Centros repetidos perforaron el área' },
+    'Catenaccio': { bonusXG: 0, possession: 50, desc: 'Partido trabado de cerrojo táctico' }
+  },
+  'Juego por Bandas': {
+    'Catenaccio': { bonusXG: 0.30, possession: 54, desc: 'Desborde de extremos desbordó la marca cerrada' },
+    'Contraataque': { bonusXG: 0.15, possession: 55, desc: 'Amplitud de campo generó centros peligrosos' },
+    'Tiki-Taka': { bonusXG: -0.18, possession: 42, desc: 'Balón perdido al intentar abrir a las bandas' },
+    'Gegenpressing': { bonusXG: -0.20, possession: 45, desc: 'Laterales taponados por la presión rival' },
+    'Juego por Bandas': { bonusXG: 0, possession: 50, desc: 'Duelo abierto de centros y desbordes' }
+  },
+  'Contraataque': {
+    'Gegenpressing': { bonusXG: 0.40, possession: 42, desc: 'Zarpazos al espacio castigaron la línea adelantada' },
+    'Tiki-Taka': { bonusXG: 0.15, possession: 40, desc: 'Repliegue y salida relámpago con pocos toques' },
+    'Catenaccio': { bonusXG: -0.30, possession: 48, desc: 'Sin metros para correr ante un rival replegado' },
+    'Juego por Bandas': { bonusXG: -0.12, possession: 45, desc: 'Centro rival interceptado en transición' },
+    'Contraataque': { bonusXG: 0, possession: 50, desc: 'Partido cauto a la espera del error ajeno' }
+  }
+};
