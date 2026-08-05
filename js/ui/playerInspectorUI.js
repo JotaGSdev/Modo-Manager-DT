@@ -77,14 +77,10 @@ export function openPlayerInspectorModal(player, onUpdate) {
         </div>
       </div>
 
-      <!-- Atributos Hexagonales / Físicos -->
-      <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 20px; background: #0d1320; padding: 12px; border-radius: 8px; text-align: center;">
-        <div><span class="text-sub" style="font-size: 0.75rem;">PAC</span><br><strong>${player.pac || 75}</strong></div>
-        <div><span class="text-sub" style="font-size: 0.75rem;">SHO</span><br><strong>${player.sho || 75}</strong></div>
-        <div><span class="text-sub" style="font-size: 0.75rem;">PAS</span><br><strong>${player.pas || 75}</strong></div>
-        <div><span class="text-sub" style="font-size: 0.75rem;">DRI</span><br><strong>${player.dri || 75}</strong></div>
-        <div><span class="text-sub" style="font-size: 0.75rem;">DEF</span><br><strong>${player.def || 75}</strong></div>
-        <div><span class="text-sub" style="font-size: 0.75rem;">PHY</span><br><strong>${player.phy || 75}</strong></div>
+      <!-- v2.0: GRÁFICO RADAR HEXAGONAL DE ATRIBUTOS EN CANVAS PURO (FASE 5B) -->
+      <div style="background: #0d1320; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-bottom: 20px; text-align: center;">
+        <div style="font-size:0.8rem; font-weight:800; color:var(--accent-cyan); margin-bottom:8px;">📊 GRÁFICO RADAR DE ATRIBUTOS (6 DIMENSIONES)</div>
+        <canvas id="playerRadarCanvas" width="300" height="240" style="max-width:100%; border-radius:6px; background:#070b12;"></canvas>
       </div>
 
       <!-- Instrucciones Tácticas Individuales Estilo EA FC -->
@@ -104,12 +100,41 @@ export function openPlayerInspectorModal(player, onUpdate) {
       <!-- Estadísticas de Rendimiento y Vínculo contractual Actualizado -->
       <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; margin-bottom: 20px;">
         <h4 style="margin-bottom: 10px; color: var(--accent-green);">📊 Rendimiento Deportivo & Estado del Contrato</h4>
-        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 0.9rem;">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 0.9rem; margin-bottom: 12px;">
           <span>Partidos Jugados (PJ): <strong>${appearances}</strong></span>
           <span>Goles Marcados: <strong>${goals} ⚽</strong></span>
           <span>Promedio de Calificación: <strong>${ratingAvg} ⭐</strong></span>
           <span>Vínculo contractual: <strong style="color: ${contractYears <= 1 ? 'var(--accent-red)' : 'var(--accent-gold)'}">${contractYears} Años (${monthsRemaining} Meses restantes)</strong></span>
         </div>
+
+        <!-- ── v2.0: TABLA DE HISTORIAL DE RENDIMIENTO DE TEMPORADAS PASADAS (FASE 5B) ── -->
+        ${(player.statsHistory && player.statsHistory.length > 0) ? `
+          <div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:10px;">
+            <div style="font-size:0.8rem; font-weight:800; color:var(--accent-gold); margin-bottom:6px;">📜 Histórico de Temporadas Anteriores</div>
+            <table class="data-table" style="font-size:0.75rem;">
+              <thead>
+                <tr>
+                  <th>Temporada</th>
+                  <th>OVR</th>
+                  <th>PJ</th>
+                  <th>Goles</th>
+                  <th>Rating</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${player.statsHistory.map(h => `
+                  <tr>
+                    <td>T${h.season}</td>
+                    <td><span class="stat-ovr">${h.ovr}</span></td>
+                    <td>${h.appearances}</td>
+                    <td>${h.goals} ⚽</td>
+                    <td>${h.ratingAvg || '6.8'} ⭐</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : ''}
       </div>
 
       <!-- Panel de Acciones Directivas Estilo EA FC -->
@@ -136,6 +161,89 @@ export function openPlayerInspectorModal(player, onUpdate) {
   `;
 
   modal.classList.remove('hidden');
+
+  // Renderizar Gráfico Radar Hexagonal en Canvas puro
+  const radarCanvas = document.getElementById('playerRadarCanvas');
+  if (radarCanvas) {
+    drawPlayerRadarCanvas(radarCanvas, player);
+  }
+
+  function drawPlayerRadarCanvas(canvas, p) {
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    const cx = w / 2, cy = h / 2, r = 75;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const stats = [
+      { label: 'PAC', val: p.pac || 75 },
+      { label: 'SHO', val: p.sho || 75 },
+      { label: 'PAS', val: p.pas || 75 },
+      { label: 'DRI', val: p.dri || 75 },
+      { label: 'DEF', val: p.def || 75 },
+      { label: 'PHY', val: p.phy || 75 },
+    ];
+
+    const totalAxes = stats.length;
+    const angleStep = (Math.PI * 2) / totalAxes;
+
+    // Dibujar rejilla hexagonal concéntrica (niveles 25, 50, 75, 100)
+    [0.25, 0.50, 0.75, 1.0].forEach(level => {
+      ctx.beginPath();
+      for (let i = 0; i < totalAxes; i++) {
+        const a = i * angleStep - Math.PI / 2;
+        const x = cx + Math.cos(a) * (r * level);
+        const y = cy + Math.sin(a) * (r * level);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = level === 1.0 ? 'rgba(0,200,133,0.4)' : 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+    // Dibujar ejes radiados y etiquetas
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    for (let i = 0; i < totalAxes; i++) {
+      const a = i * angleStep - Math.PI / 2;
+      const x = cx + Math.cos(a) * r;
+      const y = cy + Math.sin(a) * r;
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(x, y);
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.stroke();
+
+      // Posición texto etiqueta
+      const lx = cx + Math.cos(a) * (r + 18);
+      const ly = cy + Math.sin(a) * (r + 14);
+      ctx.fillStyle = '#00c885';
+      ctx.fillText(`${stats[i].label} ${stats[i].val}`, lx, ly);
+    }
+
+    // Polígono de los atributos del jugador
+    ctx.beginPath();
+    for (let i = 0; i < totalAxes; i++) {
+      const a = i * angleStep - Math.PI / 2;
+      const normVal = Math.min(100, Math.max(30, stats[i].val)) / 100;
+      const x = cx + Math.cos(a) * (r * normVal);
+      const y = cy + Math.sin(a) * (r * normVal);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(0, 200, 133, 0.35)';
+    ctx.fill();
+    ctx.strokeStyle = '#00c885';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
 
   const feedbackEl = document.getElementById('inspectorFeedback');
   const closeBtn = document.getElementById('btnCloseInspector');

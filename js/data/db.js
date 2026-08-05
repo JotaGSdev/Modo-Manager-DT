@@ -10,6 +10,9 @@
  * 4. Persistencia automática en `localStorage` (clave: `entrenador_leyenda_save`).
  * 5. Avance y envejecimiento de temporada (`processSeasonPlayerEvolution`).
  * 6. Historial de carrera multi-club durante las 25 temporadas máximas de juego.
+ *
+ * VERSIÓN 2.0 — Añade: Manager Market IA, The Feed, Team Spirit, FC IQ Roles,
+ * Presupuesto Dual, Seguimiento Multiliga, Histórico por Jugador, Regens, Eventos Avanzados.
  */
 
 import { generateTeamPlayers, calculatePositionOvr, calculatePlayerMarketValue, calculatePlayerSalary } from './teamData.js';
@@ -117,7 +120,7 @@ class DatabaseManager {
    * @param {string} [managerArchetype='GUARDIOLA'] - Arquetipo táctico elegido
    * @returns {Object} Estado inicial creado
    */
-  newCareer(userTeamId, managerName = 'Director Técnico', managerCountry = 'Argentina', managerAge = 35, managerArchetype = 'GUARDIOLA') {
+  newCareer(userTeamId, managerName = 'Director Técnico', managerCountry = 'Argentina', managerAge = 35, managerArchetype = 'GUARDIOLA', options = {}) {
     const userTeam = this.teams[userTeamId];
     if (!userTeam) return null;
 
@@ -137,29 +140,47 @@ class DatabaseManager {
       points: 0
     }));
 
-    const userLeague = this.leagues.find(l => l.id === userTeam.leagueId);
     const numTeams = userLeague && userLeague.teams ? userLeague.teams.length : 20;
     const computedMaxWeeks = (numTeams - 1) * 2;
 
     this.gameState = {
+      // ── Identidad del DT ──────────────────────────────────────────────────
       managerName: managerName,
       managerCountry: managerCountry,
       managerAge: parseInt(managerAge) || 35,
       managerArchetype: managerArchetype,
+      clubPhilosophy: userTeam.philosophy || managerArchetype, // filosofía exigida por el club
+      tacticalFidelityWeeks: 0, // semanas consecutivas con estilo correcto
+
+      // ── Equipo y liga ─────────────────────────────────────────────────────
       userTeamId: userTeamId,
       userLeagueId: userTeam.leagueId,
+
+      // ── Presupuesto dual ─────────────────────────────────────────────────
       budget: userTeam.budget,
-      wageBudget: userTeam.wageBudget,
+      wageBudget: userTeam.wageBudget || Math.round((userTeam.budget || 0) * 0.3),
+      transferBudgetLocked: false,   // true cuando hay crisis financiera activa
+      lockedBudgetAmount: 0,         // monto congelado en crisis
+
+      // ── Reputación y puntuación ───────────────────────────────────────────
       reputation: userTeam.reputation,
       managerScore: 500,
+
+      // ── Tiempo ───────────────────────────────────────────────────────────
       season: 2026,
       week: 1,
       maxWeeks: computedMaxWeeks,
       isCareerFinished: false,
+
+      // ── Fichajes ─────────────────────────────────────────────────────────
       failedTransferPlayers: [],
+
+      // ── Competiciones ────────────────────────────────────────────────────
       standings: leagueStandings,
       topScorers: [],
       trophies: [],
+
+      // ── Tácticas ─────────────────────────────────────────────────────────
       tactics: {
         formation: '4-3-3',
         mentality: 'Ofensiva',
@@ -177,8 +198,36 @@ class DatabaseManager {
         tacticalBonus: 0,
         penaltyBonus: 0
       },
+
+      // ── Team Spirit ──────────────────────────────────────────────────────
+      teamSpirit: 50,  // 0-100, afecta el OVR efectivo en simulación
+
+      // ── Ojeadores ────────────────────────────────────────────────────────
       scoutLevel: 1,
       youthAcademy: [],
+
+      // ── Mercado de Entrenadores IA ────────────────────────────────────────
+      managerMarket: {
+        aiManagers: {},     // { teamId: { name, archetype, reputation, isInterim, weeksInCharge } }
+        lastRotationWeek: 0
+      },
+      enableManagerMarket: options.enableManagerMarket !== false, // activo por defecto
+
+      // ── The Feed (red social de noticias) ────────────────────────────────
+      feedItems: [],  // [{ id, week, season, type, text, icon, isRead, linkedPlayerId? }]
+
+      // ── Seguimiento Multiliga ─────────────────────────────────────────────
+      watchedLeagues: [],      // hasta 5 IDs de liga
+      externalStandings: {},   // { leagueId: { standings: [], topScorers: [] } }
+
+      // ── Regens ───────────────────────────────────────────────────────────
+      retiredLegends: [],       // [{ name, pos, originalOvr, potential, teamId }]
+      enableRegens: options.enableRegens !== false, // activo por defecto
+
+      // ── Configuración de eventos ──────────────────────────────────────────
+      eventFrequency: options.eventFrequency || 'normal', // 'off'|'baja'|'normal'|'alta'
+
+      // ── Log de eventos y finanzas ─────────────────────────────────────────
       eventsLog: [
         { date: '01/08/2026', text: `¡Bienvenido a ${userTeam.name}! El consejo directivo espera luchar por los primeros puestos esta temporada.` }
       ],
@@ -188,8 +237,11 @@ class DatabaseManager {
         playerSales: 0,
         playerPurchases: 0,
         leaguePrize: 0,
-        balance: 0
+        balance: 0,
+        budgetAtSeasonStart: userTeam.budget
       },
+
+      // ── Historial de carrera ──────────────────────────────────────────────
       careerHistory: [],
       winStreak: 0,
       currentStreak: 0,
@@ -257,8 +309,34 @@ class DatabaseManager {
           const currentContract = p.contractYears !== undefined ? p.contractYears : 3;
           p.contractYears = Math.max(0, currentContract - 1);
 
+          // ── Snapshot de estadísticas históricas (Fase 5B) ────────────────
+          if (!Array.isArray(p.statsHistory)) p.statsHistory = [];
+          p.statsHistory.push({
+            season: this.gameState.season,
+            goals: p.seasonGoals || 0,
+            appearances: p.appearances || 0,
+            ratingAvg: p.ratingAvg || 0,
+            ovr: p.overall
+          });
+
           p.appearances = 0;
           p.seasonGoals = 0;
+          p.ratingAvg = 0;
+
+          // ── Detección de leyendas retiradas para sistema de Regens (Fase 6A) ──
+          if (p.age > 38 && this.gameState.enableRegens) {
+            if (!this.gameState.retiredLegends) this.gameState.retiredLegends = [];
+            const alreadyRetired = this.gameState.retiredLegends.some(r => r.name === p.name);
+            if (!alreadyRetired && p.overall >= 75) {
+              this.gameState.retiredLegends.push({
+                name: p.name,
+                pos: p.pos,
+                originalOvr: p.overall,
+                potential: Math.round(p.overall * 0.8),
+                originTeamId: p.teamId
+              });
+            }
+          }
 
           if (p.contractYears === 0 && tId === userTeamId) {
             this.gameState.eventsLog.unshift({
@@ -382,6 +460,7 @@ class DatabaseManager {
       this.players = parsed.players || {};
 
       if (this.gameState) {
+        // ── Guards de migración para saves anteriores a v2.0 ────────────────
         if (!this.gameState.standings) this.gameState.standings = [];
         if (!this.gameState.topScorers) this.gameState.topScorers = [];
         if (!this.gameState.trophies) this.gameState.trophies = [];
@@ -399,6 +478,36 @@ class DatabaseManager {
         if (!this.gameState.seasonPlayersIn) this.gameState.seasonPlayersIn = [];
         if (!this.gameState.seasonPlayersOut) this.gameState.seasonPlayersOut = [];
         if (!this.gameState.cupPhaseReached) this.gameState.cupPhaseReached = 'Fase de Grupos';
+
+        // ── Migración v2.0: Nuevos campos ────────────────────────────────────
+        if (this.gameState.teamSpirit === undefined) this.gameState.teamSpirit = 50;
+        if (!this.gameState.feedItems) this.gameState.feedItems = [];
+        if (!this.gameState.watchedLeagues) this.gameState.watchedLeagues = [];
+        if (!this.gameState.externalStandings) this.gameState.externalStandings = {};
+        if (!this.gameState.retiredLegends) this.gameState.retiredLegends = [];
+        if (!this.gameState.managerMarket) this.gameState.managerMarket = { aiManagers: {}, lastRotationWeek: 0 };
+        if (this.gameState.enableManagerMarket === undefined) this.gameState.enableManagerMarket = true;
+        if (this.gameState.enableRegens === undefined) this.gameState.enableRegens = true;
+        if (!this.gameState.eventFrequency) this.gameState.eventFrequency = 'normal';
+        if (this.gameState.transferBudgetLocked === undefined) this.gameState.transferBudgetLocked = false;
+        if (this.gameState.lockedBudgetAmount === undefined) this.gameState.lockedBudgetAmount = 0;
+        if (!this.gameState.clubPhilosophy) this.gameState.clubPhilosophy = this.gameState.managerArchetype;
+        if (this.gameState.tacticalFidelityWeeks === undefined) this.gameState.tacticalFidelityWeeks = 0;
+        if (!this.gameState.wageBudget) this.gameState.wageBudget = Math.round((this.gameState.budget || 0) * 0.3);
+        if (!this.gameState.finances.budgetAtSeasonStart) this.gameState.finances.budgetAtSeasonStart = this.gameState.budget;
+
+        // ── Migración v2.0: Nuevos campos por jugador ────────────────────────
+        for (const tId in this.players) {
+          (this.players[tId] || []).forEach(p => {
+            if (!Array.isArray(p.statsHistory)) p.statsHistory = [];
+            if (!p.fcIqRole) p.fcIqRole = null;
+            if (!p.personalityRole) p.personalityRole = null;
+            if (!p.tacticalAffinity) p.tacticalAffinity = { possession: 50, counterattack: 50, highPress: 50 };
+            if (p.isRegen === undefined) p.isRegen = false;
+            if (!p.regenOriginName) p.regenOriginName = null;
+            if (p.ratingAvg === undefined) p.ratingAvg = 0;
+          });
+        }
 
         const userTeam = this.teams[this.gameState.userTeamId];
         if (userTeam) {

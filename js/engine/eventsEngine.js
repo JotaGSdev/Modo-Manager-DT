@@ -13,8 +13,9 @@
  *    - Épico (7%)
  *    - Legendario (2%)
  *    - Único (1%)
- * 3. 4 triggers automáticos por temporada en las Semanas 8, 16, 24 y 32.
+ * 3. Frecuencia dinámica de triggers basada en gameState.eventFrequency.
  * 4. Modal interactivo de toma de decisiones con impacto en Moral, Presupuesto o Confianza.
+ * 5. v2.0: Método generateFeedItem() para alimentar The Feed con noticias en tiempo real.
  */
 
 import { db } from '../data/db.js';
@@ -27,11 +28,20 @@ export class EventsEngine {
    * @returns {Object|null} Objeto del evento o null
    */
   static getEventForWeek(weekNumber) {
-    const triggerWeeks = [8, 16, 24, 32];
-    if (!triggerWeeks.includes(weekNumber)) return null;
-
     const gameState = db.gameState;
     if (!gameState) return null;
+
+    // Frecuencia dinámica según configuración de partida (Fase 6D)
+    const triggerMap = {
+      off:    [],
+      baja:   [16, 32],
+      normal: [8, 16, 24, 32],
+      alta:   [4, 8, 12, 16, 20, 24, 28, 32]
+    };
+    const freq = gameState.eventFrequency || 'normal';
+    const triggerWeeks = triggerMap[freq] || triggerMap.normal;
+
+    if (!triggerWeeks.includes(weekNumber)) return null;
 
     return this.generateRandomEvent();
   }
@@ -128,10 +138,50 @@ export class EventsEngine {
       // CATEGORÍA: INSTITUCIONAL
       {
         category: 'INSTITUCIONAL',
-        title: '🏟️ INVERSIÓN EN EL SISTEMA DE RIEGO Y CÉSPED',
+        title: '🏠 INVERSIÓN EN EL SISTEMA DE RIEGO Y CÉSPED',
         description: `El canchero del estadio solicita reparar el sistema de drenaje del campo de juego para partidos con lluvia.`,
         optionA: { label: '👉 Aprobar las obras (€100K) (+5% Solidez Defensiva en casa)', bonusType: 'tactical', bonusVal: 5, cost: 100000 },
         optionB: { label: '👉 Posponer las obras para el próximo año (Sin costo)', bonusType: 'morale', bonusVal: 1 }
+      },
+
+      // ======================================================================
+      // v2.0 — NUEVAS PLANTILLAS AVANZADAS (Fase 6B)
+      // ======================================================================
+
+      // FILTRACIÓN SALARIAL — Reduce Team Spirit si hay disparidad salarial
+      {
+        category: 'FILTRACIÓN',
+        title: '📰 FILTRACIÓN SALARIAL EN EL VESTUARIO',
+        description: `Los medios publicaron los salarios internos del club. Varios suplentes exigen equiparación salarial. El ambiente en el vestuario se tensa.`,
+        optionA: { label: '👉 Convocar reunión y explicar la jerarquía salarial (€50K bonus pl. / -5 Team Spirit)', bonusType: 'spirit', bonusVal: -5, cost: 50000 },
+        optionB: { label: '👉 Ignorar la situación y confiar en la profesionalidad (-10 Team Spirit)', bonusType: 'spirit', bonusVal: -10 }
+      },
+
+      // AUDITORÍA FINANCIERA — Congela el 30% del presupuesto
+      {
+        category: 'CRISIS FINANCIERA',
+        title: '🕵️ AUDITORÍA INTERNA SORPRESIVA',
+        description: `La junta directiva ha ordenado una auditoría de cuentas. El 30% del presupuesto de traspasos queda congelado durante 4 semanas. Puedes liberar los fondos vendiendo a un jugador con salario elevado.`,
+        optionA: { label: '👉 Aceptar la auditoría y mostrar transparencia (Fondos bloqueados 4 semanas)', bonusType: 'freeze_budget', bonusVal: 4 },
+        optionB: { label: '👉 Negociar con el director financiero (€200K) para liberar los fondos inmediatamente', bonusType: 'unfreeze_budget', bonusVal: 0, cost: 200000 }
+      },
+
+      // DERECHOS DE TRANSMISIÓN — Inyección extraordinaria de capital
+      {
+        category: 'FINANZAS',
+        title: '📺 ACUERDO DE DERECHOS DE TRANSMISIÓN',
+        description: `La liga anuncia un nuevo acuerdo de derechos de TV. ${db.teams[db.gameState.userTeamId]?.name || 'El club'} recibe una distribución extraordinaria de ingresos.`,
+        optionA: { label: '👉 Destinar el bono (€3M-€8M) al presupuesto de traspasos', bonusType: 'tv_rights', bonusVal: 'transfer' },
+        optionB: { label: '👉 Reinvertir los fondos en infraestructura (Mejora Team Spirit +8)', bonusType: 'tv_rights', bonusVal: 'infrastructure' }
+      },
+
+      // DESCONTENTO DE ESTRELLA — El goleador exige el mayor salario
+      {
+        category: 'VESTUARIO',
+        title: '💥 DESCONTENTO DE LA ESTRELLA',
+        description: `Tu máximo goleador exige ser el mejor pagado de la plantilla. Su representante amenza con activar cláusulas de rescisión si no hay acuerdo en 2 semanas.`,
+        optionA: { label: '👉 Acceder y renovarle (€50K/sem extra) (+8 Moral del jugador, -Team Spirit resto)', bonusType: 'morale', bonusVal: 8, cost: 50000 },
+        optionB: { label: '👉 Mantener firmeza y demostrar que nadie está por encima del equipo (+5 Confianza Directiva)', bonusType: 'board', bonusVal: 5 }
       }
     ];
 
@@ -198,6 +248,7 @@ export class EventsEngine {
       if (opt.cost && gameState.budget >= opt.cost) {
         gameState.budget -= opt.cost;
       }
+
       if (opt.bonusType === 'morale') {
         gameState.matchBonus = gameState.matchBonus || {};
         gameState.matchBonus.moraleBonus = (gameState.matchBonus.moraleBonus || 0) + opt.bonusVal;
@@ -208,6 +259,31 @@ export class EventsEngine {
         gameState.contract.boardConfidence = Math.min(100, gameState.contract.boardConfidence + opt.bonusVal);
       } else if (opt.bonusType === 'budget') {
         gameState.budget += opt.bonusVal;
+      } else if (opt.bonusType === 'spirit') {
+        // Modificar Team Spirit (v2.0)
+        gameState.teamSpirit = Math.max(0, Math.min(100, (gameState.teamSpirit || 50) + opt.bonusVal));
+      } else if (opt.bonusType === 'freeze_budget') {
+        // Auditoría financiera: congelar el 30% del presupuesto
+        const toFreeze = Math.round((gameState.budget || 0) * 0.30);
+        gameState.transferBudgetLocked = true;
+        gameState.lockedBudgetAmount = toFreeze;
+        gameState.budget -= toFreeze;
+        EventsEngine.generateFeedItem('CRISIS_FINANCIERA', { text: '🕵️ Auditoría activa: El 30% del presupuesto de traspasos está bloqueado.' });
+      } else if (opt.bonusType === 'unfreeze_budget') {
+        // Pagó para liberar los fondos
+        gameState.transferBudgetLocked = false;
+        gameState.lockedBudgetAmount = 0;
+      } else if (opt.bonusType === 'tv_rights') {
+        // Ingreso por derechos de TV
+        const tvBonus = 3000000 + Math.floor(Math.random() * 5000000);
+        if (opt.bonusVal === 'transfer') {
+          gameState.budget += tvBonus;
+          EventsEngine.generateFeedItem('DERECHOS_TV', { text: `📺 Derechos de TV: +€${(tvBonus/1000000).toFixed(1)}M al presupuesto de traspasos.` });
+        } else {
+          gameState.teamSpirit = Math.min(100, (gameState.teamSpirit || 50) + 8);
+          EventsEngine.generateFeedItem('DERECHOS_TV', { text: `📺 Derechos de TV reinvertidos en infraestructura: Team Spirit +8.` });
+        }
+        if (gameState.finances) gameState.finances.balance = (gameState.finances.balance || 0) + tvBonus;
       }
 
       db.saveGame();
@@ -224,5 +300,51 @@ export class EventsEngine {
 
     document.getElementById('btnEventOptionA').addEventListener('click', () => applyEffect(eventData.optionA));
     document.getElementById('btnEventOptionB').addEventListener('click', () => applyEffect(eventData.optionB));
+  }
+
+  // ===========================================================================
+  // v2.0 — THE FEED: Generador de ítems para el panel de noticias
+  // ===========================================================================
+
+  /**
+   * Genera un ítem para The Feed y lo registra en gameState.feedItems.
+   * @param {string} type - Tipo de noticia (RUMOR_SALIDA, FILTRACIÓN_SALARIAL, CAMBIO_DT, etc.)
+   * @param {Object} data - Datos opcionales { text, icon, linkedPlayerId }
+   * @returns {Object} El feedItem creado
+   */
+  static generateFeedItem(type, data = {}) {
+    const gameState = db.gameState;
+    if (!gameState) return null;
+    if (!Array.isArray(gameState.feedItems)) gameState.feedItems = [];
+
+    const iconMap = {
+      RUMOR_SALIDA:        '🔗',
+      FILTRACIÓN_SALARIAL: '💰',
+      CRISIS_FINANCIERA:   '🕵️',
+      DERECHOS_TV:         '📺',
+      CAMBIO_DT:           '🧑‍💼',
+      OFERTA_DT_JUGADOR:   '📨',
+      AGENTE_EXIGE:        '🤝',
+      RIVAL_SONDEA:        '🔍',
+      DESCONTENTO:         '😡'
+    };
+
+    const feedItem = {
+      id: `feed_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      week: gameState.week,
+      season: gameState.season,
+      type,
+      text: data.text || `Novedad de tipo ${type} en la Semana ${gameState.week}.`,
+      icon: data.icon || iconMap[type] || '📰',
+      isRead: false,
+      linkedPlayerId: data.linkedPlayerId || null
+    };
+
+    // Mantener máximo 50 ítems en el Feed (FIFO)
+    gameState.feedItems.unshift(feedItem);
+    if (gameState.feedItems.length > 50) gameState.feedItems.pop();
+
+    db.saveGame();
+    return feedItem;
   }
 }

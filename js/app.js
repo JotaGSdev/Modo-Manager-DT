@@ -21,6 +21,7 @@ import { renderTrophyRoom } from './ui/trophyUI.js';
 import { renderMatch } from './ui/matchUI.js';
 import { renderContractView } from './ui/contractUI.js';
 import { renderFinances } from './ui/financesUI.js';
+import { renderScoutingView } from './ui/scoutingUI.js';
 import { ContractEngine } from './engine/contracts.js';
 import { sfx } from '../assets/audio/sfx.js';
 import { renderCountryFlagSVG } from './ui/badgeHelper.js';
@@ -82,6 +83,7 @@ class App {
           <a class="nav-item" data-view="squad">📋 Plantilla Hub</a>
           <a class="nav-item" data-view="tactics">🧩 Tácticas & Alineación</a>
           <a class="nav-item" data-view="transfers">📝 Mercado Fichajes</a>
+          <a class="nav-item" data-view="scouting">🔭 Centro de Análisis</a>
           <a class="nav-item" data-view="youth">🌱 Cantera</a>
           <a class="nav-item" data-view="finances">💶 Finanzas</a>
           <a class="nav-item" data-view="trophies">🏆 Palmarés</a>
@@ -210,6 +212,8 @@ class App {
         renderYouth(this.mainContainer);
       } else if (viewName === 'finances') {
         renderFinances(this.mainContainer, (v, p) => this.navigateTo(v, p));
+      } else if (viewName === 'scouting') {
+        renderScoutingView(this.mainContainer);
       } else if (viewName === 'trophies') {
         renderTrophyRoom(this.mainContainer);
       } else if (viewName === 'match') {

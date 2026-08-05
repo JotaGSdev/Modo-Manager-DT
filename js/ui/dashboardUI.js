@@ -136,31 +136,60 @@ export function renderDashboard(container, navigateTo) {
 
       </div>
 
-      <!-- Columna 3: Tabla de Goleadores (Pichichi) -->
-      <div class="card glass-panel" style="padding: 14px 16px;">
-        <h4 style="margin-bottom: 8px; font-size: 0.92rem; color: #ffffff;">⚽ Pichichi de la Liga</h4>
-        <div class="table-responsive">
-          <table class="data-table" style="font-size: 0.80rem;">
-            <thead>
-              <tr>
-                <th style="padding: 4px 6px;">#</th>
-                <th style="padding: 4px 6px;">Jugador</th>
-                <th style="padding: 4px 6px;">Goles</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${topScorers.length === 0 ? `
-                <tr><td colspan="3" class="text-sub text-center py-3">Sin goles registrados aún.</td></tr>
-              ` : topScorers.slice(0, 6).map((s, idx) => `
+      <!-- Columna 3: Tabla de Goleadores & The Feed (Red Social de Noticias) (v2.0) -->
+      <div class="card glass-panel" style="padding: 14px 16px; display:flex; flex-direction:column; justify-content:space-between;">
+        
+        <!-- PICHICHI -->
+        <div style="margin-bottom:12px;">
+          <h4 style="margin-bottom: 8px; font-size: 0.92rem; color: #ffffff;">⚽ Pichichi de la Liga</h4>
+          <div class="table-responsive">
+            <table class="data-table" style="font-size: 0.78rem;">
+              <thead>
                 <tr>
-                  <td style="padding: 5px 6px;">${idx + 1}</td>
-                  <td style="padding: 5px 6px;"><strong>${s.name}</strong></td>
-                  <td style="padding: 5px 6px;"><span class="stat-ovr" style="padding: 2px 6px; font-size: 0.75rem;">${s.goals} ⚽</span></td>
+                  <th style="padding: 4px 6px;">#</th>
+                  <th style="padding: 4px 6px;">Jugador</th>
+                  <th style="padding: 4px 6px;">Goles</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${topScorers.length === 0 ? `
+                  <tr><td colspan="3" class="text-sub text-center py-2">Sin goles registrados aún.</td></tr>
+                ` : topScorers.slice(0, 4).map((s, idx) => `
+                  <tr>
+                    <td style="padding: 4px 6px;">${idx + 1}</td>
+                    <td style="padding: 4px 6px;"><strong>${s.name}</strong></td>
+                    <td style="padding: 4px 6px;"><span class="stat-ovr" style="padding: 1px 5px; font-size: 0.72rem;">${s.goals} ⚽</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        <!-- THE FEED (RED SOCIAL DE NOTICIAS) — v2.0 Exclusivo Dashboard -->
+        <div style="border-top:1px solid var(--border-color); padding-top:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <h4 style="margin:0; font-size:0.85rem; color:var(--accent-cyan);">📲 THE FEED (RED SOCIAL)</h4>
+            <span class="badge" style="font-size:0.65rem; background:#1e293b; color:var(--text-sub);">NOTICIAS DT</span>
+          </div>
+
+          <div id="feedListContainer" style="max-height:170px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
+            ${(gameState.feedItems || []).length === 0 ? `
+              <div class="text-sub text-center" style="font-size:0.75rem; padding:10px;">
+                📰 Sin publicaciones recientes en el Feed. Avanza la temporada para recibir rumores y noticias.
+              </div>
+            ` : (gameState.feedItems || []).slice(0, 10).map(f => `
+              <div style="background:#0f172a; border:1px solid var(--border-color); border-radius:6px; padding:6px 8px; font-size:0.75rem; display:flex; gap:8px; align-items:flex-start;">
+                <span style="font-size:1.1rem; line-height:1;">${f.icon || '📰'}</span>
+                <div>
+                  <div style="color:var(--text-sub); font-size:0.65rem; font-weight:800;">Semana ${f.week} · T${f.season}</div>
+                  <div style="color:#fff; line-height:1.3;">${f.text}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
       </div>
 
     </div>

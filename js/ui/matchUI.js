@@ -127,29 +127,73 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
         <div style="display:grid; grid-template-columns:1fr 120px 1fr; gap:8px; align-items:center; font-size:0.8rem;">
           <div style="text-align:right;"><span id="homePossession" style="font-weight:800; color:var(--accent-cyan);">50%</span></div>
           <div style="text-align:center;">
-            <div class="text-sub" style="font-size:0.68rem; margin-bottom:4px; font-weight:700;">POSESI\u00d3N</div>
+            <div class="text-sub" style="font-size:0.68rem; margin-bottom:4px; font-weight:700;">POSESIÓN</div>
             <div style="height:6px; background:#1e293b; border-radius:3px; overflow:hidden;">
               <div id="possessionBar" style="height:100%; width:50%; background:linear-gradient(90deg,var(--accent-cyan),var(--accent-green)); border-radius:3px; transition:width 0.4s ease;"></div>
             </div>
           </div>
           <div style="text-align:left;"><span id="awayPossession" style="font-weight:800; color:var(--accent-red);">50%</span></div>
-          <div style="text-align:right;"><span id="homeShots" style="font-weight:800;">0</span> <span class="text-sub" style="font-size:0.7rem;">(0 a porter\u00eda)</span></div>
+          <div style="text-align:right;"><span id="homeShots" style="font-weight:800;">0</span> <span class="text-sub" style="font-size:0.7rem;">(0 a portería)</span></div>
           <div style="text-align:center;"><div class="text-sub" style="font-size:0.68rem; font-weight:700;">TIROS</div></div>
-          <div style="text-align:left;"><span id="awayShots" style="font-weight:800;">0</span> <span class="text-sub" style="font-size:0.7rem;">(0 a porter\u00eda)</span></div>
+          <div style="text-align:left;"><span id="awayShots" style="font-weight:800;">0</span> <span class="text-sub" style="font-size:0.7rem;">(0 a portería)</span></div>
           <div style="text-align:right;"><span id="homeXG" style="font-weight:800; color:var(--accent-gold);">0.00</span></div>
           <div style="text-align:center;"><div class="text-sub" style="font-size:0.68rem; font-weight:700;">xG</div></div>
           <div style="text-align:left;"><span id="awayXG" style="font-weight:800; color:var(--accent-gold);">0.00</span></div>
         </div>
+
+        <!-- ── v2.0: LÍNEA DE TIEMPO VISUAL DEL PARTIDO ── -->
+        <div style="margin-top:12px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.08);">
+          <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:var(--text-sub); margin-bottom:4px;">
+            <span>0'</span><span>15'</span><span>30'</span><span>45' HT</span><span>60'</span><span>75'</span><span>90' FT</span>
+          </div>
+          <div id="matchTimelineTrack" style="height:10px; background:#0f172a; border-radius:5px; position:relative; overflow:hidden; border:1px solid var(--border-color);">
+            <div id="matchTimelineProgress" style="height:100%; width:0%; background:var(--accent-cyan); transition:width 0.2s;"></div>
+            <div id="matchTimelineEvents" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div id="goalFlash" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,200,133,0.12); display:flex; align-items:center; justify-content:center; z-index:1000; pointer-events:none;">
-      <div style="font-size:4rem; font-weight:900; color:var(--accent-green); text-shadow:0 0 40px rgba(0,200,133,0.8);" id="goalFlashText">&#x26BD; GOOOOOL</div>
+    <!-- ── v2.0: SELECTOR DE VISTA DE PARTIDO (BITÁCORA vs RADAR 2D) ── -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <div style="display:flex; gap:8px;">
+        <button id="tabLogView" class="btn-secondary active" style="padding:6px 14px; font-size:0.8rem;">📜 Bitácora Narrativa</button>
+        <button id="tabRadarView" class="btn-secondary" style="padding:6px 14px; font-size:0.8rem;">📡 Radar 2D en Vivo</button>
+      </div>
+      <div id="activeTacticalOrderBadge" class="text-sub" style="font-size:0.75rem; font-weight:700; color:var(--accent-gold);"></div>
     </div>
 
-    <div class="glass-panel" style="padding:14px 16px;">
-      <h4 style="font-size:0.88rem; margin-bottom:10px; color:var(--text-sub);">&#x1F3D9; NARRACI\u00d3N EN VIVO</h4>
+    <!-- VISTA BITÁCORA -->
+    <div id="logViewContainer" class="glass-panel" style="padding:14px 16px;">
+      <h4 style="font-size:0.88rem; margin-bottom:10px; color:var(--text-sub);">🏙️ NARRACIÓN EN VIVO</h4>
       <div id="commentaryLog" style="max-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+
+    <!-- VISTA RADAR 2D (CANVAS) -->
+    <div id="radarViewContainer" class="glass-panel hidden" style="padding:14px 16px; text-align:center;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:0.8rem; font-weight:800; color:var(--accent-cyan);">📡 RADAR TÁCTICO 2D EN TIEMPO REAL</span>
+        <span style="font-size:0.7rem; color:var(--text-sub);">Focos de presión y movimiento de líneas</span>
+      </div>
+      <canvas id="matchRadarCanvas" width="600" height="340" style="width:100%; max-width:600px; background:#0b192c; border-radius:8px; border:2px solid var(--border-color);"></canvas>
+    </div>
+
+    <!-- ── v2.0: MODAL MOMENTO DE TENSIÓN (10s TIMER) ── -->
+    <div id="tensionMomentModal" class="modal-overlay hidden" style="z-index:2000;">
+      <div class="modal-card glass-panel" style="max-width:540px; border:2px solid var(--accent-gold); text-align:center;">
+        <div style="font-size:0.75rem; font-weight:900; color:var(--accent-gold); letter-spacing:1px; margin-bottom:6px;">
+          ⏱️ MÁXIMA TENSIÓN — DECISIÓN DEL DT
+        </div>
+        <h3 id="tensionTitle" style="color:#fff; font-size:1.2rem; margin-bottom:8px;">Momentos Decisivos</h3>
+        <p id="tensionDesc" class="text-sub" style="font-size:0.85rem; margin-bottom:14px;"></p>
+
+        <!-- Barra de 10 segundos -->
+        <div style="height:6px; background:#1e293b; border-radius:3px; margin-bottom:16px; overflow:hidden;">
+          <div id="tensionTimerBar" style="height:100%; width:100%; background:var(--accent-gold); transition:width 0.1s linear;"></div>
+        </div>
+
+        <div id="tensionOptionsContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
+      </div>
     </div>
 
     <div id="matchCinematicModal" class="cinematic-overlay hidden">
@@ -233,25 +277,201 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
     });
   });
 
+  // ── CONTROLES VISTA BITÁCORA vs RADAR 2D ──────────────────────────
+  const btnLog = document.getElementById('tabLogView');
+  const btnRadar = document.getElementById('tabRadarView');
+  const logContainer = document.getElementById('logViewContainer');
+  const radarContainer = document.getElementById('radarViewContainer');
+  const radarCanvas = document.getElementById('matchRadarCanvas');
+
+  btnLog?.addEventListener('click', () => {
+    btnLog.classList.add('active');
+    btnRadar.classList.remove('active');
+    logContainer.classList.remove('hidden');
+    radarContainer.classList.add('hidden');
+  });
+
+  btnRadar?.addEventListener('click', () => {
+    btnRadar.classList.add('active');
+    btnLog.classList.remove('active');
+    radarContainer.classList.remove('hidden');
+    logContainer.classList.add('hidden');
+    drawMatchRadarCanvas(radarCanvas, engine);
+  });
+
+  // Renderizador Radar 2D en Canvas puro
+  function drawMatchRadarCanvas(canvas, eng) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Cancha verde estilo césped
+    ctx.fillStyle = '#0f291e';
+    ctx.fillRect(0, 0, w, h);
+
+    // Líneas de cancha
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, w - 20, h - 20);
+
+    // Línea central y círculo central
+    ctx.beginPath();
+    ctx.moveTo(w / 2, 10); ctx.lineTo(w / 2, h - 10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(w / 2, h / 2, 45, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Áreas
+    ctx.strokeRect(10, h / 2 - 60, 60, 120);
+    ctx.strokeRect(w - 70, h / 2 - 60, 60, 120);
+
+    // Posición dinámica del balón basada en posesión y minuto
+    const homePossRatio = eng.homePossession / 100;
+    const ballX = 40 + homePossRatio * (w - 80) + Math.sin(eng.minute * 0.5) * 40;
+    const ballY = h / 2 + Math.cos(eng.minute * 0.7) * 80;
+
+    // Focos de presión / calor del equipo local (cyan) y visitante (red)
+    const homeX = 30 + homePossRatio * (w / 2);
+    const awayX = w - (30 + (1 - homePossRatio) * (w / 2));
+
+    // Elipse Local
+    ctx.fillStyle = 'rgba(0, 200, 133, 0.25)';
+    ctx.beginPath();
+    ctx.ellipse(homeX, h / 2, 70, 90, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Elipse Visitante
+    ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+    ctx.beginPath();
+    ctx.ellipse(awayX, h / 2, 70, 90, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Balón (amarillo destellante)
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.stroke();
+  }
+
+  const addTimelineIcon = (ev) => {
+    const eventsEl = document.getElementById('matchTimelineEvents');
+    if (!eventsEl) return;
+    const pct = Math.min(100, (ev.minute / 90) * 100);
+    let icon = '';
+    if (ev.type === 'goal_home' || ev.type === 'goal_away') icon = '⚽';
+    else if (ev.type === 'yellow_card') icon = '🟨';
+    else if (ev.type === 'red_card') icon = '🟥';
+    else if (ev.type === 'tension_moment') icon = '⏱️';
+
+    if (icon) {
+      const mark = document.createElement('div');
+      mark.style.cssText = `position:absolute; left:${pct}%; top:-2px; transform:translateX(-50%); font-size:0.65rem; z-index:2;`;
+      mark.innerText = icon;
+      eventsEl.appendChild(mark);
+    }
+  };
+
+  // ── MANEJO DEL MODAL DE MOMENTO DE TENSIÓN ──────────────────────────
+  let tensionCountdownInterval = null;
+
+  const triggerTensionUI = (tensionEvent) => {
+    if (simTimer) clearInterval(simTimer);
+
+    const modal = document.getElementById('tensionMomentModal');
+    const titleEl = document.getElementById('tensionTitle');
+    const descEl = document.getElementById('tensionDesc');
+    const optionsContainer = document.getElementById('tensionOptionsContainer');
+    const timerBar = document.getElementById('tensionTimerBar');
+
+    titleEl.innerText = tensionEvent.title;
+    descEl.innerText = tensionEvent.description;
+    optionsContainer.innerHTML = '';
+
+    modal.classList.remove('hidden');
+
+    let secondsLeft = 10;
+    timerBar.style.width = '100%';
+
+    const resolveChoice = (optionId) => {
+      if (tensionCountdownInterval) clearInterval(tensionCountdownInterval);
+      engine.applyTacticalDecision(optionId);
+      modal.classList.add('hidden');
+
+      const badge = document.getElementById('activeTacticalOrderBadge');
+      if (badge) {
+        const labels = { PRESSING: '⚡ PRESIÓN ALTA', LOW_BLOCK: '🚌 BLOQUE BAJO', COUNTER: '🎯 CONTRAATAQUE' };
+        badge.innerText = `ORDEN ACTIVA: ${labels[optionId] || optionId}`;
+      }
+
+      if (simSpeed > 0) {
+        simTimer = setInterval(tick, simSpeed);
+      }
+    };
+
+    tensionEvent.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'btn-secondary';
+      btn.style.cssText = 'text-align:left; padding:12px 16px; border-color:var(--accent-cyan); display:flex; flex-direction:column; gap:4px; font-size:0.85rem;';
+      btn.innerHTML = `<strong>${opt.label}</strong><span class="text-sub" style="font-size:0.75rem;">${opt.desc}</span>`;
+      btn.addEventListener('click', () => resolveChoice(opt.id));
+      optionsContainer.appendChild(btn);
+    });
+
+    tensionCountdownInterval = setInterval(() => {
+      secondsLeft -= 0.1;
+      const pct = Math.max(0, (secondsLeft / 10) * 100);
+      timerBar.style.width = `${pct}%`;
+
+      if (secondsLeft <= 0) {
+        clearInterval(tensionCountdownInterval);
+        resolveChoice('LOW_BLOCK'); // Opción más conservadora por defecto
+      }
+    }, 100);
+  };
+
   const processEvent = (ev) => {
     if (!ev) return;
+
+    // Actualizar barra de tiempo de línea de tiempo
+    const progressEl = document.getElementById('matchTimelineProgress');
+    if (progressEl) progressEl.style.width = `${Math.min(100, (ev.minute / 90) * 100)}%`;
+
+    addTimelineIcon(ev);
+
+    if (ev.type === 'tension_moment') {
+      triggerTensionUI(ev);
+      return;
+    }
+
     if (ev.type === 'goal_home') {
       sfx.playGoal && sfx.playGoal();
       homeShotsOnTarget++;
       showGoalFlash(ev.scorerName || '', userTeam.name);
-      if (homeGoalsList) homeGoalsList.innerHTML += `<span>&#x26BD; ${ev.minute}' ${ev.scorerName || ''} </span>`;
+      if (homeGoalsList) homeGoalsList.innerHTML += `<span>⚽ ${ev.minute}' ${ev.scorerName || ''} </span>`;
     } else if (ev.type === 'goal_away') {
       sfx.playGoal && sfx.playGoal();
       awayShotsOnTarget++;
       showGoalFlash(ev.scorerName || '', rival.name);
-      if (awayGoalsList) awayGoalsList.innerHTML += `<span>&#x26BD; ${ev.minute}' ${ev.scorerName || ''} </span>`;
+      if (awayGoalsList) awayGoalsList.innerHTML += `<span>⚽ ${ev.minute}' ${ev.scorerName || ''} </span>`;
     } else if (ev.type === 'shot_on_target_home') { homeShotsOnTarget++; }
     else if (ev.type === 'shot_on_target_away') { awayShotsOnTarget++; }
+
     if (Math.random() < 0.28) {
       const fn = commentaryPool[Math.floor(Math.random() * commentaryPool.length)];
       addLog({ minute: ev.minute, type: 'commentary', text: fn(ev.minute, Math.random() < 0.5 ? userTeam.name : rival.name) });
     }
     addLog(ev);
+
+    // Redibujar radar si está visible
+    if (!radarContainer.classList.contains('hidden')) {
+      drawMatchRadarCanvas(radarCanvas, engine);
+    }
   };
 
   const tick = () => {

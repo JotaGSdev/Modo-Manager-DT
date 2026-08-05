@@ -271,6 +271,17 @@ export function renderTransfers(container) {
           <input type="number" id="inputSigningBonus" class="input-text" value="0" step="50000" />
         </div>
 
+        <!-- ── v2.0: BARRA DE IMPACIENCIA DEL AGENTE EN TIEMPO REAL (FASE 6C) ── -->
+        <div style="background:#0b111e; border:1px solid var(--border-color); padding:10px; border-radius:8px; margin:10px 0;">
+          <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:4px;">
+            <span style="color:var(--accent-gold); font-weight:800;">🤝 Impaciencia del Representante del Jugador:</span>
+            <span id="agentImpatienceText" style="font-weight:900; color:var(--accent-green);">0% (Tranquilo)</span>
+          </div>
+          <div style="height:6px; background:#1e293b; border-radius:3px; overflow:hidden;">
+            <div id="agentImpatienceBar" style="height:100%; width:0%; background:var(--accent-green); transition:width 0.3s ease;"></div>
+          </div>
+        </div>
+
         <div id="wageValidationInfo" class="text-sub mb-2" style="font-size: 0.84rem;"></div>
 
         <div id="step2Result" class="mt-3"></div>
@@ -281,11 +292,40 @@ export function renderTransfers(container) {
         </div>
       `;
 
+      let agentImpatience = 0;
+
       const validateStep2Budgets = () => {
         const wage = parseFloat(document.getElementById('inputPlayerWage').value) || 0;
         const bonus = parseFloat(document.getElementById('inputSigningBonus').value) || 0;
         const remainingBudgetForBonus = gameState.budget - agreedFee;
         const infoEl = document.getElementById('wageValidationInfo');
+
+        // Cálculo dinámico de impaciencia del agente según la rebaja salarial propuesta
+        const wageDiffRatio = (defaultWage - wage) / defaultWage;
+        if (wageDiffRatio > 0) {
+          agentImpatience = Math.min(100, Math.round(wageDiffRatio * 150));
+        } else {
+          agentImpatience = Math.max(0, agentImpatience - 10);
+        }
+
+        const barEl = document.getElementById('agentImpatienceBar');
+        const txtEl = document.getElementById('agentImpatienceText');
+        if (barEl && txtEl) {
+          barEl.style.width = `${agentImpatience}%`;
+          if (agentImpatience >= 80) {
+            barEl.style.background = 'var(--accent-red)';
+            txtEl.innerText = `${agentImpatience}% (¡A punto de romper la mesa!)`;
+            txtEl.style.color = 'var(--accent-red)';
+          } else if (agentImpatience >= 40) {
+            barEl.style.background = 'var(--accent-gold)';
+            txtEl.innerText = `${agentImpatience}% (Molesto por la oferta baja)`;
+            txtEl.style.color = 'var(--accent-gold)';
+          } else {
+            barEl.style.background = 'var(--accent-green)';
+            txtEl.innerText = `${agentImpatience}% (Tranquilo)`;
+            txtEl.style.color = 'var(--accent-green)';
+          }
+        }
 
         if (!infoEl) return;
 
@@ -309,6 +349,14 @@ export function renderTransfers(container) {
       });
 
       document.getElementById('btnSubmitStep2').addEventListener('click', () => {
+        if (agentImpatience >= 95) {
+          alert('¡NEGOCIACIÓN ROTA! El representante del jugador se levantó de la mesa furioso por tu propuesta insultante.');
+          TransferEngine.lockPlayerForCurrentWindow(player.id);
+          modal.classList.add('hidden');
+          renderMarketList();
+          return;
+        }
+
         const role = document.getElementById('selectPlayerRole').value;
         const years = parseInt(document.getElementById('selectYears').value);
         const wage = parseFloat(document.getElementById('inputPlayerWage').value);

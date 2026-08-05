@@ -3,15 +3,12 @@
  * ENTRENADOR LEYENDA - GESTOR DE TÁCTICAS Y ARQUETIPOS DE DT (tactics.js)
  * ============================================================================
  * Administra las alineaciones 2D, formaciones de juego y arquetipos tácticos de DT.
- * Arquetipos disponibles:
- * 1. Pep Guardiola / Xavi Hernández: Maestro de Posesión y Pase Corto.
- * 2. Xabi Alonso / Klopp / Ancelotti: Rey del Contraataque y Velocidad Directa.
- * 3. Luis de la Fuente / Cholo Simeone: Garra de Potrero, Balón Parado y Presión.
- * 
- * Además proporciona:
- * - Diccionario de coordenadas para formaciones 2D en el campo (4-3-3, 4-4-2, 4-2-3-1, 3-5-2, 5-3-2).
- * - Selección automática de los 11 mejores titulares por posición (`getBestStartingXI`).
- * - Sistema de nivel táctico del entrenador por consumo de EXP (`upgradeManagerSkill`).
+ *
+ * v2.0 AÑADE:
+ * - Sistema de Roles FC IQ: Box Crasher, Inverted Wingback, Anchor, etc.
+ * - Modificadores de atributos por Rol FC IQ (afectan el OVR efectivo en simulación).
+ * - Cálculo de Team Spirit integrado en `calculateEffectiveRating()`.
+ * - Afinidad Táctica por jugador: bonus si el estilo del equipo coincide con su perfil.
  */
 
 import { db } from '../data/db.js';
@@ -167,6 +164,110 @@ export const FORMATIONS = {
   }
 };
 
+// =============================================================================
+// v2.0 — SISTEMA DE ROLES FC IQ
+// =============================================================================
+
+/**
+ * Mapa de roles FC IQ disponibles por posición.
+ * Cada posición tiene un array de roles que un jugador puede desempeñar.
+ */
+export const FC_IQ_ROLES = {
+  POR:  ['Goalkeeper',      'Sweeper Keeper'],
+  DFC:  ['Stopper',         'Ball-Playing CB',    'Libero'],
+  LI:   ['Full Back',       'Inverted Wingback',  'Overlapping FB'],
+  LD:   ['Full Back',       'Inverted Wingback',  'Overlapping FB'],
+  MCD:  ['Anchor',          'Deep-Lying PM',      'Box-to-Box'],
+  MC:   ['Playmaker',       'Box-to-Box',         'Mezzala'],
+  MCO:  ['Enganche',        'Shadow Striker',     'Deep Forward'],
+  MI:   ['Wide Midfielder', 'Half Winger',        'Box-to-Box'],
+  MD:   ['Wide Midfielder', 'Half Winger',        'Box-to-Box'],
+  EI:   ['Inside Forward',  'Winger',             'Half Winger'],
+  ED:   ['Inside Forward',  'Winger',             'Half Winger'],
+  DC:   ['Target Forward',  'Box Crasher',        'False 9',     'Poacher']
+};
+
+/**
+ * Modificadores de atributos por Rol FC IQ.
+ * Cada clave es un nombre de rol, el valor son los deltas de atributos.
+ * El OVR efectivo se recalcula aplicando estos modificadores en simulación.
+ */
+export const FC_IQ_ROLE_MODIFIERS = {
+  // Porteros
+  'Goalkeeper':        { def: 0,  pac: 0,  pas: 0,  dri: 0,  sho: 0,  phy: 0 },
+  'Sweeper Keeper':    { def: -2, pac: +3, pas: +3, dri: +2, sho: 0,  phy: 0 },
+
+  // Defensas Centrales
+  'Stopper':           { def: +4, phy: +3, pac: +1, pas: -2, dri: -2, sho: 0 },
+  'Ball-Playing CB':   { pas: +4, def: +1, dri: +2, pac: 0,  sho: 0,  phy: 0 },
+  'Libero':            { def: +2, pas: +3, dri: +3, pac: +1, sho: 0,  phy: 0 },
+
+  // Laterales
+  'Full Back':         { def: +3, pac: +2, pas: +1, dri: 0,  sho: 0,  phy: 0 },
+  'Inverted Wingback': { def: +2, dri: +3, pas: +2, pac: +2, sho: +2, phy: 0 },
+  'Overlapping FB':    { pac: +4, dri: +3, pas: +2, def: 0,  sho: 0,  phy: 0 },
+
+  // Mediocampistas Defensivos
+  'Anchor':            { def: +5, phy: +2, pas: -1, dri: -1, sho: -2, pac: 0 },
+  'Deep-Lying PM':     { pas: +5, def: +2, dri: +2, pac: -1, sho: 0,  phy: 0 },
+  'Box-to-Box':        { phy: +3, pac: +2, sho: +2, pas: +1, def: +1, dri: 0 },
+
+  // Mediocampistas Centrales
+  'Playmaker':         { pas: +5, dri: +3, sho: +1, def: -1, pac: 0,  phy: 0 },
+  'Mezzala':           { dri: +4, pas: +3, sho: +3, pac: +2, def: -2, phy: 0 },
+
+  // Mediocampistas Ofensivos
+  'Enganche':          { pas: +5, dri: +4, sho: +2, pac: -2, def: -3, phy: -2 },
+  'Shadow Striker':    { sho: +5, dri: +4, pac: +3, pas: 0,  def: -3, phy: 0 },
+  'Deep Forward':      { pas: +4, dri: +3, sho: +2, pac: 0,  def: -1, phy: 0 },
+
+  // Extremos
+  'Inside Forward':    { sho: +4, dri: +3, pac: +2, pas: +1, def: -2, phy: 0 },
+  'Winger':            { pac: +4, dri: +3, pas: +2, sho: 0,  def: -1, phy: 0 },
+  'Half Winger':       { dri: +3, pas: +3, pac: +2, sho: +1, def: 0,  phy: 0 },
+  'Wide Midfielder':   { pas: +3, dri: +2, pac: +2, def: +2, sho: 0,  phy: 0 },
+
+  // Delanteros Centro
+  'Target Forward':    { phy: +5, sho: +3, pac: -1, pas: -1, dri: 0,  def: 0 },
+  'Box Crasher':       { sho: +4, phy: +3, pac: +2, pas: -2, dri: +1, def: 0 },
+  'False 9':           { pas: +4, dri: +4, sho: +1, pac: +1, def: 0,  phy: -1 },
+  'Poacher':           { sho: +6, pac: +3, dri: +2, pas: -3, def: -2, phy: 0 }
+};
+
+/**
+ * Calcula el OVR efectivo de un jugador aplicando modificadores de rol FC IQ.
+ * @param {Object} player - Objeto jugador con atributos base
+ * @returns {number} OVR efectivo ajustado (50-99)
+ */
+export function calculateFCIQEffectiveOvr(player) {
+  if (!player.fcIqRole || !FC_IQ_ROLE_MODIFIERS[player.fcIqRole]) {
+    return player.overall;
+  }
+  const mods = FC_IQ_ROLE_MODIFIERS[player.fcIqRole];
+  const pac = Math.max(30, Math.min(99, (player.pac || 70) + (mods.pac || 0)));
+  const sho = Math.max(10, Math.min(99, (player.sho || 60) + (mods.sho || 0)));
+  const pas = Math.max(30, Math.min(99, (player.pas || 60) + (mods.pas || 0)));
+  const dri = Math.max(30, Math.min(99, (player.dri || 65) + (mods.dri || 0)));
+  const def = Math.max(20, Math.min(99, (player.def || 50) + (mods.def || 0)));
+  const phy = Math.max(30, Math.min(99, (player.phy || 65) + (mods.phy || 0)));
+
+  // Recalcular OVR con los atributos modificados usando la misma fórmula de posición
+  const pos = player.pos;
+  let ovr;
+  if (pos === 'POR')       ovr = def * 0.40 + phy * 0.35 + pas * 0.15 + pac * 0.10;
+  else if (pos === 'DFC') ovr = def * 0.40 + phy * 0.35 + pac * 0.15 + pas * 0.10;
+  else if (pos === 'LI' || pos === 'LD') ovr = pac * 0.30 + def * 0.30 + pas * 0.20 + phy * 0.20;
+  else if (pos === 'MCD') ovr = def * 0.35 + phy * 0.30 + pas * 0.25 + dri * 0.10;
+  else if (pos === 'MC')  ovr = pas * 0.35 + dri * 0.25 + phy * 0.15 + sho * 0.15 + def * 0.10;
+  else if (pos === 'MCO') ovr = dri * 0.35 + pas * 0.35 + sho * 0.20 + pac * 0.10;
+  else if (pos === 'EI' || pos === 'ED' || pos === 'MI' || pos === 'MD')
+                           ovr = pac * 0.40 + dri * 0.30 + sho * 0.15 + pas * 0.15;
+  else if (pos === 'DC')  ovr = sho * 0.40 + pac * 0.25 + phy * 0.20 + dri * 0.15;
+  else                    ovr = (pac + sho + pas + dri + def + phy) / 6;
+
+  return Math.max(50, Math.min(99, Math.round(ovr)));
+}
+
 export class TacticsEngine {
   /**
    * Obtiene la alineación titular ideal para una plantilla de jugadores y formación elegida.
@@ -238,6 +339,20 @@ export class TacticsEngine {
 
     let totalOvr = 0;
     let chemistryPoints = 0;
+    let fcIqRoleCount = 0;
+
+    const gameState = db.gameState;
+    const tacticsStyle = tacticsConfig?.style || gameState?.tactics?.style || '';
+
+    // Mapa de estilos a clave de afinidad
+    const styleAffinityKey = {
+      'Tiki-Taka': 'possession',
+      'Gegenpressing': 'highPress',
+      'Presión Alta': 'highPress',
+      'Catenaccio': 'counterattack',
+      'Contraataque': 'counterattack',
+      'Juego por Bandas': 'possession'
+    }[tacticsStyle] || null;
 
     startingXI.forEach(item => {
       const p = item.player;
@@ -247,7 +362,20 @@ export class TacticsEngine {
         posPenalty = 4;
       }
 
-      const effectiveOvr = Math.max(50, p.overall - posPenalty);
+      // Aplicar modificadores de Rol FC IQ si están asignados
+      let baseOvr = p.overall;
+      if (p.fcIqRole) {
+        baseOvr = calculateFCIQEffectiveOvr(p);
+        fcIqRoleCount++;
+      }
+
+      // Bonus de afinidad táctica (hasta +3 por jugador si el estilo coincide)
+      let affinityBonus = 0;
+      if (styleAffinityKey && p.tacticalAffinity?.[styleAffinityKey]) {
+        affinityBonus = Math.round((p.tacticalAffinity[styleAffinityKey] - 50) * 0.04);
+      }
+
+      const effectiveOvr = Math.max(50, baseOvr - posPenalty + affinityBonus);
       totalOvr += effectiveOvr;
 
       if (p.morale >= 85) chemistryPoints += 2;
@@ -257,10 +385,16 @@ export class TacticsEngine {
     const avgOvr = totalOvr / startingXI.length;
     const chemistry = Math.min(100, 75 + chemistryPoints);
 
-    const gameState = db.gameState;
     const mTac = gameState?.managerTactics || { skillLevels: { skill1: 1, skill2: 1 } };
     const skillBonus = ((mTac.skillLevels?.skill1 || 1) + (mTac.skillLevels?.skill2 || 1)) * 0.8;
 
-    return Math.round(avgOvr * 0.80 + (chemistry * 0.15) + skillBonus);
+    // Bonus de Team Spirit (hasta +3 OVR si spirit = 100)
+    const spirit = gameState?.teamSpirit || 50;
+    const spiritBonus = Math.round((spirit - 50) * 0.06);
+
+    // Bonus por uso extensivo de Roles FC IQ (bonus adicional si todos tienen rol)
+    const fcIqBonus = fcIqRoleCount >= 8 ? 2 : (fcIqRoleCount >= 5 ? 1 : 0);
+
+    return Math.round(avgOvr * 0.80 + (chemistry * 0.15) + skillBonus + spiritBonus + fcIqBonus);
   }
 }

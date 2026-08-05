@@ -4,6 +4,7 @@ import { db } from '../data/db.js';
 import { ContractEngine } from '../engine/contracts.js';
 import { renderTeamBadgeSVG, getCountryFlag } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
+import { ManagerMarketEngine } from '../engine/managerMarketEngine.js';
 
 export function renderContractView(container, navigateTo) {
   const gameState = db.gameState;
@@ -92,6 +93,46 @@ export function renderContractView(container, navigateTo) {
       </div>
 
       <div id="jobOffersContainer" class="mt-4 hidden"></div>
+
+      <!-- ── v2.0: MERCADO DE ENTRENADORES RIVALES (INTEGRADO SEGÚN PREFERENCIA DE USUARIO) ── -->
+      <div class="glass-panel mt-4">
+        <h3 style="margin-bottom:6px; color:var(--accent-cyan);">🧑‍💼 Mercado Global de Entrenadores (DTs Rivales & Vacantes)</h3>
+        <p class="text-sub" style="font-size:0.8rem; margin-bottom:14px;">
+          Movilidad en tiempo real de directores técnicos. Los clubes destituyen entrenadores por bajos resultados.
+        </p>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Club</th>
+                <th>Director Técnico Actual</th>
+                <th>Estilo / Arquetipo Táctico</th>
+                <th>Estado del Cargo</th>
+                <th>Reputación</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ManagerMarketEngine.getAllManagersTable().map(row => {
+                const isInterim = row.manager.isInterim;
+                return `
+                  <tr>
+                    <td><strong>${row.teamName}</strong> <span class="text-sub" style="font-size:0.75rem;">(${row.country})</span></td>
+                    <td>${row.manager.name}</td>
+                    <td><span class="badge" style="background:#1e293b; color:var(--accent-gold);">${row.manager.archetype.replace(/_/g, ' ')}</span></td>
+                    <td>
+                      ${isInterim
+                        ? `<span class="badge" style="background:rgba(239,68,68,0.2); color:var(--accent-red); font-weight:800;">🔴 INTERINO (VACANTE LIBRE)</span>`
+                        : `<span class="badge" style="background:rgba(0,200,133,0.2); color:var(--accent-green);">🟢 TITULAR</span>`}
+                    </td>
+                    <td><span class="stat-ovr">${row.manager.reputation}</span></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   `;
 

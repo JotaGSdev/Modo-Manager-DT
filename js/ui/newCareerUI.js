@@ -22,6 +22,11 @@ export function renderNewCareer(container, onCareerStarted) {
   let managerCountry = 'Perú'; // Por defecto
   let selectedArchetype = 'TIKI_TAKA';
 
+  // v2.0: Opciones avanzadas de partida (Paso 4)
+  let eventFrequency = 'normal'; // 'off'|'baja'|'normal'|'alta'
+  let enableRegens = true;
+  let enableManagerMarket = true;
+
   // Obtener lista completa de países presentes en las ligas de la BD
   const countriesInDB = Array.from(new Set(db.leagues.map(l => l.country))).sort();
 
@@ -98,11 +103,12 @@ export function renderNewCareer(container, onCareerStarted) {
           </p>
         </div>
 
-        <!-- INDICADOR DE PROGRESO DE 3 PASOS -->
+        <!-- INDICADOR DE PROGRESO DE 4 PASOS -->
         <div style="display: flex; gap: 12px; margin-bottom: 24px; width: 100%; max-width: 600px; justify-content: center;">
           <div style="flex: 1; height: 6px; border-radius: 3px; background: ${currentStep >= 1 ? 'var(--accent-green)' : '#1e293b'}; transition: background 0.3s ease;"></div>
           <div style="flex: 1; height: 6px; border-radius: 3px; background: ${currentStep >= 2 ? 'var(--accent-green)' : '#1e293b'}; transition: background 0.3s ease;"></div>
           <div style="flex: 1; height: 6px; border-radius: 3px; background: ${currentStep >= 3 ? 'var(--accent-green)' : '#1e293b'}; transition: background 0.3s ease;"></div>
+          <div style="flex: 1; height: 6px; border-radius: 3px; background: ${currentStep >= 4 ? 'var(--accent-green)' : '#1e293b'}; transition: background 0.3s ease;"></div>
         </div>
 
         <!-- PASO 1: PERFIL DEL DT PRINCIPIANTE -->
@@ -287,6 +293,54 @@ export function renderNewCareer(container, onCareerStarted) {
           </div>
         ` : ''}
 
+        <!-- PASO 4: CONFIGURACIÓN DE EXPERIENCIA (FASE 6D) -->
+        ${currentStep === 4 ? `
+          <div class="glass-panel" style="width: 100%; max-width: 680px; padding: 28px; border: 1px solid var(--border-color); background: #121826;">
+            <div class="text-center mb-4">
+              <h3 style="color: var(--accent-cyan); font-size: 1.3rem; margin-bottom: 4px;">⚙️ PASO 4: CONFIGURACIÓN DE EXPERIENCIA DE JUEGO</h3>
+              <p class="text-sub" style="font-size: 0.86rem;">Ajusta la dificultad y sistemas dinámicos para tu partida:</p>
+            </div>
+
+            <!-- Frecuencia de Eventos -->
+            <div class="form-group mb-4" style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid var(--border-color);">
+              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: var(--accent-gold);">🚨 Frecuencia de Eventos Inesperados & Crisis:</label>
+              <select id="selectEventFreqConfig" class="input-select" style="width: 100%; margin-top:6px;">
+                <option value="off" ${eventFrequency === 'off' ? 'selected' : ''}>Desactivado (Experiencia Lineal sin imprevistos)</option>
+                <option value="baja" ${eventFrequency === 'baja' ? 'selected' : ''}>Baja (2 eventos por temporada)</option>
+                <option value="normal" ${eventFrequency === 'normal' ? 'selected' : ''}>Normal (4 eventos por temporada — Recomendado)</option>
+                <option value="alta" ${eventFrequency === 'alta' ? 'selected' : ''}>Alta (8 eventos por temporada — Máxima tensión)</option>
+              </select>
+            </div>
+
+            <!-- Sistema de Regens PES -->
+            <div class="form-group mb-4" style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: var(--accent-green); margin:0;">♻️ Sistema de Regens Nostálgico (PES):</label>
+                <p class="text-sub" style="font-size:0.75rem; margin:2px 0 0 0;">Jugadores retirados reaparecen de 16 años en sus clubes de origen.</p>
+              </div>
+              <input type="checkbox" id="checkEnableRegensConfig" ${enableRegens ? 'checked' : ''} style="width:20px; height:20px; cursor:pointer;" />
+            </div>
+
+            <!-- Mercado de Entrenadores IA -->
+            <div class="form-group mb-4" style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: var(--accent-cyan); margin:0;">🧑‍💼 Mercado Global de Entrenadores IA:</label>
+                <p class="text-sub" style="font-size:0.75rem; margin:2px 0 0 0;">Despidos dinámicos de DTs en clubes rivales durante la temporada.</p>
+              </div>
+              <input type="checkbox" id="checkEnableManagerMarketConfig" ${enableManagerMarket ? 'checked' : ''} style="width:20px; height:20px; cursor:pointer;" />
+            </div>
+
+            <div style="display: flex; gap: 14px;">
+              <button id="btnBackToStep3" class="btn-secondary" style="flex: 1; padding: 14px; font-weight: 800;">
+                ⬅️ VOLVER A OFERTAS
+              </button>
+              <button id="btnConfirmStartGame" class="btn-primary btn-large" style="flex: 2; font-size: 1rem; font-weight: 900; background:var(--accent-gold); color:#000;">
+                🚀 INICIAR MI CARRERA PROFESIONAL DE DT ➔
+              </button>
+            </div>
+          </div>
+        ` : ''}
+
       </div>
     `;
 
@@ -365,8 +419,35 @@ export function renderNewCareer(container, onCareerStarted) {
         currentStep = 2;
         renderStep();
       });
+    } else if (currentStep === 4) {
+      document.getElementById('btnBackToStep3')?.addEventListener('click', () => {
+        sfx.playClick();
+        currentStep = 3;
+        renderStep();
+        renderStep3Offers();
+      });
+
+      document.getElementById('btnConfirmStartGame')?.addEventListener('click', () => {
+        const freqSelect = document.getElementById('selectEventFreqConfig');
+        const regensCheck = document.getElementById('checkEnableRegensConfig');
+        const marketCheck = document.getElementById('checkEnableManagerMarketConfig');
+
+        if (freqSelect) eventFrequency = freqSelect.value;
+        if (regensCheck) enableRegens = regensCheck.checked;
+        if (marketCheck) enableManagerMarket = marketCheck.checked;
+
+        sfx.playGoal();
+        db.newCareer(selectedTeamIdForStart, managerName, managerCountry, managerAge, selectedArchetype, {
+          eventFrequency,
+          enableRegens,
+          enableManagerMarket
+        });
+        onCareerStarted();
+      });
     }
   };
+
+  let selectedTeamIdForStart = null;
 
   /**
    * Renderiza las 3 tarjetas de ofertas de clubes nacionales en el Paso 3
@@ -404,18 +485,17 @@ export function renderNewCareer(container, onCareerStarted) {
         </div>
 
         <button class="btn-primary btn-sign-club" data-id="${o.team.id}" style="width: 100%; padding: 12px; font-weight: 900; font-size: 0.95rem; background: var(--accent-green); color: #000;">
-          ✍️ FIRMAR CONTRATO CON ${o.team.name.toUpperCase()} (3 AÑOS)
+          ✍️ SELECCIONAR ${o.team.name.toUpperCase()} (PASO FINAL ➔)
         </button>
       </div>
     `).join('');
 
     document.querySelectorAll('.btn-sign-club').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const teamId = e.currentTarget.dataset.id;
-
-        sfx.playGoal();
-        db.newCareer(teamId, managerName, managerCountry, managerAge, selectedArchetype);
-        onCareerStarted();
+        selectedTeamIdForStart = e.currentTarget.dataset.id;
+        sfx.playClick();
+        currentStep = 4;
+        renderStep();
       });
     });
   };

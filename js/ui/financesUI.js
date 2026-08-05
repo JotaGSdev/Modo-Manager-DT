@@ -60,16 +60,51 @@ export function renderFinances(container, navigateTo) {
 
   container.innerHTML = `
     <div class="finances-layout">
-      <!-- Encabezado de Finanzas -->
+      <!-- Encabezado de Finanzas Dual (v2.0) -->
       <div class="glass-panel mb-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
           <h2>💶 Panel de Finanzas & Contabilidad de ${userTeam.name}</h2>
-          <p class="text-sub">Control de ingresos, gastos salariales, taquilla e historial contable estilo EA FC</p>
+          <p class="text-sub">Control de ingresos, gastos salariales, presupuesto dual y auditorías contables</p>
         </div>
-        <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px; text-align: center;">
-          <span class="text-sub" style="font-size: 0.78rem; font-weight: 700;">PRESUPUESTO DISPONIBLE PARA FICHAJES</span>
-          <h2 style="margin: 0; color: var(--accent-green);">€${(gameState.budget / 1000000).toFixed(2)}M</h2>
+        
+        <div style="display:flex; gap:12px;">
+          <!-- CAJA 1: TRASPASOS -->
+          <div style="background: #141d2e; border: 1px solid var(--accent-green); padding: 10px 16px; border-radius: 8px; text-align: center;">
+            <span class="text-sub" style="font-size: 0.75rem; font-weight: 700;">💰 PRESUPUESTO TRASPASOS</span>
+            <h3 style="margin: 0; color: var(--accent-green);">€${(gameState.budget / 1000000).toFixed(2)}M</h3>
+          </div>
+
+          <!-- CAJA 2: SALARIOS -->
+          <div style="background: #141d2e; border: 1px solid var(--accent-gold); padding: 10px 16px; border-radius: 8px; text-align: center;">
+            <span class="text-sub" style="font-size: 0.75rem; font-weight: 700;">📋 PRESUPUESTO SALARIAL</span>
+            <h3 style="margin: 0; color: var(--accent-gold);">€${((gameState.wageBudget || 0) / 1000).toFixed(0)}K /sem</h3>
+          </div>
         </div>
+      </div>
+
+      <!-- ALERTA DE CONGELACIÓN DE FONDOS POR CRISIS / AUDITORÍA (v2.0) -->
+      ${gameState.transferBudgetLocked ? `
+        <div class="glass-panel mb-4" style="border: 2px solid var(--accent-red); background: rgba(239,68,68,0.1); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h4 style="color: var(--accent-red); margin: 0; font-size: 1rem;">🕵️ CRISIS FINANCIERA ACTIVA — FONDOS CONGELADOS POR AUDITORÍA</h4>
+            <p class="text-sub" style="font-size: 0.82rem; margin-top: 4px;">
+              El 30% (€${((gameState.lockedBudgetAmount || 0) / 1000000).toFixed(2)}M) de tu presupuesto de traspasos está congelado por la junta directiva.
+            </p>
+          </div>
+          <button id="btnUnfreezeBudget" class="btn-primary" style="background: var(--accent-gold); color: #000; font-weight: 900;">
+            🔓 LIBERAR FONDOS (€200K)
+          </button>
+        </div>
+      ` : ''}
+
+      <!-- ACCIÓN DE REDISTRIBUCIÓN PRESUPUESTARIA CON LA DIRECTIVA -->
+      <div class="glass-panel mb-4 text-center" style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="text-sub" style="font-size:0.85rem; font-weight:700;">
+          📊 Solicitud de Conversión / Redistribución Presupuestaria
+        </span>
+        <button id="btnRedistributeBudget" class="btn-secondary" style="font-size:0.82rem; padding:8px 16px;">
+          🔄 Solicitar mover liquidez a la Directiva
+        </button>
       </div>
 
       <!-- KPIs RÁPIDOS FINANCIEROS -->
@@ -243,4 +278,40 @@ export function renderFinances(container, navigateTo) {
 
     </div>
   `;
+
+  // Handlers
+  document.getElementById('btnUnfreezeBudget')?.addEventListener('click', () => {
+    if (gameState.budget < 200000) {
+      alert('Presupuesto insuficiente para liberar los fondos congelados (€200,000 requeridos).');
+      return;
+    }
+    gameState.budget -= 200000;
+    gameState.budget += (gameState.lockedBudgetAmount || 0);
+    gameState.transferBudgetLocked = false;
+    gameState.lockedBudgetAmount = 0;
+    db.saveGame();
+    sfx.playGoal();
+    alert('¡AUDITORÍA RESUELTA! Se han desbloqueado los fondos congelados.');
+    renderFinances(container, navigateTo);
+  });
+
+  document.getElementById('btnRedistributeBudget')?.addEventListener('click', () => {
+    sfx.playClick();
+    const boardConf = gameState.contract?.boardConfidence || 50;
+    if (boardConf < 55) {
+      alert('La directiva ha RECHAZADO tu solicitud de redistribución presupuestaria debido a la baja confianza actual (<55%).');
+      return;
+    }
+    const moveAmount = 5000000;
+    if (gameState.budget >= moveAmount) {
+      gameState.budget -= moveAmount;
+      gameState.wageBudget = (gameState.wageBudget || 0) + 100000;
+      db.saveGame();
+      sfx.playGoal();
+      alert('¡SOLICITUD APROBADA! Se transfirieron €5.0M del presupuesto de traspasos a €100K/sem de masa salarial.');
+      renderFinances(container, navigateTo);
+    } else {
+      alert('No dispones de liquidez suficiente (€5.0M requeridos) para la conversión.');
+    }
+  });
 }

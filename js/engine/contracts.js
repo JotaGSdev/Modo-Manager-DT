@@ -63,11 +63,32 @@ export class ContractEngine {
     const budgetRatio = gameState.budget / Math.max(1, initialBudget);
     contract.financialBalance = Math.max(30, Math.min(100, Math.round(70 + budgetRatio * 20)));
 
-    // 4. Confianza Global de la Directiva
+    // 4. v2.0: KPI 5 — Fidelidad Filosófica / Táctica (Directiva exige arquetipo)
+    const currentStyle = gameState.tactics?.style || '';
+    const clubPhilosophy = gameState.clubPhilosophy || gameState.managerArchetype;
+    let fidelityScore = 75;
+
+    // Verificar si el estilo actual encaja con la filosofía del club
+    const isMatchingStyle = (currentStyle.toLowerCase().includes('tiki') && clubPhilosophy.toLowerCase().includes('tiki')) ||
+      (currentStyle.toLowerCase().includes('pressing') && clubPhilosophy.toLowerCase().includes('klopp')) ||
+      (currentStyle.toLowerCase().includes('catenaccio') && clubPhilosophy.toLowerCase().includes('simeone')) ||
+      (currentStyle.toLowerCase().includes('contra') && clubPhilosophy.toLowerCase().includes('alonso'));
+
+    if (isMatchingStyle) {
+      gameState.tacticalFidelityWeeks = (gameState.tacticalFidelityWeeks || 0) + 1;
+      fidelityScore = Math.min(100, 75 + gameState.tacticalFidelityWeeks * 2);
+    } else {
+      gameState.tacticalFidelityWeeks = Math.max(0, (gameState.tacticalFidelityWeeks || 0) - 1);
+      fidelityScore = Math.max(40, 75 - (10 - gameState.tacticalFidelityWeeks) * 3);
+    }
+    contract.tacticalFidelity = fidelityScore;
+
+    // 5. Confianza Global de la Directiva (incorporando KPI 5)
     contract.boardConfidence = Math.round(
-      (contract.sportingScore * 0.40) +
-      (contract.fanSatisfaction * 0.25) +
-      (contract.financialBalance * 0.20) +
+      (contract.sportingScore * 0.35) +
+      (contract.fanSatisfaction * 0.20) +
+      (contract.financialBalance * 0.15) +
+      (contract.tacticalFidelity * 0.15) +
       (gameState.reputation * 0.15)
     );
 

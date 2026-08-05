@@ -1,7 +1,7 @@
 // Vista de Tácticas & Alineación 2D Estilo EA FC / FIFA (Drag and Drop, Formaciones y Auto-Alineación)
 
 import { db } from '../data/db.js';
-import { TacticsEngine, FORMATIONS } from '../engine/tactics.js';
+import { TacticsEngine, FORMATIONS, FC_IQ_ROLES } from '../engine/tactics.js';
 import { openPlayerInspectorModal } from './playerInspectorUI.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
@@ -30,18 +30,34 @@ export function renderTactics(container) {
             <div class="penalty-box bottom"></div>
           </div>
 
-          <!-- Jugadores en cancha -->
-          ${startingXI.map((item, idx) => `
-            <div class="player-pitch-card" 
-                 draggable="true" 
-                 data-id="${item.player.id}" 
-                 data-idx="${idx}"
-                 style="left: ${item.slot.x}%; top: ${item.slot.y}%;">
-              <div class="player-number">${item.player.overall}</div>
-              <div class="player-name">${item.player.name.split(' ').pop()}</div>
-              <div class="player-pos-badge">${item.slot.role}</div>
-            </div>
-          `).join('')}
+          <!-- Jugadores en cancha con selector de Rol FC IQ (v2.0) -->
+          ${startingXI.map((item, idx) => {
+            const playerPos = item.slot.role;
+            const availableRoles = FC_IQ_ROLES[playerPos] || ['Estándar'];
+            const currentRole = item.player.fcIqRole || availableRoles[0];
+
+            return `
+              <div class="player-pitch-card" 
+                   draggable="true" 
+                   data-id="${item.player.id}" 
+                   data-idx="${idx}"
+                   style="left: ${item.slot.x}%; top: ${item.slot.y}%;">
+                <div class="player-number">${item.player.overall}</div>
+                <div class="player-name">${item.player.name.split(' ').pop()}</div>
+                <div class="player-pos-badge" style="background:var(--accent-gold); color:#000;">${item.slot.role}</div>
+                
+                <!-- Selector de Rol FC IQ -->
+                <select class="fc-iq-role-select" 
+                        data-player-id="${item.player.id}" 
+                        onclick="event.stopPropagation();"
+                        style="font-size:0.62rem; font-weight:800; background:rgba(15,23,42,0.9); color:var(--accent-cyan); border:1px solid var(--accent-cyan); border-radius:3px; margin-top:2px; cursor:pointer; max-width:85px;">
+                  ${availableRoles.map(r => `
+                    <option value="${r}" ${r === currentRole ? 'selected' : ''}>${r}</option>
+                  `).join('')}
+                </select>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
 
@@ -221,6 +237,22 @@ export function renderTactics(container) {
         renderTactics(container);
       } else {
         alert(res.reason);
+      }
+    });
+  });
+
+  // Handlers para cambios de rol FC IQ
+  document.querySelectorAll('.fc-iq-role-select').forEach(sel => {
+    sel.addEventListener('change', (e) => {
+      e.stopPropagation();
+      const playerId = e.target.dataset.playerId;
+      const roleVal = e.target.value;
+      const player = squad.find(p => p.id === playerId);
+      if (player) {
+        player.fcIqRole = roleVal;
+        db.saveGame();
+        sfx.playClick();
+        renderTactics(container);
       }
     });
   });

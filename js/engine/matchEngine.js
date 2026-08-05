@@ -40,6 +40,11 @@ export class MatchEngine {
     this.events = [];
     this.isFinished = false;
 
+    // v2.0: Momentos de Tensión (Intervenciones del Mánager)
+    this.tensionMomentsTriggered = 0;
+    this.pendingTensionMoment = null;
+    this.appliedTacticalOrder = null; // 'PRESSING' | 'LOW_BLOCK' | 'COUNTER' | null
+
     this.initMatch();
   }
 
@@ -182,7 +187,86 @@ export class MatchEngine {
       return finalEvent;
     }
 
+    // v2.0: Chequear si se activa un Momento de Tensión (2 o 3 por partido: min 25-35, min 65-75)
+    const tensionEvent = this.checkForTensionMoment();
+    if (tensionEvent) {
+      this.events.push(tensionEvent);
+      return tensionEvent;
+    }
+
     return null;
+  }
+
+  /**
+   * Evaluá si en el minuto actual debe gatillarse un Momento de Tensión táctico.
+   * @returns {Object|null} Objeto del evento de tensión o null
+   */
+  checkForTensionMoment() {
+    if (this.tensionMomentsTriggered >= 2) return null;
+
+    const isFirstWindow = (this.minute >= 25 && this.minute <= 35 && this.tensionMomentsTriggered === 0);
+    const isSecondWindow = (this.minute >= 65 && this.minute <= 75 && this.tensionMomentsTriggered === 1);
+
+    if (isFirstWindow || isSecondWindow) {
+      this.tensionMomentsTriggered++;
+
+      const isUserHome = db.gameState?.userTeamId === this.homeTeam.id;
+      const isUserBehind = isUserHome ? (this.awayScore > this.homeScore) : (this.homeScore > this.awayScore);
+      const isTied = (this.homeScore === this.awayScore);
+
+      let contextText = isTied
+        ? `El partido está igualado y la batalla táctica en mitad de cancha se intensifica.`
+        : (isUserBehind ? `Vas por detrás en el marcador y el rival cierra espacios.` : `Llevas la ventaja pero el rival adelanta sus líneas y presiona.`);
+
+      const tensionEvent = {
+        minute: this.minute,
+        type: 'tension_moment',
+        title: `⏱️ MOMENTO CLAVE (${this.minute}') — DECISIÓN DEL MÁNAGER`,
+        description: `${contextText} ¿Qué orden táctica das a tu plantilla? (Tienes 10 segundos)`,
+        options: [
+          {
+            id: 'PRESSING',
+            label: '⚡ Presión Asfixiante',
+            desc: '+15% Ocasiones de gol (Gasta resistencia)',
+            effect: { homeShotBonus: 0.15, awayShotBonus: 0.05 }
+          },
+          {
+            id: 'LOW_BLOCK',
+            label: '🚌 Cerrar Bloque Bajo',
+            desc: '-25% Riesgo de encajar (Cede posesión)',
+            effect: { awayShotBonus: -0.25, homePossessionBonus: -8 }
+          },
+          {
+            id: 'COUNTER',
+            label: '🎯 Contraataque Directo',
+            desc: '+20% Efectividad de contragolpe si recuperas',
+            effect: { homeShotBonus: 0.10, awayShotBonus: 0.00 }
+          }
+        ]
+      };
+
+      this.pendingTensionMoment = tensionEvent;
+      return tensionEvent;
+    }
+    return null;
+  }
+
+  /**
+   * Aplica la decisión del mánager tomada durante un Momento de Tensión.
+   * @param {string} optionId - 'PRESSING' | 'LOW_BLOCK' | 'COUNTER'
+   */
+  applyTacticalDecision(optionId) {
+    this.appliedTacticalOrder = optionId;
+    if (optionId === 'PRESSING') {
+      this.targetHomeXG += 0.45;
+      this.targetAwayXG += 0.20;
+    } else if (optionId === 'LOW_BLOCK') {
+      this.targetAwayXG = Math.max(0.1, this.targetAwayXG - 0.40);
+      this.homePossession = Math.max(30, this.homePossession - 8);
+    } else if (optionId === 'COUNTER') {
+      this.targetHomeXG += 0.35;
+    }
+    this.pendingTensionMoment = null;
   }
 
   /**

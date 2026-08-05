@@ -3,6 +3,7 @@
 import { db } from '../data/db.js';
 import { openPlayerInspectorModal } from './playerInspectorUI.js';
 import { sfx } from '../../assets/audio/sfx.js';
+import { TeamSpiritEngine } from '../engine/teamSpirit.js';
 
 const POS_ORDER = { 'POR': 1, 'DFC': 2, 'LI': 3, 'LD': 4, 'MCD': 5, 'MC': 6, 'MCO': 7, 'EI': 8, 'ED': 9, 'DC': 10 };
 
@@ -42,6 +43,7 @@ export function renderSquad(container) {
       <tr><td colspan="9" class="text-sub text-center py-4">No se encontraron futbolistas con los filtros seleccionados.</td></tr>
     ` : filtered.map(p => {
       const roleText = p.individualInstruction || 'Estándar';
+      const personalityRole = p.personalityRole || 'none';
       const contractYears = p.contractYears !== undefined ? p.contractYears : 3;
       const maxWeeks = gameState.maxWeeks || 38;
       const currentWeek = gameState.week || 1;
@@ -57,6 +59,18 @@ export function renderSquad(container) {
           <td><strong>${p.age}a</strong></td>
           <td><span class="stat-ovr">${p.overall}</span></td>
           <td><span class="text-highlight">${p.potential || p.overall}</span></td>
+
+          <!-- Selector de Rol de Personalidad / Vestuario (v2.0) -->
+          <td>
+            <select class="select-personality-role" data-player-id="${p.id}" onclick="event.stopPropagation();" style="font-size:0.75rem; padding:3px 6px; border-radius:4px; background:#0f172a; color:#fff; border:1px solid var(--border-color);">
+              <option value="none" ${personalityRole === 'none' ? 'selected' : ''}>Ninguno</option>
+              <option value="captain" ${personalityRole === 'captain' ? 'selected' : ''}>👑 Capitán (-20% riesgo en crisis)</option>
+              <option value="youngStar" ${personalityRole === 'youngStar' ? 'selected' : ''}>⭐ Joven Promesa (+20% EXP c/Mentor)</option>
+              <option value="rebel" ${personalityRole === 'rebel' ? 'selected' : ''}>🔥 El Rebelde (+8 OVR si moral alta)</option>
+              <option value="mentor" ${personalityRole === 'mentor' ? 'selected' : ''}>🎓 El Mentor (Guía canteranos)</option>
+            </select>
+          </td>
+
           <td>€${(p.value / 1000000).toFixed(1)}M</td>
           <td style="color: var(--accent-gold);">€${(p.salary / 1000).toFixed(0)}K/s</td>
           <td style="color: ${contractYears <= 1 ? 'var(--accent-red)' : 'inherit'}; font-weight: 700;">${contractYears}a (${monthsLeft}m)</td>
@@ -66,6 +80,26 @@ export function renderSquad(container) {
         </tr>
       `;
     }).join('');
+
+    // Change handlers para selector de roles de personalidad
+    document.querySelectorAll('.select-personality-role').forEach(sel => {
+      sel.addEventListener('change', (e) => {
+        e.stopPropagation();
+        const pid = e.target.dataset.playerId;
+        const pval = e.target.value;
+        const player = squad.find(p => p.id === pid);
+        if (player) {
+          // Si eligió capitán, remover capitán previo
+          if (pval === 'captain') {
+            squad.forEach(sp => { if (sp.personalityRole === 'captain') sp.personalityRole = 'none'; });
+          }
+          player.personalityRole = pval === 'none' ? null : pval;
+          db.saveGame();
+          sfx.playClick();
+          renderSquad(container);
+        }
+      });
+    });
 
     // Eventos de botones de acción por jugador
     document.querySelectorAll('.btn-inspect-player').forEach(btn => {
@@ -101,8 +135,10 @@ export function renderSquad(container) {
           <p class="text-sub">Total de Futbolistas: <strong>${squad.length} Jugadores</strong> | Presupuesto Salarial: <strong style="color: var(--accent-gold);">€${(gameState.wageBudget / 1000).toFixed(0)}K/sem</strong></p>
         </div>
         
-        <div style="display: flex; gap: 10px;">
-          <input type="text" id="inputSearchSquad" class="input-select" placeholder="🔍 Buscar jugador por nombre..." style="width: 240px;">
+        <div style="display: flex; gap: 10px; align-items:center;">
+          <!-- Panel Embebido de Team Spirit (v2.0) -->
+          ${TeamSpiritEngine.renderSpiritPanel()}
+          <input type="text" id="inputSearchSquad" class="input-select" placeholder="🔍 Buscar jugador..." style="width: 200px;">
         </div>
       </div>
 
@@ -127,6 +163,7 @@ export function renderSquad(container) {
                 <th>Edad</th>
                 <th>Media (OVR)</th>
                 <th>Potencial</th>
+                <th>Rol Vestuario (Personalidad)</th>
                 <th>Valor Mercado</th>
                 <th>Salario</th>
                 <th>Contrato</th>

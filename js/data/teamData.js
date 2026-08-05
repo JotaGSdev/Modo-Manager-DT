@@ -1,4 +1,5 @@
 // Generador dinámico de plantillas con medias ponderadas y curva de valoración de mercado hiperrealista EA FC 25 (OVR Inicial Máximo 91)
+// v2.0: Añade campos FC IQ, Team Spirit, historial estadístico y sistema de Regens.
 
 export function calculatePositionOvr(pos, pac, sho, pas, dri, def, phy) {
   let ovr = 70;
@@ -167,7 +168,19 @@ export function generateTeamPlayers(team) {
       form: 75 + Math.floor(Math.random() * 20),
       appearances: 0,
       seasonGoals: 0,
-      teamId: team.id
+      ratingAvg: 0,
+      teamId: team.id,
+      // ── v2.0: Campos de roles y seguimiento ────────────────────────────
+      statsHistory: [],
+      fcIqRole: null,        // rol FC IQ asignado (ej: 'Box Crasher', 'Inverted Wingback')
+      personalityRole: null, // rol de personalidad ('captain'|'youngStar'|'rebel'|'mentor')
+      tacticalAffinity: {   // afinidad con estilos de juego (0-100)
+        possession: 50 + Math.floor((Math.random() - 0.5) * 40),
+        counterattack: 50 + Math.floor((Math.random() - 0.5) * 40),
+        highPress: 50 + Math.floor((Math.random() - 0.5) * 40)
+      },
+      isRegen: false,
+      regenOriginName: null
     });
   });
 
@@ -234,9 +247,63 @@ export function generateTeamPlayers(team) {
       form: 70 + Math.floor(Math.random() * 25),
       appearances: 0,
       seasonGoals: 0,
-      teamId: team.id
+      ratingAvg: 0,
+      teamId: team.id,
+      // ── v2.0: Campos de roles y seguimiento ────────────────────────────
+      statsHistory: [],
+      fcIqRole: null,
+      personalityRole: null,
+      tacticalAffinity: {
+        possession: 50 + Math.floor((Math.random() - 0.5) * 40),
+        counterattack: 50 + Math.floor((Math.random() - 0.5) * 40),
+        highPress: 50 + Math.floor((Math.random() - 0.5) * 40)
+      },
+      isRegen: false,
+      regenOriginName: null
     });
   }
 
   return players;
+}
+
+// ───────────────────────────────────────────────────────────────────
+// v2.0 — Generador de entrenadores IA para el Mercado de DTs
+// ───────────────────────────────────────────────────────────────────
+
+const MANAGER_FIRST_NAMES = [
+  'Carlos', 'Diego', 'Marcelo', 'Roberto', 'Jorge', 'Andrés', 'Luis', 'Miguel',
+  'Thomas', 'Oliver', 'Michael', 'James', 'Richard', 'David', 'John', 'Peter',
+  'Antonio', 'Marco', 'Roberto', 'Fabio', 'Luca', 'Giovanni', 'Paolo', 'Andrea',
+  'Pep', 'Jürgen', 'Carlo', 'Xabi', 'Zinedine', 'José', 'Simóne',
+  'Lionel', 'Sebastian', 'Patrick', 'Philippe', 'Thierry'
+];
+const MANAGER_LAST_NAMES = [
+  'Bianchi', 'Ortega', 'Fernández', 'Oliveira', 'Silva', 'Torres', 'Moreno',
+  'Smith', 'Johnson', 'Williams', 'Brown', 'Davies', 'Evans', 'Wilson',
+  'Ferrari', 'Romano', 'Ricci', 'Conti', 'Costa', 'Esposito', 'Bianchi',
+  'Scholz', 'Müller', 'Becker', 'Fischer', 'Wagner', 'Klein', 'Weber',
+  'Dupont', 'Martin', 'Bernard', 'Petit', 'Girard'
+];
+const MANAGER_ARCHETYPES_LIST = ['GUARDIOLA', 'KLOPP', 'SIMEONE', 'ANCELOTTI', 'XABI_ALONSO'];
+
+/**
+ * Genera un entrenador IA para un equipo dado.
+ * @param {string} teamId - ID del equipo
+ * @param {number} teamReputation - Reputación del equipo (30-100)
+ * @returns {Object} Objeto de entrenador IA
+ */
+export function generateAIManager(teamId, teamReputation = 60) {
+  const fName = MANAGER_FIRST_NAMES[Math.floor(Math.random() * MANAGER_FIRST_NAMES.length)];
+  const lName = MANAGER_LAST_NAMES[Math.floor(Math.random() * MANAGER_LAST_NAMES.length)];
+  const archetype = MANAGER_ARCHETYPES_LIST[Math.floor(Math.random() * MANAGER_ARCHETYPES_LIST.length)];
+  // La reputación del DT IA ronda la del equipo ± 15 puntos
+  const reputation = Math.max(25, Math.min(95, teamReputation + Math.floor((Math.random() - 0.5) * 30)));
+  return {
+    name: `${fName} ${lName}`,
+    archetype,
+    reputation,
+    isInterim: false,
+    weeksInCharge: 0,
+    teamId
+  };
 }
