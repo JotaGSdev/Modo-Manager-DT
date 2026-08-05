@@ -18,6 +18,7 @@
 import { generateTeamPlayers, calculatePositionOvr, calculatePlayerMarketValue, calculatePlayerSalary } from './teamData.js';
 import { TransferEngine } from '../engine/transfers.js';
 import { ContractEngine } from '../engine/contracts.js';
+import { ManagerMarketEngine } from '../engine/managerMarketEngine.js';
 
 class DatabaseManager {
   constructor() {
@@ -124,10 +125,12 @@ class DatabaseManager {
     const userTeam = this.teams[userTeamId];
     if (!userTeam) return null;
 
-    const userLeague = this.leagues.find(l => l.id === userTeam.leagueId);
-    userLeague.teams.forEach(t => this.getTeamPlayers(t.id));
+    const userLeague = this.leagues.find(l => l.id === userTeam.leagueId) || this.leagues[0];
+    if (userLeague && userLeague.teams) {
+      userLeague.teams.forEach(t => this.getTeamPlayers(t.id));
+    }
 
-    const leagueStandings = userLeague.teams.map(t => ({
+    const leagueStandings = (userLeague && userLeague.teams) ? userLeague.teams.map(t => ({
       teamId: t.id,
       name: t.name,
       played: 0,
@@ -138,9 +141,9 @@ class DatabaseManager {
       ga: 0,
       gd: 0,
       points: 0
-    }));
+    })) : [];
 
-    const numTeams = userLeague && userLeague.teams ? userLeague.teams.length : 20;
+    const numTeams = (userLeague && userLeague.teams) ? userLeague.teams.length : 20;
     const computedMaxWeeks = (numTeams - 1) * 2;
 
     this.gameState = {
@@ -251,6 +254,10 @@ class DatabaseManager {
       seasonPlayersOut: [],
       cupPhaseReached: 'Fase de Grupos'
     };
+
+    if (this.gameState.enableManagerMarket) {
+      ManagerMarketEngine.initAIManagers();
+    }
 
     this.saveGame();
     return this.gameState;
