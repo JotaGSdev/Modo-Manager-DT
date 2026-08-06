@@ -1,17 +1,20 @@
 // Motor de Contratos Laborales (3-5 Años), KPIs de Evaluación, Ofertas de Clubes y Selecciones Nacionales
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
+
+import type { ContractYearEndResult, JobOffer, ManagerContract } from '../types.js';
 
 export class ContractEngine {
   /**
    * Inicializa o renueva el contrato laboral del DT con el club actual
-   * @param {string} teamId - ID del club
-   * @param {number} durationYears - Duración del contrato (3 a 5 años)
+   * @param teamId - ID del club
+   * @param durationYears - Duración del contrato (3 a 5 años)
    */
-  static startClubContract(teamId, durationYears = 3) {
-    const gameState = db.gameState;
-    const team = db.teams[teamId];
-    
+  static startClubContract(teamId: string, durationYears = 3): ManagerContract {
+    const gameState = db.gameState!;
+    const team = db.teams[teamId]!;
+
     // Fijar objetivo deportivo según el nivel del equipo
     let targetPos = 5;
     if (team.overall >= 84) targetPos = 1; // Campeón
@@ -19,7 +22,7 @@ export class ContractEngine {
     else if (team.overall >= 70) targetPos = 8; // Mitad superior
     else targetPos = 14; // Evitar descenso
 
-    gameState.contract = {
+    const contract: ManagerContract = {
       teamId: teamId,
       teamName: team.name,
       startYear: gameState.season,
@@ -33,16 +36,18 @@ export class ContractEngine {
       renewalChance: 85,
       status: 'ACTIVO' // ACTIVO, EN_RIESGO, RENOVADO, FINALIZADO, DESPEDIDO
     };
+    gameState.contract = contract;
 
     db.saveGame();
-    return gameState.contract;
+    return contract;
   }
 
   /**
    * Evalúa los 4 KPIs de rendimiento del DT periódicamente
    */
-  static evaluatePerformance(shouldSave = false) {
+  static evaluatePerformance(shouldSave = false): ManagerContract | null {
     const gameState = db.gameState;
+    if (!gameState) return null;
     const contract = gameState.contract;
     if (!contract) return null;
 
@@ -110,8 +115,8 @@ export class ContractEngine {
   /**
    * Avanza un año de contrato al finalizar la temporada
    */
-  static processContractYearEnd() {
-    const gameState = db.gameState;
+  static processContractYearEnd(): ContractYearEndResult {
+    const gameState = db.gameState!;
     let contract = gameState.contract;
 
     if (!contract) {
@@ -142,22 +147,24 @@ export class ContractEngine {
   /**
    * Genera 3 ofertas de empleo de clubes y selecciones nacionales interesadas según la reputación del DT
    */
-  static generateJobOffers() {
+  static generateJobOffers(): JobOffer[] {
     const gameState = db.gameState;
+    if (!gameState) return [];
+
     const rep = gameState.reputation || 75;
-    const offers = [];
+    const offers: JobOffer[] = [];
 
     const availableTeams = Object.values(db.teams).filter(t => t.id !== gameState.userTeamId);
     availableTeams.sort((a, b) => Math.abs(a.reputation - rep) - Math.abs(b.reputation - rep));
 
     for (let i = 0; i < Math.min(2, availableTeams.length); i++) {
-      const t = availableTeams[i];
+      const t = availableTeams[i]!;
       offers.push({
         type: 'CLUB',
         teamId: t.id,
         teamName: t.name,
-        leagueId: t.leagueId,
-        country: t.country,
+        leagueId: t.leagueId || '',
+        country: t.country || '',
         budget: t.budget,
         reputation: t.reputation,
         contractDuration: 3 + Math.floor(Math.random() * 3), // 3 - 5 años

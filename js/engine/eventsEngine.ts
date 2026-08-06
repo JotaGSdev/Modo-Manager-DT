@@ -16,29 +16,33 @@
  * 3. Frecuencia dinámica de triggers basada en gameState.eventFrequency.
  * 4. Modal interactivo de toma de decisiones con impacto en Moral, Presupuesto o Confianza.
  * 5. v2.0: Método generateFeedItem() para alimentar The Feed con noticias en tiempo real.
+ *
+ * Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
  */
 
 import { db } from '../data/db.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
+import type { EventFrequency, EventOption, EventTemplate, FeedItem, FeedType, GameEvent } from '../types.js';
+
 export class EventsEngine {
   /**
    * Determina si la semana actual corresponde a un evento narrativo (Semanas 8, 16, 24, 32).
-   * @param {number} weekNumber - Número de jornada actual
-   * @returns {Object|null} Objeto del evento o null
+   * @param weekNumber - Número de jornada actual
+   * @returns Evento listo para renderizar o null
    */
-  static getEventForWeek(weekNumber) {
+  static getEventForWeek(weekNumber: number): GameEvent | null {
     const gameState = db.gameState;
     if (!gameState) return null;
 
     // Frecuencia dinámica según configuración de partida (Fase 6D)
-    const triggerMap = {
-      off:    [],
-      baja:   [16, 32],
+    const triggerMap: Record<EventFrequency, number[]> = {
+      off: [],
+      baja: [16, 32],
       normal: [8, 16, 24, 32],
-      alta:   [4, 8, 12, 16, 20, 24, 28, 32]
+      alta: [4, 8, 12, 16, 20, 24, 28, 32]
     };
-    const freq = gameState.eventFrequency || 'normal';
+    const freq: EventFrequency = gameState.eventFrequency || 'normal';
     const triggerWeeks = triggerMap[freq] || triggerMap.normal;
 
     if (!triggerWeeks.includes(weekNumber)) return null;
@@ -48,18 +52,19 @@ export class EventsEngine {
 
   /**
    * Genera un evento procedural seleccionando rareza ponderada y plantilla.
-   * @returns {Object} Evento listo para renderizar en modal
+   * @returns Evento listo para renderizar en modal
    */
-  static generateRandomEvent() {
+  static generateRandomEvent(): GameEvent | null {
     const gameState = db.gameState;
+    if (!gameState) return null;
+
     const squad = db.getTeamPlayers(gameState.userTeamId);
-    const starPlayer = [...squad].sort((a, b) => b.overall - a.overall)[0] || { name: 'Capitán' };
-    const youngPlayer = squad.find(p => p.age <= 21) || squad[1] || { name: 'Promesa' };
+    const starPlayer: { name: string } = [...squad].sort((a, b) => b.overall - a.overall)[0] || { name: 'Capitán' };
+    const youngPlayer: { name: string } = squad.find(p => p.age <= 21) || squad[1] || { name: 'Promesa' };
 
     // Selección de rareza por peso de probabilidades
     const rand = Math.random() * 100;
-    let rarity = 'COMÚN';
-    let rarityBadge = 'badge-common';
+    let rarity: GameEvent['rarity'] = 'COMÚN';
     let rarityColor = '#94a3b8';
 
     if (rand < 1) { rarity = 'ÚNICO'; rarityColor = '#ff0055'; }
@@ -68,7 +73,7 @@ export class EventsEngine {
     else if (rand < 25) { rarity = 'RARO'; rarityColor = '#3b82f6'; }
     else if (rand < 50) { rarity = 'ESPECIAL'; rarityColor = '#00c885'; }
 
-    const templates = [
+    const templates: EventTemplate[] = [
       // CATEGORÍA: TÁCTICA
       {
         category: 'TÁCTICA',
@@ -170,7 +175,7 @@ export class EventsEngine {
       {
         category: 'FINANZAS',
         title: '📺 ACUERDO DE DERECHOS DE TRANSMISIÓN',
-        description: `La liga anuncia un nuevo acuerdo de derechos de TV. ${db.teams[db.gameState.userTeamId]?.name || 'El club'} recibe una distribución extraordinaria de ingresos.`,
+        description: `La liga anuncia un nuevo acuerdo de derechos de TV. ${db.teams[gameState.userTeamId]?.name || 'El club'} recibe una distribución extraordinaria de ingresos.`,
         optionA: { label: '👉 Destinar el bono (€3M-€8M) al presupuesto de traspasos', bonusType: 'tv_rights', bonusVal: 'transfer' },
         optionB: { label: '👉 Reinvertir los fondos en infraestructura (Mejora Team Spirit +8)', bonusType: 'tv_rights', bonusVal: 'infrastructure' }
       },
@@ -185,7 +190,7 @@ export class EventsEngine {
       }
     ];
 
-    const selected = templates[Math.floor(Math.random() * templates.length)];
+    const selected = templates[Math.floor(Math.random() * templates.length)]!;
 
     return {
       id: `event_${Date.now()}`,
@@ -201,11 +206,14 @@ export class EventsEngine {
 
   /**
    * Renderiza el modal de evento inesperado e impacta la decisión en el juego.
-   * @param {Object} eventData - Objeto con datos del evento
-   * @param {Function} onDecisionMade - Callback que se ejecuta tras elegir opción
+   * @param eventData - Datos del evento
+   * @param onDecisionMade - Callback que se ejecuta tras elegir opción
    */
-  static renderEventModal(eventData, onDecisionMade) {
-    let modal = document.getElementById('unexpectedEventModal');
+  static renderEventModal(eventData: GameEvent, onDecisionMade?: () => void): void {
+    const gameState = db.gameState;
+    if (!gameState) return;
+
+    let modal: HTMLElement | null = document.getElementById('unexpectedEventModal');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'unexpectedEventModal';
@@ -241,27 +249,25 @@ export class EventsEngine {
       </div>
     `;
 
-    const gameState = db.gameState;
-
-    const applyEffect = (opt) => {
+    const applyEffect = (opt: EventOption): void => {
       sfx.playClick();
       if (opt.cost && gameState.budget >= opt.cost) {
         gameState.budget -= opt.cost;
       }
 
       if (opt.bonusType === 'morale') {
-        gameState.matchBonus = gameState.matchBonus || {};
-        gameState.matchBonus.moraleBonus = (gameState.matchBonus.moraleBonus || 0) + opt.bonusVal;
+        gameState.matchBonus = gameState.matchBonus || { moraleBonus: 0, tacticalBonus: 0, penaltyBonus: 0 };
+        gameState.matchBonus.moraleBonus = (gameState.matchBonus.moraleBonus || 0) + Number(opt.bonusVal);
       } else if (opt.bonusType === 'tactical') {
-        gameState.matchBonus = gameState.matchBonus || {};
-        gameState.matchBonus.tacticalBonus = (gameState.matchBonus.tacticalBonus || 0) + opt.bonusVal;
+        gameState.matchBonus = gameState.matchBonus || { moraleBonus: 0, tacticalBonus: 0, penaltyBonus: 0 };
+        gameState.matchBonus.tacticalBonus = (gameState.matchBonus.tacticalBonus || 0) + Number(opt.bonusVal);
       } else if (opt.bonusType === 'board' && gameState.contract) {
-        gameState.contract.boardConfidence = Math.min(100, gameState.contract.boardConfidence + opt.bonusVal);
+        gameState.contract.boardConfidence = Math.min(100, gameState.contract.boardConfidence + Number(opt.bonusVal));
       } else if (opt.bonusType === 'budget') {
-        gameState.budget += opt.bonusVal;
+        gameState.budget += Number(opt.bonusVal);
       } else if (opt.bonusType === 'spirit') {
         // Modificar Team Spirit (v2.0)
-        gameState.teamSpirit = Math.max(0, Math.min(100, (gameState.teamSpirit || 50) + opt.bonusVal));
+        gameState.teamSpirit = Math.max(0, Math.min(100, (gameState.teamSpirit || 50) + Number(opt.bonusVal)));
       } else if (opt.bonusType === 'freeze_budget') {
         // Auditoría financiera: congelar el 30% del presupuesto
         const toFreeze = Math.round((gameState.budget || 0) * 0.30);
@@ -288,7 +294,7 @@ export class EventsEngine {
 
       db.saveGame();
 
-      const feedback = document.getElementById('eventFeedback');
+      const feedback = document.getElementById('eventFeedback')!;
       feedback.innerText = '✅ ¡Decisión registrada por el Director Técnico!';
       feedback.classList.remove('hidden');
 
@@ -298,8 +304,8 @@ export class EventsEngine {
       }, 1200);
     };
 
-    document.getElementById('btnEventOptionA').addEventListener('click', () => applyEffect(eventData.optionA));
-    document.getElementById('btnEventOptionB').addEventListener('click', () => applyEffect(eventData.optionB));
+    document.getElementById('btnEventOptionA')!.addEventListener('click', () => applyEffect(eventData.optionA));
+    document.getElementById('btnEventOptionB')!.addEventListener('click', () => applyEffect(eventData.optionB));
   }
 
   // ===========================================================================
@@ -308,16 +314,16 @@ export class EventsEngine {
 
   /**
    * Genera un ítem para The Feed y lo registra en gameState.feedItems.
-   * @param {string} type - Tipo de noticia (RUMOR_SALIDA, FILTRACIÓN_SALARIAL, CAMBIO_DT, etc.)
-   * @param {Object} data - Datos opcionales { text, icon, linkedPlayerId }
-   * @returns {Object} El feedItem creado
+   * @param type - Tipo de noticia (RUMOR_SALIDA, FILTRACIÓN_SALARIAL, CAMBIO_DT, etc.)
+   * @param data - Datos opcionales { text, icon, linkedPlayerId }
+   * @returns El feedItem creado (o null sin partida activa)
    */
-  static generateFeedItem(type, data = {}) {
+  static generateFeedItem(type: FeedType, data: { text?: string; icon?: string; linkedPlayerId?: string | null } = {}): FeedItem | null {
     const gameState = db.gameState;
     if (!gameState) return null;
     if (!Array.isArray(gameState.feedItems)) gameState.feedItems = [];
 
-    const iconMap = {
+    const iconMap: Record<string, string> = {
       RUMOR_SALIDA:        '🔗',
       FILTRACIÓN_SALARIAL: '💰',
       CRISIS_FINANCIERA:   '🕵️',
@@ -329,7 +335,7 @@ export class EventsEngine {
       DESCONTENTO:         '😡'
     };
 
-    const feedItem = {
+    const feedItem: FeedItem = {
       id: `feed_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       week: gameState.week,
       season: gameState.season,

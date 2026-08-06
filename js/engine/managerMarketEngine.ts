@@ -9,18 +9,22 @@
  * 4. Contrataciones: En ventanas de fichajes se asignan nuevos DTs a equipos sin técnico.
  * 5. Generación de Ofertas: Para el DT jugador, basadas en reputación y filosofía.
  * 6. Feed: Genera noticias de cambios de DT para The Feed.
+ *
+ * Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
  */
 
 import { db } from '../data/db.js';
 import { generateAIManager } from '../data/teamData.js';
 import { EventsEngine } from './eventsEngine.js';
 
+import type { AIManager, ManagerMarketJobOffer, Team } from '../types.js';
+
 export class ManagerMarketEngine {
   /**
    * Inicializa entrenadores IA para todos los equipos de la liga del usuario.
    * Se llama al crear una nueva carrera.
    */
-  static initAIManagers() {
+  static initAIManagers(): void {
     const gameState = db.gameState;
     if (!gameState || !gameState.enableManagerMarket) return;
 
@@ -31,8 +35,8 @@ export class ManagerMarketEngine {
       // No asignar DT IA al equipo del jugador
       if (team.id === gameState.userTeamId) return;
       if (!gameState.managerMarket.aiManagers[team.id]) {
-        const teamObj = db.teams[team.id] || {};
-        gameState.managerMarket.aiManagers[team.id] = generateAIManager(team.id, teamObj.reputation || 60);
+        const teamObj = db.teams[team.id];
+        gameState.managerMarket.aiManagers[team.id] = generateAIManager(team.id, teamObj?.reputation || 60);
       }
     });
 
@@ -42,9 +46,9 @@ export class ManagerMarketEngine {
   /**
    * Evalúa si algún equipo rival debe despedir a su DT IA.
    * Debe llamarse cada 4 semanas desde dashboardUI.
-   * @param {number} week - Semana actual
+   * @param week - Semana actual
    */
-  static evaluateAIManagerSackings(week) {
+  static evaluateAIManagerSackings(week: number): void {
     const gameState = db.gameState;
     if (!gameState || !gameState.enableManagerMarket) return;
     if (week < 8) return; // No hay despidos en las primeras 8 semanas
@@ -81,15 +85,15 @@ export class ManagerMarketEngine {
 
   /**
    * Despide al DT de un equipo y asigna un interino.
-   * @param {string} teamId
-   * @param {number} week
+   * @param teamId
+   * @param week
    */
-  static sackAIManager(teamId, week) {
+  static sackAIManager(teamId: string, week: number): void {
     const gameState = db.gameState;
-    const oldManager = gameState.managerMarket.aiManagers[teamId];
-    const teamName = db.teams[teamId]?.name || teamId;
-
+    const oldManager = gameState?.managerMarket.aiManagers[teamId];
     if (!oldManager) return;
+
+    const teamName = db.teams[teamId]?.name || teamId;
 
     // Notificar en The Feed
     EventsEngine.generateFeedItem('CAMBIO_DT', {
@@ -103,14 +107,16 @@ export class ManagerMarketEngine {
   /**
    * Asigna un entrenador interino a un equipo despedido.
    * El interino dura hasta la próxima ventana de fichajes.
-   * @param {string} teamId
-   * @param {number} currentWeek
+   * @param teamId
+   * @param currentWeek
    */
-  static assignInterimManager(teamId, currentWeek) {
+  static assignInterimManager(teamId: string, currentWeek: number): void {
     const gameState = db.gameState;
-    const teamObj = db.teams[teamId] || {};
-    const interim = generateAIManager(teamId, (teamObj.reputation || 60) - 15);
-    interim.name = `${interim.name.split(' ')[0]} (Interino)`;
+    if (!gameState) return;
+
+    const teamObj = db.teams[teamId];
+    const interim = generateAIManager(teamId, (teamObj?.reputation || 60) - 15);
+    interim.name = `${interim.name.split(' ')[0]!} (Interino)`;
     interim.isInterim = true;
     interim.weeksInCharge = 0;
     // El interino dura como máximo hasta la próxima ventana (semanas 19-22 o 1-4)
@@ -127,15 +133,15 @@ export class ManagerMarketEngine {
    * Procesa la contratación de nuevos DTs en ventanas de fichajes.
    * Los equipos con interino contratan un DT definitivo.
    */
-  static processManagerHirings() {
+  static processManagerHirings(): void {
     const gameState = db.gameState;
     if (!gameState || !gameState.enableManagerMarket) return;
 
     Object.keys(gameState.managerMarket.aiManagers).forEach(teamId => {
       const manager = gameState.managerMarket.aiManagers[teamId];
       if (manager && manager.isInterim) {
-        const teamObj = db.teams[teamId] || {};
-        const newManager = generateAIManager(teamId, teamObj.reputation || 60);
+        const teamObj = db.teams[teamId];
+        const newManager = generateAIManager(teamId, teamObj?.reputation || 60);
         gameState.managerMarket.aiManagers[teamId] = newManager;
 
         EventsEngine.generateFeedItem('CAMBIO_DT', {
@@ -152,21 +158,21 @@ export class ManagerMarketEngine {
    * - Reputación del DT vs. nivel del club interesado
    * - Alineación filosófica: preferencia por clubes con arquetipo compatible
    * - Situación: solo ofrece si el club tiene interino o está libre
-   * @returns {Array<Object>} Lista de hasta 3 ofertas
+   * @returns Lista de hasta 3 ofertas
    */
-  static generateManagerJobOffers() {
+  static generateManagerJobOffers(): ManagerMarketJobOffer[] {
     const gameState = db.gameState;
     if (!gameState) return [];
 
     const playerRep = gameState.reputation || 50;
     const playerArchetype = gameState.managerArchetype || 'GUARDIOLA';
-    const offers = [];
+    const offers: ManagerMarketJobOffer[] = [];
 
     // Buscar equipos con interinos como oportunidades de trabajo
     const interimTeams = Object.entries(gameState.managerMarket.aiManagers || {})
       .filter(([, mgr]) => mgr.isInterim)
       .map(([teamId]) => db.teams[teamId])
-      .filter(Boolean);
+      .filter((t): t is Team => Boolean(t));
 
     // Seleccionar hasta 2 equipos con interino como ofertas prioritarias
     interimTeams.slice(0, 2).forEach(team => {
@@ -177,7 +183,7 @@ export class ManagerMarketEngine {
         offers.push({
           teamId: team.id,
           teamName: team.name,
-          country: team.country,
+          country: team.country || '',
           teamReputation: team.reputation || 60,
           philosophyMatch,
           situation: 'interim_vacancy', // plaza libre por interino
@@ -193,7 +199,7 @@ export class ManagerMarketEngine {
 
     // Completar con ofertas generadas por reputación (como en contracts.js original)
     if (offers.length < 3) {
-      const allLeagueTeams = db.leagues.flatMap(l => l.teams.map(t => ({ ...t, ...db.teams[t.id] })));
+      const allLeagueTeams = db.leagues.flatMap(l => l.teams.map(t => ({ ...t, ...(db.teams[t.id] || {}) })));
       const eligibleTeams = allLeagueTeams.filter(t =>
         t.id !== gameState.userTeamId &&
         Math.abs((t.reputation || 60) - playerRep) <= 20 &&
@@ -205,7 +211,7 @@ export class ManagerMarketEngine {
         offers.push({
           teamId: team.id,
           teamName: team.name,
-          country: team.country,
+          country: team.country || '',
           teamReputation: team.reputation || 60,
           philosophyMatch: team.philosophy === playerArchetype,
           situation: 'regular',
@@ -222,19 +228,19 @@ export class ManagerMarketEngine {
 
   /**
    * Devuelve la información del DT IA de un equipo rival.
-   * @param {string} teamId
-   * @returns {Object|null}
+   * @param teamId
+   * @returns Info del DT IA o null
    */
-  static getAIManagerInfo(teamId) {
+  static getAIManagerInfo(teamId: string): AIManager | null {
     const gameState = db.gameState;
     return gameState?.managerMarket?.aiManagers?.[teamId] || null;
   }
 
   /**
    * Devuelve todos los DTs IA en formato de tabla para la UI.
-   * @returns {Array<{teamId, teamName, manager}>}
+   * @returns Filas { teamId, teamName, country, manager }
    */
-  static getAllManagersTable() {
+  static getAllManagersTable(): { teamId: string; teamName: string; country: string; manager: AIManager }[] {
     const gameState = db.gameState;
     if (!gameState?.managerMarket?.aiManagers) return [];
 

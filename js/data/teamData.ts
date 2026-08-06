@@ -1,7 +1,10 @@
 // Generador dinámico de plantillas con medias ponderadas y curva de valoración de mercado hiperrealista EA FC 25 (OVR Inicial Máximo 91)
 // v2.0: Añade campos FC IQ, Team Spirit, historial estadístico y sistema de Regens.
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
-export function calculatePositionOvr(pos, pac, sho, pas, dri, def, phy) {
+import type { AIManager, ManagerArchetypeId, Player, Position, Team } from '../types.js';
+
+export function calculatePositionOvr(pos: Position, pac: number, sho: number, pas: number, dri: number, def: number, phy: number): number {
   let ovr = 70;
   if (pos === 'POR') {
     ovr = (def * 0.40) + (phy * 0.35) + (pas * 0.15) + (pac * 0.10);
@@ -26,7 +29,7 @@ export function calculatePositionOvr(pos, pac, sho, pas, dri, def, phy) {
   return Math.max(50, Math.min(91, Math.round(ovr)));
 }
 
-export function calculatePlayerMarketValue(ovr, age, pot = ovr) {
+export function calculatePlayerMarketValue(ovr: number, age: number, pot: number = ovr): number {
   const keypoints = [
     { ovr: 50, val: 300000 },
     { ovr: 60, val: 1200000 },
@@ -44,14 +47,15 @@ export function calculatePlayerMarketValue(ovr, age, pot = ovr) {
   ];
 
   let baseValue = 300000;
-  if (ovr <= keypoints[0].ovr) {
-    baseValue = keypoints[0].val;
-  } else if (ovr >= keypoints[keypoints.length - 1].ovr) {
-    baseValue = keypoints[keypoints.length - 1].val;
+  // Índices siempre válidos (keypoints no está vacío y i < length-1): aserciones seguras
+  if (ovr <= keypoints[0]!.ovr) {
+    baseValue = keypoints[0]!.val;
+  } else if (ovr >= keypoints[keypoints.length - 1]!.ovr) {
+    baseValue = keypoints[keypoints.length - 1]!.val;
   } else {
     for (let i = 0; i < keypoints.length - 1; i++) {
-      const p1 = keypoints[i];
-      const p2 = keypoints[i + 1];
+      const p1 = keypoints[i]!;
+      const p2 = keypoints[i + 1]!;
       if (ovr >= p1.ovr && ovr <= p2.ovr) {
         const ratio = (ovr - p1.ovr) / (p2.ovr - p1.ovr);
         baseValue = p1.val + ratio * (p2.val - p1.val);
@@ -73,13 +77,30 @@ export function calculatePlayerMarketValue(ovr, age, pot = ovr) {
   return Math.max(300000, Math.round(baseValue * ageFactor * potBonus));
 }
 
-export function calculatePlayerSalary(value, ovr) {
+export function calculatePlayerSalary(value: number, ovr: number): number {
   const weeklyWage = Math.round(value * 0.0018 + Math.pow(Math.max(0, ovr - 70), 2.2) * 150);
   return Math.max(1500, weeklyWage);
 }
 
+/** Semilla de estrella real (ajustada a EA FC 25: OVR inicial máx 91) */
+interface StarPlayerSeed {
+  teamId: string;
+  name: string;
+  pos: Position;
+  age: number;
+  pot: number;
+  pac: number;
+  sho: number;
+  pas: number;
+  dri: number;
+  def: number;
+  phy: number;
+  val: number;
+  sal: number;
+}
+
 // BASE DE DATOS DE ESTRELLAS REALES TOP MUNDIALES (Ajustadas a EA FC 25: OVR inicial máx 91)
-const STAR_PLAYERS = [
+const STAR_PLAYERS: StarPlayerSeed[] = [
   // REAL MADRID
   { teamId: 'real_madrid', name: 'Kylian Mbappé', pos: 'DC', age: 25, pot: 95, pac: 97, sho: 90, pas: 80, dri: 92, def: 36, phy: 78, val: 185000000, sal: 480000 },
   { teamId: 'real_madrid', name: 'Vinícius Júnior', pos: 'EI', age: 24, pot: 94, pac: 95, sho: 84, pas: 81, dri: 91, def: 29, phy: 69, val: 175000000, sal: 420000 },
@@ -136,12 +157,14 @@ const STAR_PLAYERS = [
   { teamId: 'river', name: 'Claudio Echeverri', pos: 'MCO', age: 18, pot: 88, pac: 83, sho: 71, pas: 75, dri: 82, def: 42, phy: 58, val: 18000000, sal: 25000 }
 ];
 
-const FIRST_NAMES = ['Carlos', 'Mateo', 'Lucas', 'Gonzalo', 'Santiago', 'Nicolás', 'Joaquín', 'Enzo', 'Gabriel', 'Thiago', 'Felipe', 'Rodrigo', 'Lautaro', 'Julian', 'Alejandro', 'Diego', 'Sebastian', 'Marco', 'Bruno', 'Leo', 'Alex', 'David'];
-const LAST_NAMES = ['Rodríguez', 'González', 'Fernández', 'López', 'Martínez', 'Sánchez', 'Pérez', 'Gómez', 'Díaz', 'Álvarez', 'Romero', 'Sosa', 'Torres', 'Benítez', 'Silva', 'Santos', 'Oliveira', 'Costa', 'Pereira', 'Ferreira', 'García'];
+const FIRST_NAMES: string[] = ['Carlos', 'Mateo', 'Lucas', 'Gonzalo', 'Santiago', 'Nicolás', 'Joaquín', 'Enzo', 'Gabriel', 'Thiago', 'Felipe', 'Rodrigo', 'Lautaro', 'Julian', 'Alejandro', 'Diego', 'Sebastian', 'Marco', 'Bruno', 'Leo', 'Alex', 'David'];
+const LAST_NAMES: string[] = ['Rodríguez', 'González', 'Fernández', 'López', 'Martínez', 'Sánchez', 'Pérez', 'Gómez', 'Díaz', 'Álvarez', 'Romero', 'Sosa', 'Torres', 'Benítez', 'Silva', 'Santos', 'Oliveira', 'Costa', 'Pereira', 'Ferreira', 'García'];
 
-export function generateTeamPlayers(team) {
-  const players = [];
-  
+const POSITIONS_NEEDED: Position[] = ['POR', 'POR', 'DFC', 'DFC', 'DFC', 'DFC', 'LD', 'LI', 'MCD', 'MC', 'MC', 'MCO', 'EI', 'ED', 'DC', 'DC', 'MI', 'MD', 'DFC', 'MC', 'DC', 'POR'];
+
+export function generateTeamPlayers(team: Team): Player[] {
+  const players: Player[] = [];
+
   // Agregar estrellas predefinidas
   const stars = STAR_PLAYERS.filter(p => p.teamId === team.id);
   stars.forEach((star, index) => {
@@ -185,19 +208,18 @@ export function generateTeamPlayers(team) {
   });
 
   const targetOvr = team.overall || 72;
-  const positionsNeeded = ['POR', 'POR', 'DFC', 'DFC', 'DFC', 'DFC', 'LD', 'LI', 'MCD', 'MC', 'MC', 'MCO', 'EI', 'ED', 'DC', 'DC', 'MI', 'MD', 'DFC', 'MC', 'DC', 'POR'];
 
   let count = players.length;
   for (let i = count; i < 22; i++) {
-    const pos = positionsNeeded[i % positionsNeeded.length];
+    const pos = POSITIONS_NEEDED[i % POSITIONS_NEEDED.length]!;
     const age = 18 + Math.floor(Math.random() * 16);
     const ovrOffset = Math.floor((Math.random() - 0.5) * 8);
     const baseTarget = Math.min(88, Math.max(58, targetOvr + ovrOffset));
 
-    let pac, sho, pas, dri, def, phy;
+    let pac: number, sho: number, pas: number, dri: number, def: number, phy: number;
     if (pos === 'POR') {
       pac = 40 + Math.floor(Math.random() * 25);
-      sho = 15; pas = 35 + Math.floor(Math.random() * 30); dri = 20; 
+      sho = 15; pas = 35 + Math.floor(Math.random() * 30); dri = 20;
       def = baseTarget + Math.floor(Math.random() * 6);
       phy = baseTarget + Math.floor(Math.random() * 6);
     } else if (pos === 'DFC') {
@@ -225,9 +247,9 @@ export function generateTeamPlayers(team) {
 
     const ovr = calculatePositionOvr(pos, pac, sho, pas, dri, def, phy);
     const pot = Math.min(94, Math.max(ovr, ovr + Math.floor((34 - age) / 2) + Math.floor(Math.random() * 4)));
-    
-    const fName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
-    const lName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
+
+    const fName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)]!;
+    const lName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)]!;
 
     const value = calculatePlayerMarketValue(ovr, age, pot);
     const salary = calculatePlayerSalary(value, ovr);
@@ -270,32 +292,31 @@ export function generateTeamPlayers(team) {
 // v2.0 — Generador de entrenadores IA para el Mercado de DTs
 // ───────────────────────────────────────────────────────────────────
 
-const MANAGER_FIRST_NAMES = [
+const MANAGER_FIRST_NAMES: string[] = [
   'Carlos', 'Diego', 'Marcelo', 'Roberto', 'Jorge', 'Andrés', 'Luis', 'Miguel',
   'Thomas', 'Oliver', 'Michael', 'James', 'Richard', 'David', 'John', 'Peter',
   'Antonio', 'Marco', 'Roberto', 'Fabio', 'Luca', 'Giovanni', 'Paolo', 'Andrea',
   'Pep', 'Jürgen', 'Carlo', 'Xabi', 'Zinedine', 'José', 'Simóne',
   'Lionel', 'Sebastian', 'Patrick', 'Philippe', 'Thierry'
 ];
-const MANAGER_LAST_NAMES = [
+const MANAGER_LAST_NAMES: string[] = [
   'Bianchi', 'Ortega', 'Fernández', 'Oliveira', 'Silva', 'Torres', 'Moreno',
   'Smith', 'Johnson', 'Williams', 'Brown', 'Davies', 'Evans', 'Wilson',
   'Ferrari', 'Romano', 'Ricci', 'Conti', 'Costa', 'Esposito', 'Bianchi',
   'Scholz', 'Müller', 'Becker', 'Fischer', 'Wagner', 'Klein', 'Weber',
   'Dupont', 'Martin', 'Bernard', 'Petit', 'Girard'
 ];
-const MANAGER_ARCHETYPES_LIST = ['GUARDIOLA', 'KLOPP', 'SIMEONE', 'ANCELOTTI', 'XABI_ALONSO'];
+const MANAGER_ARCHETYPES_LIST: ManagerArchetypeId[] = ['GUARDIOLA', 'KLOPP', 'SIMEONE', 'ANCELOTTI', 'XABI_ALONSO'];
 
 /**
  * Genera un entrenador IA para un equipo dado.
- * @param {string} teamId - ID del equipo
- * @param {number} teamReputation - Reputación del equipo (30-100)
- * @returns {Object} Objeto de entrenador IA
+ * @param teamId - ID del equipo
+ * @param teamReputation - Reputación del equipo (30-100)
  */
-export function generateAIManager(teamId, teamReputation = 60) {
-  const fName = MANAGER_FIRST_NAMES[Math.floor(Math.random() * MANAGER_FIRST_NAMES.length)];
-  const lName = MANAGER_LAST_NAMES[Math.floor(Math.random() * MANAGER_LAST_NAMES.length)];
-  const archetype = MANAGER_ARCHETYPES_LIST[Math.floor(Math.random() * MANAGER_ARCHETYPES_LIST.length)];
+export function generateAIManager(teamId: string, teamReputation = 60): AIManager {
+  const fName = MANAGER_FIRST_NAMES[Math.floor(Math.random() * MANAGER_FIRST_NAMES.length)]!;
+  const lName = MANAGER_LAST_NAMES[Math.floor(Math.random() * MANAGER_LAST_NAMES.length)]!;
+  const archetype = MANAGER_ARCHETYPES_LIST[Math.floor(Math.random() * MANAGER_ARCHETYPES_LIST.length)]!;
   // La reputación del DT IA ronda la del equipo ± 15 puntos
   const reputation = Math.max(25, Math.min(95, teamReputation + Math.floor((Math.random() - 0.5) * 30)));
   return {

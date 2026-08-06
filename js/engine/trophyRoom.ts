@@ -1,16 +1,19 @@
 // Sistema de Palmarés Histórico, Récords y Sala de Trofeos
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
+
+import type { Trophy } from '../types.js';
 
 export class TrophyRoomEngine {
   /**
    * Registra un nuevo título obtenido por el club
    */
-  static recordTrophy(titleName, season, runnerUpName = 'Rival') {
-    const gameState = db.gameState;
+  static recordTrophy(titleName: string, season: string, runnerUpName = 'Rival'): Trophy {
+    const gameState = db.gameState!;
     if (!gameState.trophies) gameState.trophies = [];
 
-    const trophyEntry = {
+    const trophyEntry: Trophy = {
       id: `trophy_${Date.now()}`,
       title: titleName,
       season: season,
@@ -29,10 +32,18 @@ export class TrophyRoomEngine {
   /**
    * Obtiene las estadísticas históricas y palmarés del usuario
    */
-  static getCareerSummary() {
-    const gameState = db.gameState;
+  static getCareerSummary(): {
+    managerName: string;
+    teamName: string;
+    currentSeason: number;
+    managerScore: number;
+    reputation: number;
+    trophyCount: number;
+    trophies: Trophy[];
+  } {
+    const gameState = db.gameState!;
     const trophies = gameState.trophies || [];
-    
+
     return {
       managerName: gameState.managerName,
       teamName: db.teams[gameState.userTeamId]?.name || 'Equipo',

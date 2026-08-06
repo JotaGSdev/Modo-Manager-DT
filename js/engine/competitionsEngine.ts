@@ -1,9 +1,12 @@
 // Motor de Competiciones Domésticas y Continentales (Apertura, Clausura, Copas Nacionales y Torneos Internacionales)
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
 
+import type { ContinentalCupResult, CupPhase, NationalCupResult } from '../types.js';
+
 // Diccionario de Copas Nacionales por País
-const NATIONAL_CUPS = {
+const NATIONAL_CUPS: Record<string, string> = {
   'Perú': 'Copa Bicentenario de Perú',
   'Argentina': 'Copa Argentina',
   'Brasil': 'Copa do Brasil',
@@ -41,14 +44,14 @@ export class CompetitionsEngine {
   /**
    * Obtiene el nombre de la Copa Nacional según el país del equipo
    */
-  static getNationalCupName(country) {
+  static getNationalCupName(country: string): string {
     return NATIONAL_CUPS[country] || `Copa Nacional de ${country || 'Fútbol'}`;
   }
 
   /**
    * Inicializa las fases por defecto para el carrusel de copas si no existen en la partida
    */
-  static initCupProgressIfMissing() {
+  static initCupProgressIfMissing(): void {
     const gameState = db.gameState;
     if (!gameState) return;
 
@@ -56,7 +59,7 @@ export class CompetitionsEngine {
     const country = userTeam ? userTeam.country : 'Argentina';
     const region = userTeam ? userTeam.region : 'Sudamérica';
 
-    const cupName = this.getNationalCupName(country);
+    const cupName = this.getNationalCupName(country || '');
 
     let contCupName = 'Copa CONMEBOL Libertadores';
     if (region === 'Europa') contCupName = 'UEFA Champions League';
@@ -86,7 +89,7 @@ export class CompetitionsEngine {
   /**
    * Procesa la fecha de Copa Nacional (Semanas 10, 18, 26, 34)
    */
-  static processNationalCupWeek(weekNumber) {
+  static processNationalCupWeek(weekNumber: number): NationalCupResult | null {
     const cupWeeks = [10, 18, 26, 34];
     if (!cupWeeks.includes(weekNumber)) return null;
 
@@ -98,7 +101,7 @@ export class CompetitionsEngine {
     const userTeam = db.teams[gameState.userTeamId];
     if (!userTeam) return null;
 
-    const cupName = this.getNationalCupName(userTeam.country);
+    const cupName = this.getNationalCupName(userTeam.country || '');
     const roundIndex = cupWeeks.indexOf(weekNumber) + 1;
 
     let roundLabel = `Octavos de Final`;
@@ -107,9 +110,9 @@ export class CompetitionsEngine {
     else if (roundIndex === 4) roundLabel = 'GRAN FINAL NACIONAL';
 
     // Verificar si ya fue eliminado en una fase anterior
-    const prevPhase = gameState.nationalCupProgress.find(p => p.phaseIndex === roundIndex - 1);
+    const prevPhase = gameState.nationalCupProgress!.find(p => p.phaseIndex === roundIndex - 1);
     if (prevPhase && prevPhase.status === 'ELIMINADO') {
-      const currentSlot = gameState.nationalCupProgress.find(p => p.phaseIndex === roundIndex);
+      const currentSlot = gameState.nationalCupProgress!.find(p => p.phaseIndex === roundIndex);
       if (currentSlot) {
         currentSlot.status = 'ELIMINADO';
         currentSlot.score = 'N/A';
@@ -127,7 +130,15 @@ export class CompetitionsEngine {
     let prize = 500000 * roundIndex;
     let matchText = '';
 
-    const currentSlot = gameState.nationalCupProgress.find(p => p.phaseIndex === roundIndex) || {};
+    const currentSlot: CupPhase = gameState.nationalCupProgress!.find(p => p.phaseIndex === roundIndex) || {
+      phaseIndex: roundIndex,
+      week: weekNumber,
+      phaseName: roundLabel,
+      cupName: cupName,
+      status: 'PENDIENTE',
+      score: '- -',
+      rivalName: 'Rival por definir'
+    };
     currentSlot.cupName = cupName;
     currentSlot.phaseName = roundLabel;
     currentSlot.rivalName = rivalName;
@@ -162,7 +173,7 @@ export class CompetitionsEngine {
   /**
    * Procesa la fecha de Copa Continental (Semanas 6, 12, 18, 24, 30, 36)
    */
-  static processCupWeek(weekNumber) {
+  static processCupWeek(weekNumber: number): ContinentalCupResult | null {
     const cupWeeks = [6, 12, 18, 24, 30, 36];
     if (!cupWeeks.includes(weekNumber)) return null;
 
@@ -197,9 +208,9 @@ export class CompetitionsEngine {
 
     // Verificar si fue eliminado en fase eliminatoria (Cuartos o Semis)
     if (roundIndex > 3) {
-      const prevPhase = gameState.continentalCupProgress.find(p => p.phaseIndex === roundIndex - 1);
+      const prevPhase = gameState.continentalCupProgress!.find(p => p.phaseIndex === roundIndex - 1);
       if (prevPhase && prevPhase.status === 'ELIMINADO') {
-        const currentSlot = gameState.continentalCupProgress.find(p => p.phaseIndex === roundIndex);
+        const currentSlot = gameState.continentalCupProgress!.find(p => p.phaseIndex === roundIndex);
         if (currentSlot) {
           currentSlot.status = 'ELIMINADO';
           currentSlot.score = 'N/A';
@@ -218,7 +229,15 @@ export class CompetitionsEngine {
     let reward = 0;
     let matchText = '';
 
-    const currentSlot = gameState.continentalCupProgress.find(p => p.phaseIndex === roundIndex) || {};
+    const currentSlot: CupPhase = gameState.continentalCupProgress!.find(p => p.phaseIndex === roundIndex) || {
+      phaseIndex: roundIndex,
+      week: weekNumber,
+      phaseName: roundLabel,
+      cupName: cupName,
+      status: 'PENDIENTE',
+      score: '- -',
+      rivalName: 'Rival Continental'
+    };
     currentSlot.cupName = cupName;
     currentSlot.phaseName = roundLabel;
     currentSlot.rivalName = rivalName;

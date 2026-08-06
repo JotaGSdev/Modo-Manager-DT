@@ -8,21 +8,52 @@
  * 3. Cálculo dinámico de posesión de balón (homePossession vs awayPossession).
  * 4. Atribución automática de goles a los futbolistas de la plantilla.
  * 5. Simulación completa de los partidos de los rivales de la liga (`simulateAllRivalMatches`).
+ *
+ * Migrado a TypeScript (Fase 1): el flujo de eventos usa los tipos de
+ * js/types.ts (MatchEvent, MatchResult, TensionOption, TacticalOrder).
  */
 
 import { ProbabilityEngine } from './probability.js';
 import { db } from '../data/db.js';
 
+import type { MatchEvent, MatchResult, PlayStyle, TacticalOrder, Team, TensionOption } from '../types.js';
+
 export class MatchEngine {
+  homeTeam: Team;
+  awayTeam: Team;
+  homeRating: number;
+  awayRating: number;
+
+  minute: number;
+  homeScore: number;
+  awayScore: number;
+  homeXG: number;
+  awayXG: number;
+  homeShots: number;
+  awayShots: number;
+  homePossession: number;
+
+  events: MatchEvent[];
+  isFinished: boolean;
+
+  // v2.0: Momentos de Tensión (Intervenciones del Mánager)
+  tensionMomentsTriggered: number;
+  pendingTensionMoment: MatchEvent | null;
+  appliedTacticalOrder: TacticalOrder | null;
+
+  /** xG objetivo calculados en initMatch() (asignados antes de su uso) */
+  targetHomeXG!: number;
+  targetAwayXG!: number;
+
   /**
    * Inicializa un partido entre dos equipos
-   * @param {Object} homeTeam - Objeto del equipo local
-   * @param {Object} awayTeam - Objeto del equipo visitante
-   * @param {number} homeRating - Valoración global (OVR) local + bonificaciones
-   * @param {number} awayRating - Valoración global (OVR) visitante
-   * @param {number} [userBonus=0] - Bonificación de moral/táctica adicional
+   * @param homeTeam - Objeto del equipo local
+   * @param awayTeam - Objeto del equipo visitante
+   * @param homeRating - Valoración global (OVR) local + bonificaciones
+   * @param awayRating - Valoración global (OVR) visitante
+   * @param userBonus - Bonificación de moral/táctica adicional
    */
-  constructor(homeTeam, awayTeam, homeRating, awayRating, userBonus = 0) {
+  constructor(homeTeam: Team, awayTeam: Team, homeRating: number, awayRating: number, userBonus = 0) {
     this.homeTeam = homeTeam;
     this.awayTeam = awayTeam;
     this.homeRating = homeRating + userBonus;
@@ -51,10 +82,10 @@ export class MatchEngine {
   /**
    * Configura las probabilidades iniciales y asigna apariciones a los titulares.
    */
-  initMatch() {
+  initMatch(): void {
     const gameState = db.gameState;
-    const homeStyle = gameState?.userTeamId === this.homeTeam.id ? (gameState?.tactics?.style || 'Tiki-Taka') : 'Tiki-Taka';
-    const awayStyle = gameState?.userTeamId === this.awayTeam.id ? (gameState?.tactics?.style || 'Tiki-Taka') : 'Contraataque';
+    const homeStyle: PlayStyle = gameState?.userTeamId === this.homeTeam.id ? (gameState?.tactics?.style || 'Tiki-Taka') : 'Tiki-Taka';
+    const awayStyle: PlayStyle = gameState?.userTeamId === this.awayTeam.id ? (gameState?.tactics?.style || 'Tiki-Taka') : 'Contraataque';
 
     const probs = ProbabilityEngine.calculateMatchProbabilities(this.homeRating, this.awayRating, 0, 0, homeStyle, awayStyle);
     this.targetHomeXG = probs.homeXG;
@@ -77,10 +108,10 @@ export class MatchEngine {
 
   /**
    * Selecciona un goleador aleatorio de la plantilla según su posición (delanteros primero)
-   * @param {string} teamId - ID del equipo
-   * @returns {string} Nombre del goleador
+   * @param teamId - ID del equipo
+   * @returns Nombre del goleador
    */
-  getRandomScorer(teamId) {
+  getRandomScorer(teamId: string): string {
     const players = db.getTeamPlayers(teamId);
     const attackers = players.filter(p => ['DC', 'EI', 'ED', 'MCO', 'MC'].includes(p.pos));
     const pool = attackers.length > 0 ? attackers : players;
@@ -89,19 +120,20 @@ export class MatchEngine {
     if (scorer) {
       scorer.seasonGoals = (scorer.seasonGoals || 0) + 1;
 
-      if (!db.gameState.topScorers) db.gameState.topScorers = [];
-      const existing = db.gameState.topScorers.find(s => s.playerId === scorer.id);
+      const gameState = db.gameState!;
+      if (!gameState.topScorers) gameState.topScorers = [];
+      const existing = gameState.topScorers.find(s => s.playerId === scorer.id);
       if (existing) {
         existing.goals++;
       } else {
-        db.gameState.topScorers.push({
+        gameState.topScorers.push({
           playerId: scorer.id,
           name: scorer.name,
           teamName: db.teams[teamId]?.name || 'Club',
           goals: 1
         });
       }
-      db.gameState.topScorers.sort((a, b) => b.goals - a.goals);
+      gameState.topScorers.sort((a, b) => b.goals - a.goals);
     }
 
     return scorer ? scorer.name : 'Delantero Star';
@@ -109,9 +141,9 @@ export class MatchEngine {
 
   /**
    * Avanza 1 minuto de partido y simula si ocurre alguna ocasión o gol.
-   * @returns {Object|null} Objeto del evento si ocurrió algo relevante en el minuto
+   * @returns Objeto del evento si ocurrió algo relevante en el minuto
    */
-  tickMinute() {
+  tickMinute(): MatchEvent | null {
     if (this.isFinished) return null;
 
     this.minute++;
@@ -128,7 +160,7 @@ export class MatchEngine {
       if (Math.random() < xgGain * 1.4) {
         this.homeScore++;
         const scorerName = this.getRandomScorer(this.homeTeam.id);
-        const event = {
+        const event: MatchEvent = {
           minute: this.minute,
           type: 'goal_home',
           scorerName: scorerName,
@@ -138,7 +170,7 @@ export class MatchEngine {
         this.events.push(event);
         return event;
       } else {
-        const event = {
+        const event: MatchEvent = {
           minute: this.minute,
           type: 'shot_home',
           text: `🔥 Ocasión peligrosa de ${this.homeTeam.name}. Disparo directo atajado por el arquero.`
@@ -157,7 +189,7 @@ export class MatchEngine {
       if (Math.random() < xgGain * 1.4) {
         this.awayScore++;
         const scorerName = this.getRandomScorer(this.awayTeam.id);
-        const event = {
+        const event: MatchEvent = {
           minute: this.minute,
           type: 'goal_away',
           scorerName: scorerName,
@@ -167,7 +199,7 @@ export class MatchEngine {
         this.events.push(event);
         return event;
       } else {
-        const event = {
+        const event: MatchEvent = {
           minute: this.minute,
           type: 'shot_away',
           text: `💥 Remate potente de ${this.awayTeam.name} que se estrella en el travesaño.`
@@ -180,7 +212,7 @@ export class MatchEngine {
     // Pitazo final
     if (this.minute >= 90) {
       this.isFinished = true;
-      const finalEvent = {
+      const finalEvent: MatchEvent = {
         minute: 90,
         type: 'end',
         text: `🏁 ¡FINAL DEL PARTIDO! Resultado final: ${this.homeTeam.name} ${this.homeScore} - ${this.awayScore} ${this.awayTeam.name}.`
@@ -201,9 +233,9 @@ export class MatchEngine {
 
   /**
    * Evaluá si en el minuto actual debe gatillarse un Momento de Tensión táctico.
-   * @returns {Object|null} Objeto del evento de tensión o null
+   * @returns Objeto del evento de tensión o null
    */
-  checkForTensionMoment() {
+  checkForTensionMoment(): MatchEvent | null {
     if (this.tensionMomentsTriggered >= 2) return null;
 
     const isFirstWindow = (this.minute >= 25 && this.minute <= 35 && this.tensionMomentsTriggered === 0);
@@ -220,31 +252,33 @@ export class MatchEngine {
         ? `El partido está igualado y la batalla táctica en mitad de cancha se intensifica.`
         : (isUserBehind ? `Vas por detrás en el marcador y el rival cierra espacios.` : `Llevas la ventaja pero el rival adelanta sus líneas y presiona.`);
 
-      const tensionEvent = {
+      const options: TensionOption[] = [
+        {
+          id: 'PRESSING',
+          label: '⚡ Presión Asfixiante',
+          desc: '+15% Ocasiones de gol (Gasta resistencia)',
+          effect: { homeShotBonus: 0.15, awayShotBonus: 0.05 }
+        },
+        {
+          id: 'LOW_BLOCK',
+          label: '🚌 Cerrar Bloque Bajo',
+          desc: '-25% Riesgo de encajar (Cede posesión)',
+          effect: { awayShotBonus: -0.25, homePossessionBonus: -8 }
+        },
+        {
+          id: 'COUNTER',
+          label: '🎯 Contraataque Directo',
+          desc: '+20% Efectividad de contragolpe si recuperas',
+          effect: { homeShotBonus: 0.10, awayShotBonus: 0.00 }
+        }
+      ];
+
+      const tensionEvent: MatchEvent = {
         minute: this.minute,
         type: 'tension_moment',
         title: `⏱️ MOMENTO CLAVE (${this.minute}') — DECISIÓN DEL MÁNAGER`,
         description: `${contextText} ¿Qué orden táctica das a tu plantilla? (Tienes 10 segundos)`,
-        options: [
-          {
-            id: 'PRESSING',
-            label: '⚡ Presión Asfixiante',
-            desc: '+15% Ocasiones de gol (Gasta resistencia)',
-            effect: { homeShotBonus: 0.15, awayShotBonus: 0.05 }
-          },
-          {
-            id: 'LOW_BLOCK',
-            label: '🚌 Cerrar Bloque Bajo',
-            desc: '-25% Riesgo de encajar (Cede posesión)',
-            effect: { awayShotBonus: -0.25, homePossessionBonus: -8 }
-          },
-          {
-            id: 'COUNTER',
-            label: '🎯 Contraataque Directo',
-            desc: '+20% Efectividad de contragolpe si recuperas',
-            effect: { homeShotBonus: 0.10, awayShotBonus: 0.00 }
-          }
-        ]
+        options
       };
 
       this.pendingTensionMoment = tensionEvent;
@@ -255,9 +289,9 @@ export class MatchEngine {
 
   /**
    * Aplica la decisión del mánager tomada durante un Momento de Tensión.
-   * @param {string} optionId - 'PRESSING' | 'LOW_BLOCK' | 'COUNTER'
+   * @param optionId - 'PRESSING' | 'LOW_BLOCK' | 'COUNTER'
    */
-  applyTacticalDecision(optionId) {
+  applyTacticalDecision(optionId: TacticalOrder): void {
     this.appliedTacticalOrder = optionId;
     if (optionId === 'PRESSING') {
       this.targetHomeXG += 0.45;
@@ -273,9 +307,9 @@ export class MatchEngine {
 
   /**
    * Simula de forma instantánea todo el partido hasta el minuto 90.
-   * @returns {Object} Resultado con marcador, xG, tiros y eventos
+   * @returns Resultado con marcador, xG, tiros y eventos
    */
-  simulateFullMatch() {
+  simulateFullMatch(): MatchResult {
     while (!this.isFinished) {
       this.tickMinute();
     }
@@ -298,7 +332,7 @@ export class MatchEngine {
   /**
    * Otorga EXP en tiempo real a los futbolistas titulares tras cada partido jugado
    */
-  static awardInSeasonPlayerEXP(teamId, isWinner) {
+  static awardInSeasonPlayerEXP(teamId: string, isWinner: boolean): void {
     const squad = db.getTeamPlayers(teamId);
     if (!squad || squad.length === 0) return;
 
@@ -316,9 +350,10 @@ export class MatchEngine {
         else if (['MCO', 'MC', 'MI', 'MD'].includes(p.pos)) p.pas = Math.min(99, (p.pas || 70) + 2);
         else p.def = Math.min(99, (p.def || 70) + 2);
 
-        if (db.gameState && db.gameState.eventsLog) {
-          db.gameState.eventsLog.unshift({
-            date: `Semana ${db.gameState.week || 1}`,
+        const gameState = db.gameState;
+        if (gameState && gameState.eventsLog) {
+          gameState.eventsLog.unshift({
+            date: `Semana ${gameState.week || 1}`,
             text: `⚡ MEJORA EN TIEMPO REAL: ¡${p.name} alcanzó 100 EXP por su rendimiento y subió a ${p.overall} OVR!`
           });
         }
@@ -328,19 +363,20 @@ export class MatchEngine {
 
   /**
    * Simula los partidos de la jornada para todos los demás equipos rivales de la liga según probabilidades tácticas.
-   * @param {string} userTeamId - ID del equipo del usuario
-   * @param {string} rivalId - ID del rival directo en el partido en vivo
+   * @param userTeamId - ID del equipo del usuario
+   * @param rivalId - ID del rival directo en el partido en vivo
    */
-  static simulateAllRivalMatches(userTeamId, rivalId) {
-    const gameState = db.gameState;
+  static simulateAllRivalMatches(userTeamId: string, rivalId: string): void {
+    const gameState = db.gameState!;
     const standings = gameState.standings;
     if (!standings || standings.length < 2) return;
 
     const otherTeams = standings.filter(s => s.teamId !== userTeamId && s.teamId !== rivalId);
 
     for (let i = 0; i < otherTeams.length - 1; i += 2) {
-      const t1Standing = otherTeams[i];
-      const t2Standing = otherTeams[i + 1];
+      // i siempre avanza de 2 en 2 hasta length-2: ambos índices son válidos
+      const t1Standing = otherTeams[i]!;
+      const t2Standing = otherTeams[i + 1]!;
 
       const t1 = db.teams[t1Standing.teamId] || { overall: 74 };
       const t2 = db.teams[t2Standing.teamId] || { overall: 74 };

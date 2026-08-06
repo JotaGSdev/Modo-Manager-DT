@@ -8,7 +8,7 @@ import type { MatchProbabilities, MatchupBonus, MatchupStyle, Player, PlayStyle,
  * Mismo orden de comprobación que la cadena de ternarios original de
  * `calculateMatchProbabilities`: Tiki → Gegen/Presión → Catena/Autobús → Bandas → Contraataque.
  */
-function cleanStyle(style: string): MatchupStyle {
+export function cleanStyle(style: string): MatchupStyle {
   if ((style || '').includes('Tiki')) return 'Tiki-Taka';
   if ((style || '').includes('Gegen') || (style || '').includes('Presión')) return 'Gegenpressing';
   if ((style || '').includes('Catena') || (style || '').includes('Autobús')) return 'Catenaccio';
@@ -16,42 +16,47 @@ function cleanStyle(style: string): MatchupStyle {
   return 'Contraataque';
 }
 
-/** Matriz de enfrentamientos tácticos estilo vs estilo (misma data que TACTICAL_MATCHUP_MATRIX) */
-const MATCHUP_MATRIX: Record<MatchupStyle, Record<MatchupStyle, MatchupBonus>> = {
+/**
+ * Matriz de enfrentamientos tácticos estilo vs estilo.
+ * FUENTE ÚNICA DE VERDAD: también la usa tactics.ts (TacticsEngine.getTacticalMatchup),
+ * que antes la duplicaba como TACTICAL_MATCHUP_MATRIX. La descripción es opcional
+ * para el motor de partidos, que solo lee bonusXG y possession.
+ */
+export const TACTICAL_MATCHUP_MATRIX: Record<MatchupStyle, Record<MatchupStyle, MatchupBonus>> = {
   'Tiki-Taka': {
-    'Catenaccio': { bonusXG: 0.35, possession: 62 },
-    'Juego por Bandas': { bonusXG: 0.25, possession: 58 },
-    'Gegenpressing': { bonusXG: -0.20, possession: 46 },
-    'Contraataque': { bonusXG: 0.10, possession: 60 },
-    'Tiki-Taka': { bonusXG: 0, possession: 50 }
+    'Catenaccio': { bonusXG: 0.35, possession: 62, desc: 'Posesión paciente desarmó el cerrojo' },
+    'Juego por Bandas': { bonusXG: 0.25, possession: 58, desc: 'Triangulaciones por el centro superaron el juego exterior' },
+    'Gegenpressing': { bonusXG: -0.20, possession: 46, desc: 'La presión alta rival asfixió la salida de balón' },
+    'Contraataque': { bonusXG: 0.10, possession: 60, desc: 'Dominio de balón pero vulnerabilidad al espacio' },
+    'Tiki-Taka': { bonusXG: 0, possession: 50, desc: 'Duelo equilibrado de posesión' }
   },
   'Gegenpressing': {
-    'Tiki-Taka': { bonusXG: 0.38, possession: 54 },
-    'Juego por Bandas': { bonusXG: 0.22, possession: 55 },
-    'Contraataque': { bonusXG: -0.30, possession: 58 },
-    'Catenaccio': { bonusXG: -0.15, possession: 56 },
-    'Gegenpressing': { bonusXG: 0, possession: 50 }
+    'Tiki-Taka': { bonusXG: 0.38, possession: 54, desc: 'Presión tras pérdida provocó pérdidas peligrosas' },
+    'Juego por Bandas': { bonusXG: 0.22, possession: 55, desc: 'Intensidad física cortó los avances por banda' },
+    'Contraataque': { bonusXG: -0.30, possession: 58, desc: 'Espaldas desprotegidas castigadas al contraataque' },
+    'Catenaccio': { bonusXG: -0.15, possession: 56, desc: 'Choque contra un muro defensivo impenetrable' },
+    'Gegenpressing': { bonusXG: 0, possession: 50, desc: 'Vértigo e intensidad de ida y vuelta' }
   },
   'Catenaccio': {
-    'Contraataque': { bonusXG: 0.35, possession: 40 },
-    'Gegenpressing': { bonusXG: 0.20, possession: 42 },
-    'Tiki-Taka': { bonusXG: -0.25, possession: 38 },
-    'Juego por Bandas': { bonusXG: -0.20, possession: 41 },
-    'Catenaccio': { bonusXG: 0, possession: 50 }
+    'Contraataque': { bonusXG: 0.35, possession: 40, desc: 'Bloque bajo anuló los espacios de contraataque' },
+    'Gegenpressing': { bonusXG: 0.20, possession: 42, desc: 'Atrinchertamiento en área forzó tiros desviados' },
+    'Tiki-Taka': { bonusXG: -0.25, possession: 38, desc: 'Desgaste defensivo ante el toque paciente' },
+    'Juego por Bandas': { bonusXG: -0.20, possession: 41, desc: 'Centros repetidos perforaron el área' },
+    'Catenaccio': { bonusXG: 0, possession: 50, desc: 'Partido trabado de cerrojo táctico' }
   },
   'Juego por Bandas': {
-    'Catenaccio': { bonusXG: 0.30, possession: 54 },
-    'Contraataque': { bonusXG: 0.15, possession: 55 },
-    'Tiki-Taka': { bonusXG: -0.18, possession: 42 },
-    'Gegenpressing': { bonusXG: -0.20, possession: 45 },
-    'Juego por Bandas': { bonusXG: 0, possession: 50 }
+    'Catenaccio': { bonusXG: 0.30, possession: 54, desc: 'Desborde de extremos desbordó la marca cerrada' },
+    'Contraataque': { bonusXG: 0.15, possession: 55, desc: 'Amplitud de campo generó centros peligrosos' },
+    'Tiki-Taka': { bonusXG: -0.18, possession: 42, desc: 'Balón perdido al intentar abrir a las bandas' },
+    'Gegenpressing': { bonusXG: -0.20, possession: 45, desc: 'Laterales taponados por la presión rival' },
+    'Juego por Bandas': { bonusXG: 0, possession: 50, desc: 'Duelo abierto de centros y desbordes' }
   },
   'Contraataque': {
-    'Gegenpressing': { bonusXG: 0.40, possession: 42 },
-    'Tiki-Taka': { bonusXG: 0.15, possession: 40 },
-    'Catenaccio': { bonusXG: -0.30, possession: 48 },
-    'Juego por Bandas': { bonusXG: -0.12, possession: 45 },
-    'Contraataque': { bonusXG: 0, possession: 50 }
+    'Gegenpressing': { bonusXG: 0.40, possession: 42, desc: 'Zarpazos al espacio castigaron la línea adelantada' },
+    'Tiki-Taka': { bonusXG: 0.15, possession: 40, desc: 'Repliegue y salida relámpago con pocos toques' },
+    'Catenaccio': { bonusXG: -0.30, possession: 48, desc: 'Sin metros para correr ante un rival replegado' },
+    'Juego por Bandas': { bonusXG: -0.12, possession: 45, desc: 'Centro rival interceptado en transición' },
+    'Contraataque': { bonusXG: 0, possession: 50, desc: 'Partido cauto a la espera del error ajeno' }
   }
 };
 
@@ -156,7 +161,7 @@ export class ProbabilityEngine {
     const hStyleClean = cleanStyle(homeStyle);
     const aStyleClean = cleanStyle(awayStyle);
 
-    const matchup = MATCHUP_MATRIX[hStyleClean][aStyleClean] || { bonusXG: 0, possession: 50 };
+    const matchup = TACTICAL_MATCHUP_MATRIX[hStyleClean][aStyleClean] || { bonusXG: 0, possession: 50 };
     matchupBonusXG = matchup.bonusXG;
     basePossession = matchup.possession;
 

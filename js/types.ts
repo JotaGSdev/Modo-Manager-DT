@@ -38,6 +38,21 @@ export type FormationId = (typeof FORMATION_IDS)[number];
 export const MANAGER_ARCHETYPE_IDS = ['GUARDIOLA', 'KLOPP', 'SIMEONE', 'ANCELOTTI', 'XABI_ALONSO'] as const;
 export type ManagerArchetypeId = (typeof MANAGER_ARCHETYPE_IDS)[number];
 
+/** Claves del objeto MANAGER_ARCHETYPES (tactics.ts) */
+export type ManagerArchetypeKey = 'TIKI_TAKA' | 'GEGENPRESSING' | 'CATENACCIO' | 'WING_PLAY' | 'DIRECT_ATTACK';
+
+/** Información de un arquetipo de DT (MANAGER_ARCHETYPES) */
+export interface ManagerArchetypeInfo {
+  id: string;
+  name: string;
+  coachStyle: string;
+  description: string;
+  badgeColor: string;
+  icon: string;
+  skills: Record<string, { name: string; level: number; maxLevel: number }>;
+  bonusSummary: string;
+}
+
 /** Roles FC IQ disponibles por posición (tactics.js FC_IQ_ROLES) */
 export const FC_IQ_ROLES = {
   POR: ['Goalkeeper', 'Sweeper Keeper'],
@@ -110,11 +125,39 @@ export type ActionResult = { success: boolean; message?: string; reason?: string
 // 2. JUGADORES Y CANTERA
 // ═══════════════════════════════════════════════════════════════════════════
 
+/** Claves de afinidad táctica (tacticalAffinity y mapa estilo → afinidad) */
+export type AffinityKey = 'possession' | 'highPress' | 'counterattack';
+
 /** Afinidad táctica del jugador con estilos de juego (0-100) */
 export interface TacticalAffinity {
   possession: number;
   counterattack: number;
   highPress: number;
+}
+
+/** Atributos numéricos de un jugador (pac, sho, pas, dri, def, phy) */
+export type PlayerAttribute = 'pac' | 'sho' | 'pas' | 'dri' | 'def' | 'phy';
+
+/** Modificadores de atributos por rol FC IQ (todos opcionales) */
+export type RoleModifiers = Partial<Record<PlayerAttribute, number>>;
+
+/** Posición en el pizarrón táctico 2D (formaciones) */
+export interface FormationSlot {
+  role: Position;
+  x: number;
+  y: number;
+}
+
+/** Formación táctica (posiciones y nombre) */
+export interface Formation {
+  name: string;
+  positions: FormationSlot[];
+}
+
+/** Entrada del once titular con su slot de formación */
+export interface StartingXIEntry {
+  player: Player;
+  slot: FormationSlot;
 }
 
 /** Snapshot estadístico de una temporada (db.processSeasonPlayerEvolution) */
@@ -325,11 +368,17 @@ export interface TacticsConfig {
   passingStyle: string; // 'Corto' | 'Largo'
 }
 
+/** Niveles de habilidad táctica del DT (1-10) */
+export interface SkillLevels {
+  skill1: number;
+  skill2: number;
+}
+
 /** Habilidades tácticas del DT y su EXP */
 export interface ManagerTactics {
   archetype: ManagerArchetypeId;
   exp: number;
-  skillLevels: { skill1: number; skill2: number }; // 1-10
+  skillLevels: SkillLevels; // 1-10
 }
 
 /** Bonos acumulados por eventos/decisiones que afectan el próximo partido */
@@ -529,10 +578,24 @@ export interface GameState {
   };
 }
 
+/** Opciones configurables al crear una nueva carrera (db.newCareer) */
+export interface NewCareerOptions {
+  enableManagerMarket?: boolean;
+  enableRegens?: boolean;
+  eventFrequency?: EventFrequency;
+}
+
 /** Formato completo de guardado en localStorage */
 export interface SaveData {
   gameState: GameState;
   players: Record<string, Player[]>;
+}
+
+// Sincronizador global registrado por app.js (window.updateGlobalUI)
+declare global {
+  interface Window {
+    updateGlobalUI?: () => void;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -562,7 +625,8 @@ export interface TensionOption {
 export interface MatchEvent {
   minute: number;
   type: MatchEventType;
-  text: string;
+  /** Presente en start/goal/shot/end; los Momentos de Tensión usan title+description+options */
+  text?: string;
   scorerName?: string;
   team?: string;
   title?: string;
@@ -635,4 +699,37 @@ export interface GameEvent {
   description: string;
   optionA: EventOption;
   optionB: EventOption;
+}
+
+/** Plantilla de evento narrativo (eventsEngine.generateRandomEvent) */
+export interface EventTemplate {
+  category: string;
+  title: string;
+  description: string;
+  optionA: EventOption;
+  optionB: EventOption;
+}
+
+/** Resultado de un partido de Copa Nacional (CompetitionsEngine.processNationalCupWeek) */
+export interface NationalCupResult {
+  cupName: string;
+  roundLabel: string;
+  userGoals: number;
+  rivalGoals: number;
+  prize: number;
+}
+
+/** Resultado de un partido de Copa Continental (CompetitionsEngine.processCupWeek) */
+export interface ContinentalCupResult {
+  cupName: string;
+  roundLabel: string;
+  userGoals: number;
+  rivalGoals: number;
+  reward: number;
+}
+
+/** Resultado de procesar el fin de año contractual del DT (ContractEngine.processContractYearEnd) */
+export interface ContractYearEndResult {
+  action: 'SACKED' | 'CONTRACT_EXPIRED' | 'CONTINUE';
+  contract: ManagerContract;
 }

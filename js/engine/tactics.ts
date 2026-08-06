@@ -9,11 +9,29 @@
  * - Modificadores de atributos por Rol FC IQ (afectan el OVR efectivo en simulación).
  * - Cálculo de Team Spirit integrado en `calculateEffectiveRating()`.
  * - Afinidad Táctica por jugador: bonus si el estilo del equipo coincide con su perfil.
+ *
+ * Migrado a TypeScript (Fase 1): se ELIMINARON las duplicaciones de datos —
+ * la matriz táctica vive en probability.ts (TACTICAL_MATCHUP_MATRIX) y los
+ * roles FC IQ en types.ts (FC_IQ_ROLES). Ambos se re-exportan para preservar
+ * la API pública de este módulo.
  */
 
 import { db } from '../data/db.js';
+import { TACTICAL_MATCHUP_MATRIX, cleanStyle } from './probability.js';
 
-export const MANAGER_ARCHETYPES = {
+import type {
+  ActionResult, AffinityKey, FCIQRole, Formation, FormationId, ManagerArchetypeInfo,
+  ManagerArchetypeKey, MatchupBonus, PlayStyle, Player, RoleModifiers, SkillLevels,
+  StartingXIEntry, TacticsConfig
+} from '../types.js';
+
+/** Roles FC IQ por posición — fuente única en types.ts (re-export para compatibilidad) */
+export { FC_IQ_ROLES } from '../types.js';
+
+/** Matriz táctica estilo vs estilo — fuente única en probability.ts (re-export para compatibilidad) */
+export { TACTICAL_MATCHUP_MATRIX };
+
+export const MANAGER_ARCHETYPES: Record<ManagerArchetypeKey, ManagerArchetypeInfo> = {
   TIKI_TAKA: {
     id: 'TIKI_TAKA',
     name: 'TIKI-TAKA & JUEGO DE POSICIÓN',
@@ -81,7 +99,7 @@ export const MANAGER_ARCHETYPES = {
   }
 };
 
-export const FORMATIONS = {
+export const FORMATIONS: Record<FormationId, Formation> = {
   '4-3-3': {
     name: '4-3-3 Ofensiva',
     positions: [
@@ -168,31 +186,14 @@ export const FORMATIONS = {
 // v2.0 — SISTEMA DE ROLES FC IQ
 // =============================================================================
 
-/**
- * Mapa de roles FC IQ disponibles por posición.
- * Cada posición tiene un array de roles que un jugador puede desempeñar.
- */
-export const FC_IQ_ROLES = {
-  POR:  ['Goalkeeper',      'Sweeper Keeper'],
-  DFC:  ['Stopper',         'Ball-Playing CB',    'Libero'],
-  LI:   ['Full Back',       'Inverted Wingback',  'Overlapping FB'],
-  LD:   ['Full Back',       'Inverted Wingback',  'Overlapping FB'],
-  MCD:  ['Anchor',          'Deep-Lying PM',      'Box-to-Box'],
-  MC:   ['Playmaker',       'Box-to-Box',         'Mezzala'],
-  MCO:  ['Enganche',        'Shadow Striker',     'Deep Forward'],
-  MI:   ['Wide Midfielder', 'Half Winger',        'Box-to-Box'],
-  MD:   ['Wide Midfielder', 'Half Winger',        'Box-to-Box'],
-  EI:   ['Inside Forward',  'Winger',             'Half Winger'],
-  ED:   ['Inside Forward',  'Winger',             'Half Winger'],
-  DC:   ['Target Forward',  'Box Crasher',        'False 9',     'Poacher']
-};
+/** Mapa de roles FC IQ disponibles por posición — fuente única en types.ts */
 
 /**
  * Modificadores de atributos por Rol FC IQ.
  * Cada clave es un nombre de rol, el valor son los deltas de atributos.
  * El OVR efectivo se recalcula aplicando estos modificadores en simulación.
  */
-export const FC_IQ_ROLE_MODIFIERS = {
+export const FC_IQ_ROLE_MODIFIERS: Record<FCIQRole, RoleModifiers> = {
   // Porteros
   'Goalkeeper':        { def: 0,  pac: 0,  pas: 0,  dri: 0,  sho: 0,  phy: 0 },
   'Sweeper Keeper':    { def: -2, pac: +3, pas: +3, dri: +2, sho: 0,  phy: 0 },
@@ -236,10 +237,10 @@ export const FC_IQ_ROLE_MODIFIERS = {
 
 /**
  * Calcula el OVR efectivo de un jugador aplicando modificadores de rol FC IQ.
- * @param {Object} player - Objeto jugador con atributos base
- * @returns {number} OVR efectivo ajustado (50-99)
+ * @param player - Objeto jugador con atributos base
+ * @returns OVR efectivo ajustado (50-99)
  */
-export function calculateFCIQEffectiveOvr(player) {
+export function calculateFCIQEffectiveOvr(player: Player): number {
   if (!player.fcIqRole || !FC_IQ_ROLE_MODIFIERS[player.fcIqRole]) {
     return player.overall;
   }
@@ -253,17 +254,17 @@ export function calculateFCIQEffectiveOvr(player) {
 
   // Recalcular OVR con los atributos modificados usando la misma fórmula de posición
   const pos = player.pos;
-  let ovr;
+  let ovr: number;
   if (pos === 'POR')       ovr = def * 0.40 + phy * 0.35 + pas * 0.15 + pac * 0.10;
-  else if (pos === 'DFC') ovr = def * 0.40 + phy * 0.35 + pac * 0.15 + pas * 0.10;
+  else if (pos === 'DFC')  ovr = def * 0.40 + phy * 0.35 + pac * 0.15 + pas * 0.10;
   else if (pos === 'LI' || pos === 'LD') ovr = pac * 0.30 + def * 0.30 + pas * 0.20 + phy * 0.20;
-  else if (pos === 'MCD') ovr = def * 0.35 + phy * 0.30 + pas * 0.25 + dri * 0.10;
-  else if (pos === 'MC')  ovr = pas * 0.35 + dri * 0.25 + phy * 0.15 + sho * 0.15 + def * 0.10;
-  else if (pos === 'MCO') ovr = dri * 0.35 + pas * 0.35 + sho * 0.20 + pac * 0.10;
+  else if (pos === 'MCD')  ovr = def * 0.35 + phy * 0.30 + pas * 0.25 + dri * 0.10;
+  else if (pos === 'MC')   ovr = pas * 0.35 + dri * 0.25 + phy * 0.15 + sho * 0.15 + def * 0.10;
+  else if (pos === 'MCO')  ovr = dri * 0.35 + pas * 0.35 + sho * 0.20 + pac * 0.10;
   else if (pos === 'EI' || pos === 'ED' || pos === 'MI' || pos === 'MD')
                            ovr = pac * 0.40 + dri * 0.30 + sho * 0.15 + pas * 0.15;
-  else if (pos === 'DC')  ovr = sho * 0.40 + pac * 0.25 + phy * 0.20 + dri * 0.15;
-  else                    ovr = (pac + sho + pas + dri + def + phy) / 6;
+  else if (pos === 'DC')   ovr = sho * 0.40 + pac * 0.25 + phy * 0.20 + dri * 0.15;
+  else                     ovr = (pac + sho + pas + dri + def + phy) / 6;
 
   return Math.max(50, Math.min(99, Math.round(ovr)));
 }
@@ -271,16 +272,16 @@ export function calculateFCIQEffectiveOvr(player) {
 export class TacticsEngine {
   /**
    * Obtiene la alineación titular ideal para una plantilla de jugadores y formación elegida.
-   * @param {Array<Object>} players - Plantilla de futbolistas
-   * @param {string} formationName - Nombre de la formación (ej. '4-3-3')
-   * @returns {{ startingXI: Array<Object>, substitutes: Array<Object> }}
+   * @param players - Plantilla de futbolistas
+   * @param formationName - Nombre de la formación (ej. '4-3-3')
+   * @returns Alineación titular y suplentes
    */
-  static getBestStartingXI(players, formationName = '4-3-3') {
+  static getBestStartingXI(players: Player[], formationName: FormationId = '4-3-3'): { startingXI: StartingXIEntry[]; substitutes: Player[] } {
     const formation = FORMATIONS[formationName] || FORMATIONS['4-3-3'];
     const squad = [...players].sort((a, b) => b.overall - a.overall);
 
-    const startingXI = [];
-    const usedIds = new Set();
+    const startingXI: StartingXIEntry[] = [];
+    const usedIds = new Set<string>();
 
     formation.positions.forEach(slot => {
       let best = squad.find(p => !usedIds.has(p.id) && p.pos === slot.role);
@@ -300,11 +301,10 @@ export class TacticsEngine {
 
   /**
    * Mejora el nivel de una habilidad táctica del DT consumiendo EXP acumulada.
-   * @param {string} skillKey - Clave de la habilidad ('skill1' o 'skill2')
-   * @returns {{ success: boolean, message?: string, reason?: string }}
+   * @param skillKey - Clave de la habilidad ('skill1' o 'skill2')
    */
-  static upgradeManagerSkill(skillKey) {
-    const gameState = db.gameState;
+  static upgradeManagerSkill(skillKey: keyof SkillLevels): ActionResult {
+    const gameState = db.gameState!;
     if (!gameState.managerTactics) {
       gameState.managerTactics = { archetype: 'GUARDIOLA', exp: 500, skillLevels: { skill1: 1, skill2: 1 } };
     }
@@ -330,11 +330,11 @@ export class TacticsEngine {
 
   /**
    * Calcula la valoración táctica efectiva de la alineación titular.
-   * @param {Array<Object>} startingXI - Alineación titular en cancha
-   * @param {Object} tacticsConfig - Configuración de tácticas del estado
-   * @returns {number} Calificación táctica (0-99)
+   * @param startingXI - Alineación titular en cancha
+   * @param tacticsConfig - Configuración de tácticas del estado
+   * @returns Calificación táctica (0-99)
    */
-  static calculateEffectiveRating(startingXI, tacticsConfig) {
+  static calculateEffectiveRating(startingXI: StartingXIEntry[], tacticsConfig: TacticsConfig | undefined): number {
     if (!startingXI || startingXI.length === 0) return 60;
 
     let totalOvr = 0;
@@ -345,14 +345,15 @@ export class TacticsEngine {
     const tacticsStyle = tacticsConfig?.style || gameState?.tactics?.style || '';
 
     // Mapa de estilos a clave de afinidad
-    const styleAffinityKey = {
+    const styleAffinityMap: Partial<Record<PlayStyle, AffinityKey>> = {
       'Tiki-Taka': 'possession',
       'Gegenpressing': 'highPress',
       'Presión Alta': 'highPress',
       'Catenaccio': 'counterattack',
       'Contraataque': 'counterattack',
       'Juego por Bandas': 'possession'
-    }[tacticsStyle] || null;
+    };
+    const styleAffinityKey = styleAffinityMap[tacticsStyle as PlayStyle] || null;
 
     startingXI.forEach(item => {
       const p = item.player;
@@ -371,7 +372,7 @@ export class TacticsEngine {
 
       // Bonus de afinidad táctica (hasta +3 por jugador si el estilo coincide)
       let affinityBonus = 0;
-      if (styleAffinityKey && p.tacticalAffinity?.[styleAffinityKey]) {
+      if (styleAffinityKey && p.tacticalAffinity[styleAffinityKey]) {
         affinityBonus = Math.round((p.tacticalAffinity[styleAffinityKey] - 50) * 0.04);
       }
 
@@ -401,9 +402,9 @@ export class TacticsEngine {
   /**
    * Obtiene la bonificación probabilística por enfrentamiento táctico
    */
-  static getTacticalMatchup(homeStyle = 'Tiki-Taka', awayStyle = 'Tiki-Taka') {
-    const hStyleClean = (homeStyle || '').includes('Tiki') ? 'Tiki-Taka' : ((homeStyle || '').includes('Gegen') || (homeStyle || '').includes('Presión') ? 'Gegenpressing' : ((homeStyle || '').includes('Catena') || (homeStyle || '').includes('Autobús') ? 'Catenaccio' : ((homeStyle || '').includes('Bandas') ? 'Juego por Bandas' : 'Contraataque')));
-    const aStyleClean = (awayStyle || '').includes('Tiki') ? 'Tiki-Taka' : ((awayStyle || '').includes('Gegen') || (awayStyle || '').includes('Presión') ? 'Gegenpressing' : ((awayStyle || '').includes('Catena') || (awayStyle || '').includes('Autobús') ? 'Catenaccio' : ((awayStyle || '').includes('Bandas') ? 'Juego por Bandas' : 'Contraataque')));
+  static getTacticalMatchup(homeStyle: PlayStyle = 'Tiki-Taka', awayStyle: PlayStyle = 'Tiki-Taka'): MatchupBonus {
+    const hStyleClean = cleanStyle(homeStyle);
+    const aStyleClean = cleanStyle(awayStyle);
 
     const matchup = TACTICAL_MATCHUP_MATRIX[hStyleClean]?.[aStyleClean] || { bonusXG: 0, possession: 50, desc: 'Encuentro táctico nivelado' };
     return matchup;
@@ -412,54 +413,17 @@ export class TacticsEngine {
   /**
    * Actualiza dinámicamente la media (OVR) de un equipo en db según los 11 titulares activos
    */
-  static updateTeamOverall(teamId) {
+  static updateTeamOverall(teamId: string): number {
     const squad = db.getTeamPlayers(teamId);
     if (!squad || squad.length === 0) return 70;
 
     const top11 = squad.slice(0, 11);
     const avgOvr = Math.round(top11.reduce((sum, p) => sum + (p.overall || 70), 0) / top11.length);
 
-    if (db.teams[teamId]) {
-      db.teams[teamId].overall = avgOvr;
+    const team = db.teams[teamId];
+    if (team) {
+      team.overall = avgOvr;
     }
     return avgOvr;
   }
 }
-
-export const TACTICAL_MATCHUP_MATRIX = {
-  'Tiki-Taka': {
-    'Catenaccio': { bonusXG: 0.35, possession: 62, desc: 'Posesión paciente desarmó el cerrojo' },
-    'Juego por Bandas': { bonusXG: 0.25, possession: 58, desc: 'Triangulaciones por el centro superaron el juego exterior' },
-    'Gegenpressing': { bonusXG: -0.20, possession: 46, desc: 'La presión alta rival asfixió la salida de balón' },
-    'Contraataque': { bonusXG: 0.10, possession: 60, desc: 'Dominio de balón pero vulnerabilidad al espacio' },
-    'Tiki-Taka': { bonusXG: 0, possession: 50, desc: 'Duelo equilibrado de posesión' }
-  },
-  'Gegenpressing': {
-    'Tiki-Taka': { bonusXG: 0.38, possession: 54, desc: 'Presión tras pérdida provocó pérdidas peligrosas' },
-    'Juego por Bandas': { bonusXG: 0.22, possession: 55, desc: 'Intensidad física cortó los avances por banda' },
-    'Contraataque': { bonusXG: -0.30, possession: 58, desc: 'Espaldas desprotegidas castigadas al contraataque' },
-    'Catenaccio': { bonusXG: -0.15, possession: 56, desc: 'Choque contra un muro defensivo impenetrable' },
-    'Gegenpressing': { bonusXG: 0, possession: 50, desc: 'Vértigo e intensidad de ida y vuelta' }
-  },
-  'Catenaccio': {
-    'Contraataque': { bonusXG: 0.35, possession: 40, desc: 'Bloque bajo anuló los espacios de contraataque' },
-    'Gegenpressing': { bonusXG: 0.20, possession: 42, desc: 'Atrinchertamiento en área forzó tiros desviados' },
-    'Tiki-Taka': { bonusXG: -0.25, possession: 38, desc: 'Desgaste defensivo ante el toque paciente' },
-    'Juego por Bandas': { bonusXG: -0.20, possession: 41, desc: 'Centros repetidos perforaron el área' },
-    'Catenaccio': { bonusXG: 0, possession: 50, desc: 'Partido trabado de cerrojo táctico' }
-  },
-  'Juego por Bandas': {
-    'Catenaccio': { bonusXG: 0.30, possession: 54, desc: 'Desborde de extremos desbordó la marca cerrada' },
-    'Contraataque': { bonusXG: 0.15, possession: 55, desc: 'Amplitud de campo generó centros peligrosos' },
-    'Tiki-Taka': { bonusXG: -0.18, possession: 42, desc: 'Balón perdido al intentar abrir a las bandas' },
-    'Gegenpressing': { bonusXG: -0.20, possession: 45, desc: 'Laterales taponados por la presión rival' },
-    'Juego por Bandas': { bonusXG: 0, possession: 50, desc: 'Duelo abierto de centros y desbordes' }
-  },
-  'Contraataque': {
-    'Gegenpressing': { bonusXG: 0.40, possession: 42, desc: 'Zarpazos al espacio castigaron la línea adelantada' },
-    'Tiki-Taka': { bonusXG: 0.15, possession: 40, desc: 'Repliegue y salida relámpago con pocos toques' },
-    'Catenaccio': { bonusXG: -0.30, possession: 48, desc: 'Sin metros para correr ante un rival replegado' },
-    'Juego por Bandas': { bonusXG: -0.12, possession: 45, desc: 'Centro rival interceptado en transición' },
-    'Contraataque': { bonusXG: 0, possession: 50, desc: 'Partido cauto a la espera del error ajeno' }
-  }
-};

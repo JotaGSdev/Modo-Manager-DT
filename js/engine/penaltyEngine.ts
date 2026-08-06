@@ -10,19 +10,23 @@
  *    Probabilidad = (sho * 0.65) + random(0..25) - (gkOvr * 0.15).
  * 4. Muerte súbita en caso de empate tras los 5 penales iniciales.
  * 5. Indicadores visuales de penal anotado 🟢 o fallado/atajado 🔴.
+ *
+ * Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
  */
 
 import { db } from '../data/db.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
+import type { Team } from '../types.js';
+
 export class PenaltyEngine {
   /**
    * Inicia la experiencia de tanda de penales para una final empatada.
-   * @param {Object} userTeam - Objeto del equipo del usuario
-   * @param {Object} rivalTeam - Objeto del equipo rival
-   * @param {Function} onFinish - Callback al terminar la tanda, recibe (userWon: boolean)
+   * @param userTeam - Equipo del usuario
+   * @param rivalTeam - Equipo rival
+   * @param onFinish - Callback al terminar la tanda, recibe (userWon: boolean)
    */
-  static startPenaltyShootout(userTeam, rivalTeam, onFinish) {
+  static startPenaltyShootout(userTeam: Team, rivalTeam: Team, onFinish?: (userWon: boolean) => void): void {
     const userPlayers = db.getTeamPlayers(userTeam.id);
     const rivalPlayers = db.getTeamPlayers(rivalTeam.id);
 
@@ -31,9 +35,9 @@ export class PenaltyEngine {
     const userPenaltyTakers = sortedUserPlayers.slice(0, 5);
 
     // Obtener portero rival
-    const rivalGK = rivalPlayers.find(p => p.pos === 'POR') || rivalPlayers[0] || { overall: 75, name: 'Portero Rival' };
+    const rivalGK: { overall: number; name: string } = rivalPlayers.find(p => p.pos === 'POR') || rivalPlayers[0] || { overall: 75, name: 'Portero Rival' };
 
-    let modal = document.getElementById('penaltyShootoutModal');
+    let modal: HTMLElement | null = document.getElementById('penaltyShootoutModal');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'penaltyShootoutModal';
@@ -48,11 +52,11 @@ export class PenaltyEngine {
     let rivalScore = 0;
     let isFinished = false;
 
-    const userResults = [];
-    const rivalResults = [];
+    const userResults: boolean[] = [];
+    const rivalResults: boolean[] = [];
 
     const renderShootoutUI = () => {
-      const currentShooter = userPenaltyTakers[currentRound] || sortedUserPlayers[currentRound % sortedUserPlayers.length];
+      const currentShooter = (userPenaltyTakers[currentRound] || sortedUserPlayers[currentRound % sortedUserPlayers.length])!;
 
       modal.innerHTML = `
         <div class="modal-card glass-panel text-center" style="max-width: 620px; border: 2px solid var(--accent-gold); padding: 28px;">
@@ -118,11 +122,11 @@ export class PenaltyEngine {
       `;
 
       if (!isFinished) {
-        document.getElementById('btnTakePenalty').addEventListener('click', () => {
+        document.getElementById('btnTakePenalty')!.addEventListener('click', () => {
           sfx.playClick();
-          const btn = document.getElementById('btnTakePenalty');
-          const countdownBox = document.getElementById('countdownBox');
-          const feedback = document.getElementById('shootoutFeedback');
+          const btn = document.getElementById('btnTakePenalty') as HTMLButtonElement;
+          const countdownBox = document.getElementById('countdownBox')!;
+          const feedback = document.getElementById('shootoutFeedback')!;
 
           btn.disabled = true;
           countdownBox.classList.remove('hidden');
@@ -180,7 +184,7 @@ export class PenaltyEngine {
           }, 450);
         });
       } else {
-        document.getElementById('btnCloseShootout').addEventListener('click', () => {
+        document.getElementById('btnCloseShootout')!.addEventListener('click', () => {
           modal.classList.add('hidden');
           if (onFinish) onFinish(userScore > rivalScore);
         });

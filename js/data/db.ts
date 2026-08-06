@@ -5,7 +5,7 @@
  * Este módulo es el NÚCLEO Y FUENTE ÚNICA DE VERDAD (Single Source of Truth) del juego.
  * Administra:
  * 1. Carga inicial de ligas y equipos desde ./assets/data/leagues.json.
- * 2. Generación y almacenamiento de futbolistas por equipo (teamData.js).
+ * 2. Generación y almacenamiento de futbolistas por equipo (teamData.ts).
  * 3. Estado completo de la partida activa (`this.gameState`).
  * 4. Persistencia automática en `localStorage` (clave: `entrenador_leyenda_save`).
  * 5. Avance y envejecimiento de temporada (`processSeasonPlayerEvolution`).
@@ -13,6 +13,9 @@
  *
  * VERSIÓN 2.0 — Añade: Manager Market IA, The Feed, Team Spirit, FC IQ Roles,
  * Presupuesto Dual, Seguimiento Multiliga, Histórico por Jugador, Regens, Eventos Avanzados.
+ *
+ * Migrado a TypeScript (Fase 1): `gameState` cumple la interfaz GameState de
+ * js/types.ts; las migraciones de saves antiguos quedan validadas por tipos.
  */
 
 import { generateTeamPlayers, calculatePositionOvr, calculatePlayerMarketValue, calculatePlayerSalary } from './teamData.js';
@@ -20,43 +23,52 @@ import { TransferEngine } from '../engine/transfers.js';
 import { ContractEngine } from '../engine/contracts.js';
 import { ManagerMarketEngine } from '../engine/managerMarketEngine.js';
 
+import type { EvolutionReportEntry, GameState, League, ManagerArchetypeId, NewCareerOptions, Player, SaveData, Standing } from '../types.js';
+
 class DatabaseManager {
+  /** Lista de ligas cargadas */
+  leagues: League[];
+
+  /** Diccionario de equipos por ID */
+  teams: Record<string, import('../types.js').Team>;
+
+  /** Diccionario de plantillas por ID de equipo */
+  players: Record<string, Player[]>;
+
+  /** Objeto con el estado global de la partida del usuario */
+  gameState: GameState | null;
+
+  /** Flag de carga completada */
+  isLoaded: boolean;
+
+  /** Flag para prevenir guardados concurrentes */
+  isSaving: boolean;
+
   constructor() {
-    /** @type {Array<Object>} Lista de ligas cargadas */
     this.leagues = [];
-    
-    /** @type {Object.<string, Object>} Diccionario de equipos por ID */
     this.teams = {};
-    
-    /** @type {Object.<string, Array<Object>>} Diccionario de plantillas por ID de equipo */
     this.players = {};
-    
-    /** @type {Object|null} Objeto con el estado global de la partida del usuario */
     this.gameState = null;
-    
-    /** @type {boolean} Flag de carga completada */
     this.isLoaded = false;
-    
-    /** @type {boolean} Flag para prevenir guardados concurrentes */
     this.isSaving = false;
   }
 
   /**
    * Carga asíncrona de las ligas desde el archivo JSON local.
    */
-  async init() {
+  async init(): Promise<void> {
     if (this.isLoaded) return;
     try {
       const response = await fetch('./assets/data/leagues.json');
-      this.leagues = await response.json();
-      
+      this.leagues = await response.json() as League[];
+
       this.leagues.forEach(league => {
         league.teams.forEach(team => {
-          this.teams[team.id] = { 
-            ...team, 
+          this.teams[team.id] = {
+            ...team,
             leagueId: league.id,
             country: league.country,
-            region: league.region 
+            region: league.region
           };
         });
       });
@@ -70,10 +82,10 @@ class DatabaseManager {
   /**
    * Obtiene o genera la plantilla completa de futbolistas para un equipo dado.
    * Limita la media inicial máxima a 91 OVR (estándar EA FC / FIFA).
-   * @param {string} teamId - ID del equipo
-   * @returns {Array<Object>} Lista de jugadores del equipo
+   * @param teamId - ID del equipo
+   * @returns Lista de jugadores del equipo
    */
-  getTeamPlayers(teamId) {
+  getTeamPlayers(teamId: string): Player[] {
     if (!this.players[teamId]) {
       const team = this.teams[teamId];
       if (team) {
@@ -83,30 +95,30 @@ class DatabaseManager {
       }
     }
 
-    if (this.players[teamId]) {
-      this.players[teamId].forEach(p => {
-        if (p.overall > 91) {
-          p.overall = 91;
-        }
-        const expectedValue = calculatePlayerMarketValue(p.overall, p.age, p.potential || p.overall);
-        if (!p.value || (p.overall >= 80 && p.value < expectedValue * 0.4)) {
-          p.value = expectedValue;
-          p.salary = calculatePlayerSalary(p.value, p.overall);
-        }
-      });
-    }
+    const roster = this.players[teamId]!;
+    roster.forEach(p => {
+      if (p.overall > 91) {
+        p.overall = 91;
+      }
+      const expectedValue = calculatePlayerMarketValue(p.overall, p.age, p.potential || p.overall);
+      if (!p.value || (p.overall >= 80 && p.value < expectedValue * 0.4)) {
+        p.value = expectedValue;
+        p.salary = calculatePlayerSalary(p.value, p.overall);
+      }
+    });
 
-    return this.players[teamId];
+    return roster;
   }
 
   /**
    * Busca un jugador por su ID único en todas las plantillas cargadas.
-   * @param {string} playerId - ID del jugador
-   * @returns {Object|null}
+   * @param playerId - ID del jugador
    */
-  getPlayerById(playerId) {
+  getPlayerById(playerId: string): Player | null {
     for (const teamId in this.players) {
-      const p = this.players[teamId].find(player => player.id === playerId);
+      const roster = this.players[teamId];
+      if (!roster) continue;
+      const p = roster.find(player => player.id === playerId);
       if (p) return p;
     }
     return null;
@@ -114,14 +126,22 @@ class DatabaseManager {
 
   /**
    * Inicializa un nuevo estado de carrera de 25 temporadas para el DT.
-   * @param {string} userTeamId - ID del equipo seleccionado
-   * @param {string} [managerName='Director Técnico'] - Nombre del entrenador
-   * @param {string} [managerCountry='Argentina'] - Nacionalidad del entrenador
-   * @param {number} [managerAge=35] - Edad actual del entrenador (30 a 65)
-   * @param {string} [managerArchetype='GUARDIOLA'] - Arquetipo táctico elegido
-   * @returns {Object} Estado inicial creado
+   * @param userTeamId - ID del equipo seleccionado
+   * @param managerName - Nombre del entrenador
+   * @param managerCountry - Nacionalidad del entrenador
+   * @param managerAge - Edad actual del entrenador (30 a 65)
+   * @param managerArchetype - Arquetipo táctico elegido
+   * @param options - Opciones configurables (mercado DT, regens, frecuencia de eventos)
+   * @returns Estado inicial creado
    */
-  newCareer(userTeamId, managerName = 'Director Técnico', managerCountry = 'Argentina', managerAge = 35, managerArchetype = 'GUARDIOLA', options = {}) {
+  newCareer(
+    userTeamId: string,
+    managerName = 'Director Técnico',
+    managerCountry = 'Argentina',
+    managerAge = 35,
+    managerArchetype: ManagerArchetypeId = 'GUARDIOLA',
+    options: NewCareerOptions = {}
+  ): GameState | null {
     const userTeam = this.teams[userTeamId];
     if (!userTeam) return null;
 
@@ -130,7 +150,7 @@ class DatabaseManager {
       userLeague.teams.forEach(t => this.getTeamPlayers(t.id));
     }
 
-    const leagueStandings = (userLeague && userLeague.teams) ? userLeague.teams.map(t => ({
+    const leagueStandings: Standing[] = (userLeague && userLeague.teams) ? userLeague.teams.map(t => ({
       teamId: t.id,
       name: t.name,
       played: 0,
@@ -150,14 +170,14 @@ class DatabaseManager {
       // ── Identidad del DT ──────────────────────────────────────────────────
       managerName: managerName,
       managerCountry: managerCountry,
-      managerAge: parseInt(managerAge) || 35,
+      managerAge: managerAge || 35,
       managerArchetype: managerArchetype,
       clubPhilosophy: userTeam.philosophy || managerArchetype, // filosofía exigida por el club
       tacticalFidelityWeeks: 0, // semanas consecutivas con estilo correcto
 
       // ── Equipo y liga ─────────────────────────────────────────────────────
       userTeamId: userTeamId,
-      userLeagueId: userTeam.leagueId,
+      userLeagueId: userTeam.leagueId || '',
 
       // ── Presupuesto dual ─────────────────────────────────────────────────
       budget: userTeam.budget,
@@ -271,7 +291,7 @@ class DatabaseManager {
    * 4. Reinicia tabla de posiciones, goles y contadores de la liga.
    * 5. Incrementa el año de la temporada (`season++`).
    */
-  processSeasonPlayerEvolution() {
+  processSeasonPlayerEvolution(): void {
     if (!this.gameState) return;
 
     // Verificar si se alcanzaron las 25 temporadas (2026 - 2050)
@@ -285,7 +305,8 @@ class DatabaseManager {
       return;
     }
 
-    const userTeamEvolutionReport = [];
+    const userTeamEvolutionReport: EvolutionReportEntry[] = [];
+    const userTeamId = this.gameState.userTeamId;
 
     // 1. EVOLUCIÓN, ENVEJECIMIENTO (+1 AÑO) Y DECREMENTO DE CONTRATOS (-1 AÑO) EN TODOS LOS EQUIPOS
     for (const tId in this.players) {
@@ -358,7 +379,7 @@ class DatabaseManager {
           // ── Snapshot de estadísticas históricas (Fase 5B) ────────────────
           if (!Array.isArray(p.statsHistory)) p.statsHistory = [];
           p.statsHistory.push({
-            season: this.gameState.season,
+            season: this.gameState!.season,
             goals: p.seasonGoals || 0,
             appearances: p.appearances || 0,
             ratingAvg: p.ratingAvg || 0,
@@ -370,11 +391,11 @@ class DatabaseManager {
           p.ratingAvg = 0;
 
           // ── Detección de leyendas retiradas para sistema de Regens (Fase 6A) ──
-          if (p.age > 38 && this.gameState.enableRegens) {
-            if (!this.gameState.retiredLegends) this.gameState.retiredLegends = [];
-            const alreadyRetired = this.gameState.retiredLegends.some(r => r.name === p.name);
+          if (p.age > 38 && this.gameState!.enableRegens) {
+            if (!this.gameState!.retiredLegends) this.gameState!.retiredLegends = [];
+            const alreadyRetired = this.gameState!.retiredLegends.some(r => r.name === p.name);
             if (!alreadyRetired && p.overall >= 75) {
-              this.gameState.retiredLegends.push({
+              this.gameState!.retiredLegends.push({
                 name: p.name,
                 pos: p.pos,
                 originalOvr: p.overall,
@@ -385,8 +406,8 @@ class DatabaseManager {
           }
 
           if (p.contractYears === 0 && tId === userTeamId) {
-            this.gameState.eventsLog.unshift({
-              date: `Temporada ${this.gameState.season + 1}`,
+            this.gameState!.eventsLog.unshift({
+              date: `Temporada ${this.gameState!.season + 1}`,
               text: `⚠️ ALERTA DE CONTRATO: El contrato de ${p.name} ha vencido (0 años restantes). ¡Renueva su vínculo en el Inspector de Jugador!`
             });
           }
@@ -425,15 +446,16 @@ class DatabaseManager {
 
     // 5. GUARDAR HISTORIAL DE TEMPORADA EN careerHistory[]
     const userTeamForHistory = this.teams[this.gameState.userTeamId];
-    const userStandingForHistory = this.gameState.standings ? this.gameState.standings.find(s => s.teamId === this.gameState.userTeamId) : null;
+    const userStandingForHistory = this.gameState.standings ? this.gameState.standings.find(s => s.teamId === userTeamId) : null;
+    const championStanding = this.gameState.standings[0];
     const squadForHistory = this.players[this.gameState.userTeamId] || [];
     const topScorerHistory = [...squadForHistory].sort((a, b) => (b.seasonGoals || 0) - (a.seasonGoals || 0))[0];
-    
+
     this.gameState.careerHistory.push({
       season: this.gameState.season,
       club: userTeamForHistory ? userTeamForHistory.name : 'Desconocido',
       leagueRank: userStandingForHistory ? (this.gameState.standings.indexOf(userStandingForHistory) + 1) : 0,
-      isTitleWon: userStandingForHistory && this.gameState.standings[0] && this.gameState.standings[0].teamId === this.gameState.userTeamId,
+      isTitleWon: Boolean(userStandingForHistory && championStanding && championStanding.teamId === this.gameState.userTeamId),
       mvpPlayer: topScorerHistory ? `${topScorerHistory.name} (${topScorerHistory.seasonGoals || 0} goles)` : 'N/A',
       budgetStart: this.gameState.finances ? this.gameState.finances.budgetAtSeasonStart || this.gameState.budget : this.gameState.budget,
       budgetEnd: this.gameState.budget,
@@ -474,11 +496,11 @@ class DatabaseManager {
   /**
    * Guarda el estado actual en localStorage y notifica a la interfaz global.
    */
-  saveGame() {
+  saveGame(): void {
     if (!this.gameState || this.isSaving) return;
     this.isSaving = true;
     try {
-      const saveObj = {
+      const saveObj: SaveData = {
         gameState: this.gameState,
         players: this.players
       };
@@ -497,7 +519,7 @@ class DatabaseManager {
   /**
    * Recalcula dinámicamente el OVR general del equipo del usuario según la media de sus 11 titulares
    */
-  updateUserTeamOverall() {
+  updateUserTeamOverall(): void {
     if (!this.gameState || !this.gameState.userTeamId) return;
     const squad = this.getTeamPlayers(this.gameState.userTeamId);
     if (!squad || squad.length === 0) return;
@@ -506,20 +528,21 @@ class DatabaseManager {
     const avgOvr = Math.round(top11.reduce((sum, p) => sum + (p.overall || 70), 0) / top11.length);
     const streakBonus = Math.min(3, Math.floor((this.gameState.currentStreak || 0) / 3));
 
-    if (this.teams[this.gameState.userTeamId]) {
-      this.teams[this.gameState.userTeamId].overall = Math.min(99, avgOvr + streakBonus);
+    const userTeam = this.teams[this.gameState.userTeamId];
+    if (userTeam) {
+      userTeam.overall = Math.min(99, avgOvr + streakBonus);
     }
   }
 
   /**
    * Carga la partida guardada desde localStorage e inicializa defaults faltantes.
-   * @returns {boolean} True si se cargó con éxito
+   * @returns True si se cargó con éxito
    */
-  loadGame() {
+  loadGame(): boolean {
     const dataStr = localStorage.getItem('entrenador_leyenda_save');
     if (!dataStr) return false;
     try {
-      const parsed = JSON.parse(dataStr);
+      const parsed = JSON.parse(dataStr) as SaveData;
       this.gameState = parsed.gameState;
       this.players = parsed.players || {};
 
@@ -533,7 +556,7 @@ class DatabaseManager {
         if (!this.gameState.scoutLevel) this.gameState.scoutLevel = 1;
         if (!this.gameState.matchBonus) this.gameState.matchBonus = { moraleBonus: 0, tacticalBonus: 0, penaltyBonus: 0 };
         if (!this.gameState.tactics) this.gameState.tactics = { formation: '4-3-3', mentality: 'Ofensiva', style: 'Tiki-Taka', defensiveLine: 'Alta', passingStyle: 'Corto' };
-        if (!this.gameState.finances) this.gameState.finances = { ticketRevenue: 0, weeklyWageTotal: 0, playerSales: 0, playerPurchases: 0, leaguePrize: 0, balance: 0 };
+        if (!this.gameState.finances) this.gameState.finances = { ticketRevenue: 0, weeklyWageTotal: 0, playerSales: 0, playerPurchases: 0, leaguePrize: 0, balance: 0, budgetAtSeasonStart: 0 };
         if (!this.gameState.careerHistory) this.gameState.careerHistory = [];
         if (this.gameState.winStreak === undefined) this.gameState.winStreak = 0;
         if (this.gameState.currentStreak === undefined) this.gameState.currentStreak = 0;
@@ -599,8 +622,8 @@ class DatabaseManager {
 
         if (this.gameState.standings) {
           this.gameState.standings.forEach(s => {
-            if (s.played > this.gameState.maxWeeks) {
-              s.played = this.gameState.maxWeeks;
+            if (s.played > this.gameState!.maxWeeks) {
+              s.played = this.gameState!.maxWeeks;
             }
           });
         }
@@ -614,9 +637,9 @@ class DatabaseManager {
 
   /**
    * Comprueba si existe una partida guardada en localStorage.
-   * @returns {boolean}
+   * @returns boolean
    */
-  hasSave() {
+  hasSave(): boolean {
     return localStorage.getItem('entrenador_leyenda_save') !== null;
   }
 }
