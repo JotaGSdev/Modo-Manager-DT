@@ -82,7 +82,8 @@ export type FCIQRole =
   | 'Target Forward' | 'Box Crasher' | 'False 9' | 'Poacher';
 
 /** Roles de personalidad del vestuario (teamSpirit.js) */
-export const PERSONALITY_ROLES = ['captain', 'youngStar', 'rebel', 'mentor'] as const;
+// 'none' se almacena en runtime al retirar un rol (squadUI.js) — convive con null como "sin rol".
+export const PERSONALITY_ROLES = ['none', 'captain', 'youngStar', 'rebel', 'mentor'] as const;
 export type PersonalityRole = (typeof PERSONALITY_ROLES)[number];
 
 /** Órdenes tácticas de los Momentos de Tensión (matchEngine.js) */
@@ -206,6 +207,8 @@ export interface Player {
   matchExp?: number;
   /** Rol asignado al fichar — creado en runtime */
   squadRole?: SquadRole;
+  /** Instrucción individual táctica (playerInspectorUI.js) — creado en runtime */
+  individualInstruction?: string;
   /** Campos presentes solo en juveniles de la cantera */
   country?: string;
   region?: string;

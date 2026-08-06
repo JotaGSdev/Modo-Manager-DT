@@ -1,10 +1,32 @@
 // Módulo de Cantera (Youth Academy) y Canteranos Avanzados con Niveles de Ojeador
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
 import { calculatePlayerMarketValue, calculatePlayerSalary } from '../data/teamData.js';
 
+import type { Position, Region, YouthProspect } from '../types.js';
+
+/** Datos por nivel de ojeador (SCOUT_LEVEL_DATA) */
+interface ScoutLevelData {
+  name: string;
+  upgradeCost: number;
+  scoutCost: number;
+  minOvr: number;
+  maxOvr: number;
+  minPot: number;
+  maxPot: number;
+  accuracy: string;
+}
+
+/** Pool de nombres y países de una región del mundo */
+interface RegionalNames {
+  firstNames: string[];
+  lastNames: string[];
+  countries: string[];
+}
+
 // Diccionario de Nombres y Apellidos por Región del Mundo
-const REGIONAL_NAMES = {
+const REGIONAL_NAMES: Record<string, RegionalNames> = {
   'Sudamérica': {
     firstNames: ['Gabriel', 'Mateo', 'Lucas', 'Thiago', 'Enzo', 'Agustín', 'Joaquín', 'Ignacio', 'Santino', 'Bautista', 'Vinícius', 'Matheus', 'Rodrigo', 'Felipe', 'Santiago'],
     lastNames: ['Suárez', 'Pérez', 'Gómez', 'Ríos', 'Navarro', 'Castillo', 'Vargas', 'Morales', 'Reyes', 'Mendoza', 'Silva', 'Santos', 'Oliveira', 'Fernández', 'Rodríguez'],
@@ -32,7 +54,7 @@ const REGIONAL_NAMES = {
   }
 };
 
-export const SCOUT_LEVEL_DATA = {
+export const SCOUT_LEVEL_DATA: Record<number, ScoutLevelData> = {
   1: { name: 'Novato (Local)', upgradeCost: 0, scoutCost: 100000, minOvr: 55, maxOvr: 64, minPot: 65, maxPot: 78, accuracy: 'Baja' },
   2: { name: 'Experimentado (Regional)', upgradeCost: 500000, scoutCost: 250000, minOvr: 60, maxOvr: 68, minPot: 72, maxPot: 84, accuracy: 'Media' },
   3: { name: 'Profesional (Continental)', upgradeCost: 1500000, scoutCost: 500000, minOvr: 63, maxOvr: 72, minPot: 78, maxPot: 89, accuracy: 'Alta' },
@@ -40,45 +62,56 @@ export const SCOUT_LEVEL_DATA = {
   5: { name: 'Leyenda (Cazatalentos Élite)', upgradeCost: 7000000, scoutCost: 2000000, minOvr: 70, maxOvr: 78, minPot: 87, maxPot: 97, accuracy: 'Perfecta ⭐' }
 };
 
+/** Resultado de acciones de cantera: éxito con datos o fallo con razón */
+interface YouthActionResult {
+  success: boolean;
+  reason?: string;
+  message?: string;
+  prospects?: YouthProspect[];
+}
+
 export class YouthAcademyEngine {
   /**
    * Genera nuevos prospectos de cantera según la región elegida y nivel de ojeador
    */
-  static scoutNewProspects(region = 'Sudamérica') {
-    const gameState = db.gameState;
+  static scoutNewProspects(region: Region = 'Sudamérica'): YouthActionResult {
+    const gameState = db.gameState!;
     const scoutLevel = gameState.scoutLevel || 1;
-    const levelData = SCOUT_LEVEL_DATA[scoutLevel] || SCOUT_LEVEL_DATA[1];
+    const levelData = SCOUT_LEVEL_DATA[scoutLevel] || SCOUT_LEVEL_DATA[1]!;
 
     if (gameState.budget < levelData.scoutCost) {
-      return { 
-        success: false, 
-        reason: `Presupuesto insuficiente. Se requieren €${(levelData.scoutCost / 1000).toFixed(0)}K para ojear en ${region} con tu ojeador Nivel ${scoutLevel}.` 
+      return {
+        success: false,
+        reason: `Presupuesto insuficiente. Se requieren €${(levelData.scoutCost / 1000).toFixed(0)}K para ojear en ${region} con tu ojeador Nivel ${scoutLevel}.`
       };
     }
 
     gameState.budget -= levelData.scoutCost;
 
-    const regionalData = REGIONAL_NAMES[region] || REGIONAL_NAMES['Sudamérica'];
-    const prospects = [];
+    const regionalData = REGIONAL_NAMES[region] || REGIONAL_NAMES['Sudamérica']!;
+    const prospects: YouthProspect[] = [];
     const count = 3 + Math.floor(Math.random() * 3);
 
     for (let i = 0; i < count; i++) {
-      const fn = regionalData.firstNames[Math.floor(Math.random() * regionalData.firstNames.length)];
-      const ln = regionalData.lastNames[Math.floor(Math.random() * regionalData.lastNames.length)];
-      const country = regionalData.countries[Math.floor(Math.random() * regionalData.countries.length)];
-      const pos = ['POR', 'DFC', 'LI', 'LD', 'MCD', 'MC', 'MCO', 'EI', 'ED', 'DC'][Math.floor(Math.random() * 10)];
-      
+      const fn = regionalData.firstNames[Math.floor(Math.random() * regionalData.firstNames.length)]!;
+      const ln = regionalData.lastNames[Math.floor(Math.random() * regionalData.lastNames.length)]!;
+      const country = regionalData.countries[Math.floor(Math.random() * regionalData.countries.length)]!;
+      const pos: Position = (['POR', 'DFC', 'LI', 'LD', 'MCD', 'MC', 'MCO', 'EI', 'ED', 'DC'] as Position[])[Math.floor(Math.random() * 10)]!;
+
       const age = 15 + Math.floor(Math.random() * 4); // 15 - 18 años
       const ovr = levelData.minOvr + Math.floor(Math.random() * (levelData.maxOvr - levelData.minOvr + 1));
-      
+
       const potMin = Math.min(96, Math.max(ovr + 5, levelData.minPot + Math.floor(Math.random() * 6)));
       const potMax = Math.min(97, Math.max(potMin + 4, levelData.maxPot - Math.floor(Math.random() * 4)));
 
       const value = calculatePlayerMarketValue(ovr, age, potMax);
       const salary = calculatePlayerSalary(value, ovr);
 
+      // Cast a YouthProspect: los campos Player (teamId, morale, form, appearances,
+      // seasonGoals) se completan en promoteToFirstTeam; el resto (statsHistory, fcIqRole,
+      // tacticalAffinity...) lo migra loadGame al persistir. No "arreglar" con campos adicionales.
       prospects.push({
-        id: `youth_${Date.now()}_${i}_${Math.floor(Math.random()*1000)}`,
+        id: `youth_${Date.now()}_${i}_${Math.floor(Math.random() * 1000)}`,
         name: `${fn} ${ln}`,
         country: country,
         region: region,
@@ -96,7 +129,7 @@ export class YouthAcademyEngine {
         value: value,
         salary: salary,
         promotionCost: Math.round(ovr * 1500 + potMax * 2000)
-      });
+      } as YouthProspect);
     }
 
     if (!gameState.youthAcademy) gameState.youthAcademy = [];
@@ -109,8 +142,8 @@ export class YouthAcademyEngine {
   /**
    * Sube de nivel el ojeador de cantera
    */
-  static upgradeScoutLevel() {
-    const gameState = db.gameState;
+  static upgradeScoutLevel(): YouthActionResult {
+    const gameState = db.gameState!;
     const currentLevel = gameState.scoutLevel || 1;
 
     if (currentLevel >= 5) {
@@ -118,12 +151,12 @@ export class YouthAcademyEngine {
     }
 
     const nextLevel = currentLevel + 1;
-    const upgradeCost = SCOUT_LEVEL_DATA[nextLevel].upgradeCost;
+    const upgradeCost = SCOUT_LEVEL_DATA[nextLevel]!.upgradeCost;
 
     if (gameState.budget < upgradeCost) {
-      return { 
-        success: false, 
-        reason: `Presupuesto insuficiente. Se requieren €${(upgradeCost / 1000000).toFixed(1)}M para subir al Nivel ${nextLevel}.` 
+      return {
+        success: false,
+        reason: `Presupuesto insuficiente. Se requieren €${(upgradeCost / 1000000).toFixed(1)}M para subir al Nivel ${nextLevel}.`
       };
     }
 
@@ -131,21 +164,21 @@ export class YouthAcademyEngine {
     gameState.scoutLevel = nextLevel;
     db.saveGame();
 
-    return { 
-      success: true, 
-      message: `¡Ojeador mejorado a Nivel ${nextLevel}: ${SCOUT_LEVEL_DATA[nextLevel].name}!` 
+    return {
+      success: true,
+      message: `¡Ojeador mejorado a Nivel ${nextLevel}: ${SCOUT_LEVEL_DATA[nextLevel]!.name}!`
     };
   }
 
   /**
    * Descarta un canterano de la academia
    */
-  static dismissProspect(playerDataId) {
-    const gameState = db.gameState;
+  static dismissProspect(playerDataId: string): YouthActionResult {
+    const gameState = db.gameState!;
     const academy = gameState.youthAcademy || [];
     const idx = academy.findIndex(p => p.id === playerDataId);
     if (idx !== -1) {
-      const removed = academy.splice(idx, 1)[0];
+      const removed = academy.splice(idx, 1)[0]!;
       db.saveGame();
       return { success: true, message: `${removed.name} ha sido descartado de la cantera.` };
     }
@@ -155,14 +188,14 @@ export class YouthAcademyEngine {
   /**
    * Promociona a un juvenil al primer equipo
    */
-  static promoteToFirstTeam(youthPlayer) {
-    const gameState = db.gameState;
+  static promoteToFirstTeam(youthPlayer: YouthProspect): YouthActionResult {
+    const gameState = db.gameState!;
     const promotionCost = youthPlayer.promotionCost || 100000;
 
     if (gameState.budget < promotionCost) {
-      return { 
-        success: false, 
-        reason: `Presupuesto insuficiente. Se requieren €${(promotionCost / 1000).toFixed(0)}K para el contrato profesional de ${youthPlayer.name}.` 
+      return {
+        success: false,
+        reason: `Presupuesto insuficiente. Se requieren €${(promotionCost / 1000).toFixed(0)}K para el contrato profesional de ${youthPlayer.name}.`
       };
     }
 
@@ -184,22 +217,22 @@ export class YouthAcademyEngine {
     if (idx !== -1) academy.splice(idx, 1);
 
     db.saveGame();
-    return { 
-      success: true, 
-      message: `¡${youthPlayer.name} (${youthPlayer.pos}, OVR: ${youthPlayer.overall}, Pot: ${youthPlayer.potential}) ha firmado su contrato profesional y fue promovido al primer equipo!` 
+    return {
+      success: true,
+      message: `¡${youthPlayer.name} (${youthPlayer.pos}, OVR: ${youthPlayer.overall}, Pot: ${youthPlayer.potential}) ha firmado su contrato profesional y fue promovido al primer equipo!`
     };
   }
 
   /**
    * Simula el Torneo de Cantera Sub-19 anual para evolucionar a los juveniles (+1 a +3 OVR). Solo 1 por temporada.
    */
-  static runYouthTournamentMatch() {
-    const gameState = db.gameState;
+  static runYouthTournamentMatch(): YouthActionResult {
+    const gameState = db.gameState!;
 
     if (gameState.youthTournamentPlayed) {
-      return { 
-        success: false, 
-        reason: `🏆 El Torneo de Cantera Sub-19 ya fue disputado durante la presente temporada (${gameState.season}/${gameState.season + 1}). Solo se permite 1 torneo juvenil por temporada.` 
+      return {
+        success: false,
+        reason: `🏆 El Torneo de Cantera Sub-19 ya fue disputado durante la presente temporada (${gameState.season}/${gameState.season + 1}). Solo se permite 1 torneo juvenil por temporada.`
       };
     }
 

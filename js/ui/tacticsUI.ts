@@ -1,18 +1,21 @@
 // Vista de Tácticas & Alineación 2D Estilo EA FC / FIFA (Drag and Drop, Formaciones y Auto-Alineación)
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
 import { TacticsEngine, FORMATIONS, FC_IQ_ROLES } from '../engine/tactics.js';
 import { openPlayerInspectorModal } from './playerInspectorUI.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
-export function renderTactics(container) {
-  const gameState = db.gameState;
+import type { FCIQRole, FormationId, PlayStyle, SkillLevels } from '../types.js';
+
+export function renderTactics(container: HTMLElement): void {
+  const gameState = db.gameState!;
   const squad = db.getTeamPlayers(gameState.userTeamId);
-  const currentFormation = gameState.tactics.formation || '4-3-3';
+  const currentFormation: FormationId = gameState.tactics.formation || '4-3-3';
   const { startingXI, substitutes } = TacticsEngine.getBestStartingXI(squad, currentFormation);
   const effectiveOvr = TacticsEngine.calculateEffectiveRating(startingXI, gameState.tactics);
 
-  let draggedPlayerId = null;
+  let draggedPlayerId: string | null = null;
 
   container.innerHTML = `
     <div class="squad-layout">
@@ -73,7 +76,7 @@ export function renderTactics(container) {
         <div class="form-group mb-3">
           <label>Formación Táctica:</label>
           <select id="selectFormation" class="input-select">
-            ${Object.keys(FORMATIONS).map(fKey => `
+            ${(Object.keys(FORMATIONS) as FormationId[]).map(fKey => `
               <option value="${fKey}" ${fKey === currentFormation ? 'selected' : ''}>${FORMATIONS[fKey].name}</option>
             `).join('')}
           </select>
@@ -135,7 +138,7 @@ export function renderTactics(container) {
   `;
 
   // BOTÓN AUTO-ALINEACIÓN
-  document.getElementById('btnAutoXI').addEventListener('click', () => {
+  document.getElementById('btnAutoXI')!.addEventListener('click', () => {
     sfx.playClick();
     const { startingXI: bestXI, substitutes: bestSubs } = TacticsEngine.getBestStartingXI(squad, currentFormation);
     
@@ -152,17 +155,17 @@ export function renderTactics(container) {
   });
 
   // Configurar Drag and Drop API y Clics de Inspección
-  const pitchCards = document.querySelectorAll('.player-pitch-card');
-  const subRows = document.querySelectorAll('.draggable-sub-row');
+  const pitchCards = document.querySelectorAll<HTMLElement>('.player-pitch-card');
+  const subRows = document.querySelectorAll<HTMLElement>('.draggable-sub-row');
 
-  const handleDragStart = (e) => {
-    draggedPlayerId = e.currentTarget.dataset.id;
-    e.dataTransfer.setData('text/plain', draggedPlayerId);
-    e.currentTarget.classList.add('dragging');
+  const handleDragStart = (e: Event) => {
+    draggedPlayerId = (e.currentTarget as HTMLElement).dataset.id ?? null;
+    (e as DragEvent).dataTransfer!.setData('text/plain', draggedPlayerId!);
+    (e.currentTarget as HTMLElement).classList.add('dragging');
   };
 
-  const handleDragEnd = (e) => {
-    e.currentTarget.classList.remove('dragging');
+  const handleDragEnd = (e: Event) => {
+    (e.currentTarget as HTMLElement).classList.remove('dragging');
   };
 
   pitchCards.forEach(card => {
@@ -263,7 +266,7 @@ export function renderTactics(container) {
   document.querySelectorAll('.btn-upgrade-skill').forEach(btn => {
     btn.addEventListener('click', (e) => {
       sfx.playClick();
-      const skillKey = e.currentTarget.dataset.skill;
+      const skillKey = (e.currentTarget as HTMLElement).dataset.skill as keyof SkillLevels;
       const res = TacticsEngine.upgradeManagerSkill(skillKey);
       if (res.success) {
         sfx.playGoal();
@@ -279,8 +282,9 @@ export function renderTactics(container) {
   document.querySelectorAll('.fc-iq-role-select').forEach(sel => {
     sel.addEventListener('change', (e) => {
       e.stopPropagation();
-      const playerId = e.target.dataset.playerId;
-      const roleVal = e.target.value;
+      const target = e.target as HTMLSelectElement;
+      const playerId = target.dataset.playerId;
+      const roleVal = target.value as FCIQRole;
       const player = squad.find(p => p.id === playerId);
       if (player) {
         player.fcIqRole = roleVal;
@@ -292,15 +296,15 @@ export function renderTactics(container) {
   });
 
   // Handlers para cambios de formación y tácticas
-  document.getElementById('selectFormation').addEventListener('change', (e) => {
+  document.getElementById('selectFormation')!.addEventListener('change', (e) => {
     sfx.playClick();
-    gameState.tactics.formation = e.target.value;
+    gameState.tactics.formation = (e.target as HTMLSelectElement).value as FormationId;
     db.saveGame();
     renderTactics(container);
   });
 
-  document.getElementById('selectStyle').addEventListener('change', (e) => {
-    gameState.tactics.style = e.target.value;
+  document.getElementById('selectStyle')!.addEventListener('change', (e) => {
+    gameState.tactics.style = (e.target as HTMLSelectElement).value as PlayStyle;
     db.saveGame();
   });
 }

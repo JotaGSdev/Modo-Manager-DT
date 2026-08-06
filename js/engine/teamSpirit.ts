@@ -8,13 +8,16 @@
  * 3. Afinidad táctica de los jugadores con el estilo del equipo.
  * 4. Impacto de roles de personalidad (Capitán, Rebelde, Mentor).
  * 5. Drift semanal según resultados recientes (racha de victorias/derrotas).
+ *
+ * Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
  */
 
 import { db } from '../data/db.js';
-import { FC_IQ_ROLES } from './tactics.js';
+
+import type { AffinityKey, FCIQRole, PlayStyle, StartingXIEntry, TacticsConfig } from '../types.js';
 
 // Pares de roles FC IQ que generan sinergia entre sí (+bonus de compatibilidad)
-const ROLE_SYNERGIES = [
+const ROLE_SYNERGIES: [FCIQRole, FCIQRole][] = [
   ['Anchor', 'Playmaker'],
   ['Anchor', 'Box-to-Box'],
   ['Deep-Lying PM', 'Enganche'],
@@ -28,7 +31,7 @@ const ROLE_SYNERGIES = [
 ];
 
 // Mapa de estilos de juego a clave de afinidad
-const STYLE_TO_AFFINITY = {
+const STYLE_TO_AFFINITY: Record<PlayStyle, AffinityKey> = {
   'Tiki-Taka':     'possession',
   'Gegenpressing': 'highPress',
   'Presión Alta':  'highPress',
@@ -40,11 +43,11 @@ const STYLE_TO_AFFINITY = {
 export class TeamSpiritEngine {
   /**
    * Calcula el Team Spirit actual basado en el estado del equipo.
-   * @param {Array<Object>} startingXI - Titulares actuales ({ player, slot })
-   * @param {Object} tactics - Configuración táctica (style, formation)
-   * @returns {number} Spirit calculado (0-100)
+   * @param startingXI - Titulares actuales ({ player, slot })
+   * @param tactics - Configuración táctica (style, formation)
+   * @returns Spirit calculado (0-100)
    */
-  static calculate(startingXI, tactics) {
+  static calculate(startingXI: StartingXIEntry[] | null | undefined, tactics?: TacticsConfig): number {
     if (!startingXI || startingXI.length === 0) return 50;
 
     const gameState = db.gameState;
@@ -67,7 +70,8 @@ export class TeamSpiritEngine {
     spirit += Math.min(15, synergyBonus); // máx +15 por sinergias
 
     // 3. Bonus por afinidad táctica de los titulares con el estilo
-    const affinityKey = STYLE_TO_AFFINITY[tactics?.style] || null;
+    const style = tactics?.style;
+    const affinityKey: AffinityKey | null = style ? (STYLE_TO_AFFINITY[style] || null) : null;
     if (affinityKey) {
       const avgAffinity = startingXI.reduce((sum, item) => {
         return sum + ((item.player.tacticalAffinity?.[affinityKey] || 50));
@@ -98,7 +102,7 @@ export class TeamSpiritEngine {
    * Aplica el drift semanal del Team Spirit según los últimos resultados.
    * Debe llamarse al avanzar semana desde dashboardUI.
    */
-  static applyWeeklyDrift() {
+  static applyWeeklyDrift(): void {
     const gameState = db.gameState;
     if (!gameState) return;
 
@@ -120,9 +124,9 @@ export class TeamSpiritEngine {
 
   /**
    * Renderiza el panel de Team Spirit como HTML embebible en cualquier vista.
-   * @returns {string} HTML del panel
+   * @returns HTML del panel
    */
-  static renderSpiritPanel() {
+  static renderSpiritPanel(): string {
     const gameState = db.gameState;
     const spirit = gameState?.teamSpirit ?? 50;
 

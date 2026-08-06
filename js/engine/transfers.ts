@@ -1,9 +1,23 @@
 // Motor de Mercado de Fichajes y Negociaciones Estilo EA FC / FIFA por Pasos y Bloqueo de Ventana
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
-import { ProbabilityEngine } from './probability.js';
 
-export function isTransferWindowOpen(week) {
+import type { ActionResult, Player, Position, SquadRole } from '../types.js';
+
+/** Filtros del mercado de fichajes (getMarketPlayers) */
+export interface MarketFilters {
+  position?: Position | 'ALL';
+  maxPrice?: number;
+  minOvr?: number;
+  maxAge?: number;
+  name?: string;
+}
+
+/** Entrada del mercado: jugador + club y estado de bloqueo */
+export type MarketPlayer = Player & { teamName: string; isLocked: boolean };
+
+export function isTransferWindowOpen(week: number): boolean {
   return (week >= 1 && week <= 4) || (week >= 19 && week <= 22);
 }
 
@@ -11,8 +25,8 @@ export class TransferEngine {
   /**
    * Verifica si las negociaciones con un jugador están bloqueadas en la ventana actual
    */
-  static isPlayerLocked(playerId) {
-    const gameState = db.gameState;
+  static isPlayerLocked(playerId: string): boolean {
+    const gameState = db.gameState!;
     if (!gameState.failedTransferPlayers) gameState.failedTransferPlayers = [];
     return gameState.failedTransferPlayers.includes(playerId);
   }
@@ -20,8 +34,8 @@ export class TransferEngine {
   /**
    * Bloquea a un jugador por negociación fallida hasta la siguiente ventana
    */
-  static lockPlayerForCurrentWindow(playerId) {
-    const gameState = db.gameState;
+  static lockPlayerForCurrentWindow(playerId: string): void {
+    const gameState = db.gameState!;
     if (!gameState.failedTransferPlayers) gameState.failedTransferPlayers = [];
     if (!gameState.failedTransferPlayers.includes(playerId)) {
       gameState.failedTransferPlayers.push(playerId);
@@ -32,8 +46,8 @@ export class TransferEngine {
   /**
    * Resetea el bloqueo de negociaciones al abrir una nueva ventana (Semana 1 o Semana 19)
    */
-  static resetWindowLocks() {
-    const gameState = db.gameState;
+  static resetWindowLocks(): void {
+    const gameState = db.gameState!;
     gameState.failedTransferPlayers = [];
     db.saveGame();
   }
@@ -41,9 +55,9 @@ export class TransferEngine {
   /**
    * Obtiene los jugadores disponibles en el mercado
    */
-  static getMarketPlayers(filters = {}) {
-    const market = [];
-    const userTeamId = db.gameState.userTeamId;
+  static getMarketPlayers(filters: MarketFilters = {}): MarketPlayer[] {
+    const market: MarketPlayer[] = [];
+    const userTeamId = db.gameState!.userTeamId;
 
     for (const teamId in db.teams) {
       if (teamId === userTeamId) continue;
@@ -72,8 +86,8 @@ export class TransferEngine {
   /**
    * Evalúa la Oferta de Traspaso enviada al Club Vendedor (Paso 1)
    */
-  static evaluateClubOffer(player, fee, sellOnPct = 0) {
-    const gameState = db.gameState;
+  static evaluateClubOffer(player: Player, fee: number, sellOnPct = 0): ActionResult {
+    const gameState = db.gameState!;
 
     if (!isTransferWindowOpen(gameState.week)) {
       return { success: false, reason: 'El mercado de fichajes está cerrado.' };
@@ -111,8 +125,8 @@ export class TransferEngine {
   /**
    * Evalúa el Contrato del Jugador y Representante (Paso 2)
    */
-  static evaluateContractOffer(player, transferFee, role, contractYears, wage, signingBonus = 0) {
-    const gameState = db.gameState;
+  static evaluateContractOffer(player: Player, transferFee: number, role: SquadRole, contractYears: number, wage: number, signingBonus = 0): ActionResult {
+    const gameState = db.gameState!;
 
     if (wage > gameState.wageBudget) {
       return { success: false, reason: 'Presupuesto salarial insuficiente.' };

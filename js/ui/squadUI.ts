@@ -1,16 +1,19 @@
 // Vista Dedicada a la Gestión Organizada de la Plantilla (Squad Hub Estilo EA FC / FIFA)
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
 import { openPlayerInspectorModal } from './playerInspectorUI.js';
 import { sfx } from '../../assets/audio/sfx.js';
 import { TeamSpiritEngine } from '../engine/teamSpirit.js';
 
-const POS_ORDER = { 'POR': 1, 'DFC': 2, 'LI': 3, 'LD': 4, 'MCD': 5, 'MC': 6, 'MCO': 7, 'EI': 8, 'ED': 9, 'DC': 10 };
+import type { PersonalityRole } from '../types.js';
 
-export function renderSquad(container) {
-  const gameState = db.gameState;
+const POS_ORDER: Record<string, number> = { 'POR': 1, 'DFC': 2, 'LI': 3, 'LD': 4, 'MCD': 5, 'MC': 6, 'MCO': 7, 'EI': 8, 'ED': 9, 'DC': 10 };
+
+export function renderSquad(container: HTMLElement): void {
+  const gameState = db.gameState!;
   const squad = db.getTeamPlayers(gameState.userTeamId);
-  const userTeam = db.teams[gameState.userTeamId];
+  const userTeam = db.teams[gameState.userTeamId]!;
 
   let currentFilter = 'ALL';
   let searchQuery = '';
@@ -88,15 +91,16 @@ export function renderSquad(container) {
     document.querySelectorAll('.select-personality-role').forEach(sel => {
       sel.addEventListener('change', (e) => {
         e.stopPropagation();
-        const pid = e.target.dataset.playerId;
-        const pval = e.target.value;
+        const target = e.target as HTMLSelectElement;
+        const pid = target.dataset.playerId;
+        const pval = target.value;
         const player = squad.find(p => p.id === pid);
         if (player) {
           // Si eligió capitán, remover capitán previo
           if (pval === 'captain') {
             squad.forEach(sp => { if (sp.personalityRole === 'captain') sp.personalityRole = 'none'; });
           }
-          player.personalityRole = pval === 'none' ? null : pval;
+          player.personalityRole = pval === 'none' ? null : (pval as PersonalityRole);
           db.saveGame();
           sfx.playClick();
           renderSquad(container);
@@ -108,7 +112,7 @@ export function renderSquad(container) {
     document.querySelectorAll('.btn-inspect-player').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const id = e.currentTarget.dataset.id;
+        const id = (e.currentTarget as HTMLElement).dataset.id;
         const player = squad.find(p => p.id === id);
         if (player) {
           sfx.playClick();
@@ -119,7 +123,7 @@ export function renderSquad(container) {
 
     document.querySelectorAll('.player-squad-row').forEach(row => {
       row.addEventListener('click', (e) => {
-        const id = e.currentTarget.dataset.id;
+        const id = (e.currentTarget as HTMLElement).dataset.id;
         const player = squad.find(p => p.id === id);
         if (player) {
           sfx.playClick();
@@ -188,17 +192,17 @@ export function renderSquad(container) {
     btn.addEventListener('click', (e) => {
       sfx.playClick();
       document.querySelectorAll('.btn-filter-pos').forEach(b => b.classList.remove('active'));
-      e.currentTarget.classList.add('active');
-      currentFilter = e.currentTarget.dataset.pos;
+      (e.currentTarget as HTMLElement).classList.add('active');
+      currentFilter = (e.currentTarget as HTMLElement).dataset.pos || 'ALL';
       renderTable();
     });
   });
 
   // Evento de Búsqueda por Nombre
-  const searchInput = document.getElementById('inputSearchSquad');
+  const searchInput = document.getElementById('inputSearchSquad') as HTMLInputElement | null;
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
-      searchQuery = e.target.value;
+      searchQuery = (e.target as HTMLInputElement).value;
       renderTable();
     });
   }

@@ -1,15 +1,17 @@
 // Interfaz de Mercado de Fichajes con Negociación por Pasos e Indicadores Presupuestarios en Tiempo Real (EA FC Style)
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
 import { TransferEngine, isTransferWindowOpen } from '../engine/transfers.js';
-import { ProbabilityEngine } from '../engine/probability.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
-export function renderTransfers(container) {
-  const gameState = db.gameState;
-  const userTeam = db.teams[gameState.userTeamId];
+import type { MarketFilters } from '../engine/transfers.js';
+import type { Player, SquadRole } from '../types.js';
+
+export function renderTransfers(container: HTMLElement): void {
+  const gameState = db.gameState!;
   const marketOpen = isTransferWindowOpen(gameState.week);
-  let currentFilters = { position: 'ALL', name: '' };
+  let currentFilters: MarketFilters = { position: 'ALL', name: '' };
 
   const renderMarketList = () => {
     const players = TransferEngine.getMarketPlayers(currentFilters);
@@ -50,8 +52,8 @@ export function renderTransfers(container) {
           alert('El mercado de fichajes está cerrado actualmente. Solo abre en las Semanas 1-4 (Verano) y 19-22 (Invierno).');
           return;
         }
-        const playerId = e.target.dataset.id;
-        const player = db.getPlayerById(playerId);
+        const playerId = (e.target as HTMLElement).dataset.id;
+        const player = db.getPlayerById(playerId!);
         if (player) openEAFCNegotiationWizard(player);
       });
     });
@@ -105,13 +107,13 @@ export function renderTransfers(container) {
     </div>
   `;
 
-  document.getElementById('inputSearchName').addEventListener('input', (e) => {
-    currentFilters.name = e.target.value;
+  document.getElementById('inputSearchName')!.addEventListener('input', (e) => {
+    currentFilters.name = (e.target as HTMLInputElement).value;
     renderMarketList();
   });
 
-  document.getElementById('selectPosFilter').addEventListener('change', (e) => {
-    currentFilters.position = e.target.value;
+  document.getElementById('selectPosFilter')!.addEventListener('change', (e) => {
+    currentFilters.position = (e.target as HTMLSelectElement).value as Exclude<MarketFilters['position'], undefined>;
     renderMarketList();
   });
 
@@ -120,9 +122,9 @@ export function renderTransfers(container) {
   /**
    * Wizard de Negociación por Pasos al estilo EA FC / FIFA con Indicadores Presupuestarios Visibles
    */
-  function openEAFCNegotiationWizard(player) {
-    const modal = document.getElementById('negotiationModal');
-    const content = document.getElementById('modalContent');
+  function openEAFCNegotiationWizard(player: Player): void {
+    const modal = document.getElementById('negotiationModal')!;
+    const content = document.getElementById('modalContent')!;
     modal.classList.remove('hidden');
 
     let agreedFee = Math.round(player.value * 1.05);
@@ -170,8 +172,8 @@ export function renderTransfers(container) {
       `;
 
       const updateClubMeter = () => {
-        const fee = parseFloat(document.getElementById('inputClubFee').value) || 0;
-        const sellOn = parseFloat(document.getElementById('selectSellOn').value) || 0;
+        const fee = parseFloat((document.getElementById('inputClubFee') as HTMLInputElement).value) || 0;
+        const sellOn = parseFloat((document.getElementById('selectSellOn') as HTMLSelectElement).value) || 0;
         const effective = fee + (sellOn / 100) * player.value * 0.15;
         const pct = Math.max(0, Math.min(99, Math.round((effective / player.value) * 60)));
 
@@ -185,15 +187,15 @@ export function renderTransfers(container) {
         }
       };
 
-      document.getElementById('inputClubFee').addEventListener('input', updateClubMeter);
-      document.getElementById('selectSellOn').addEventListener('change', updateClubMeter);
+      document.getElementById('inputClubFee')!.addEventListener('input', updateClubMeter);
+      document.getElementById('selectSellOn')!.addEventListener('change', updateClubMeter);
       updateClubMeter();
 
-      document.getElementById('btnCloseWizard').addEventListener('click', () => modal.classList.add('hidden'));
+      document.getElementById('btnCloseWizard')!.addEventListener('click', () => modal.classList.add('hidden'));
 
-      document.getElementById('btnSubmitStep1').addEventListener('click', () => {
-        const fee = parseFloat(document.getElementById('inputClubFee').value);
-        const sellOn = parseFloat(document.getElementById('selectSellOn').value);
+      document.getElementById('btnSubmitStep1')!.addEventListener('click', () => {
+        const fee = parseFloat((document.getElementById('inputClubFee') as HTMLInputElement).value);
+        const sellOn = parseFloat((document.getElementById('selectSellOn') as HTMLSelectElement).value);
 
         if (fee > gameState.budget) {
           alert(`Presupuesto insuficiente. Tu oferta de €${(fee/1e6).toFixed(2)}M supera tu presupuesto de fichajes disponible de €${(gameState.budget/1e6).toFixed(2)}M.`);
@@ -201,7 +203,7 @@ export function renderTransfers(container) {
         }
 
         const res = TransferEngine.evaluateClubOffer(player, fee, sellOn);
-        const resEl = document.getElementById('step1Result');
+        const resEl = document.getElementById('step1Result')!;
 
         if (res.success) {
           sfx.playTransferChime();
@@ -295,8 +297,8 @@ export function renderTransfers(container) {
       let agentImpatience = 0;
 
       const validateStep2Budgets = () => {
-        const wage = parseFloat(document.getElementById('inputPlayerWage').value) || 0;
-        const bonus = parseFloat(document.getElementById('inputSigningBonus').value) || 0;
+        const wage = parseFloat((document.getElementById('inputPlayerWage') as HTMLInputElement).value) || 0;
+        const bonus = parseFloat((document.getElementById('inputSigningBonus') as HTMLInputElement).value) || 0;
         const remainingBudgetForBonus = gameState.budget - agreedFee;
         const infoEl = document.getElementById('wageValidationInfo');
 
@@ -338,17 +340,17 @@ export function renderTransfers(container) {
         }
       };
 
-      document.getElementById('inputPlayerWage').addEventListener('input', validateStep2Budgets);
-      document.getElementById('inputSigningBonus').addEventListener('input', validateStep2Budgets);
+      document.getElementById('inputPlayerWage')!.addEventListener('input', validateStep2Budgets);
+      document.getElementById('inputSigningBonus')!.addEventListener('input', validateStep2Budgets);
       validateStep2Budgets();
 
-      document.getElementById('btnCloseWizard2').addEventListener('click', () => {
+      document.getElementById('btnCloseWizard2')!.addEventListener('click', () => {
         TransferEngine.lockPlayerForCurrentWindow(player.id);
         modal.classList.add('hidden');
         renderMarketList();
       });
 
-      document.getElementById('btnSubmitStep2').addEventListener('click', () => {
+      document.getElementById('btnSubmitStep2')!.addEventListener('click', () => {
         if (agentImpatience >= 95) {
           alert('¡NEGOCIACIÓN ROTA! El representante del jugador se levantó de la mesa furioso por tu propuesta insultante.');
           TransferEngine.lockPlayerForCurrentWindow(player.id);
@@ -357,13 +359,13 @@ export function renderTransfers(container) {
           return;
         }
 
-        const role = document.getElementById('selectPlayerRole').value;
-        const years = parseInt(document.getElementById('selectYears').value);
-        const wage = parseFloat(document.getElementById('inputPlayerWage').value);
-        const bonus = parseFloat(document.getElementById('inputSigningBonus').value);
+        const role = (document.getElementById('selectPlayerRole') as HTMLSelectElement).value as SquadRole;
+        const years = parseInt((document.getElementById('selectYears') as HTMLSelectElement).value);
+        const wage = parseFloat((document.getElementById('inputPlayerWage') as HTMLInputElement).value);
+        const bonus = parseFloat((document.getElementById('inputSigningBonus') as HTMLInputElement).value);
 
         const res = TransferEngine.evaluateContractOffer(player, agreedFee, role, years, wage, bonus);
-        const resEl = document.getElementById('step2Result');
+        const resEl = document.getElementById('step2Result')!;
 
         if (res.success) {
           sfx.playGoal();

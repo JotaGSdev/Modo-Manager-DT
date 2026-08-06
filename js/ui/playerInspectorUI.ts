@@ -1,10 +1,12 @@
 // Inspector de Jugador Estilo EA FC / FIFA: Edad Dinámica, Contrato en Años y Meses Restantes, Ventas y Renovaciones
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
 import { sfx } from '../../assets/audio/sfx.js';
-import { calculatePlayerMarketValue, calculatePlayerSalary } from '../data/teamData.js';
 
-const TACTICAL_ROLES_BY_POS = {
+import type { Player, Position } from '../types.js';
+
+const TACTICAL_ROLES_BY_POS: Partial<Record<Position, string[]>> = {
   'POR': ['Portero Líbero (Sale a Cortar)', 'Portero Tradicional (Bajo el Arco)'],
   'DFC': ['Defensa Marcador Físico', 'Defensa de Salida Limpia / Toque'],
   'LI': ['Lateral de Recorrido Profundo', 'Lateral Invertido (Apoyo a MCO)', 'Defensa Lateral Cerrado'],
@@ -17,12 +19,12 @@ const TACTICAL_ROLES_BY_POS = {
   'DC': ['Delantero Centro Avanzado', 'Falso 9 Táctico', 'Hombre Objetivo / Pivote de Área']
 };
 
-export function openPlayerInspectorModal(player, onUpdate) {
-  const gameState = db.gameState;
+export function openPlayerInspectorModal(player: Player, onUpdate?: () => void): void {
+  const gameState = db.gameState!;
   const userTeamId = gameState.userTeamId;
   const isOwnPlayer = player.teamId === userTeamId;
 
-  let modal = document.getElementById('playerInspectorModal');
+  let modal: HTMLElement | null = document.getElementById('playerInspectorModal');
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'playerInspectorModal';
@@ -165,11 +167,11 @@ export function openPlayerInspectorModal(player, onUpdate) {
   // Renderizar Gráfico Radar Hexagonal en Canvas puro
   const radarCanvas = document.getElementById('playerRadarCanvas');
   if (radarCanvas) {
-    drawPlayerRadarCanvas(radarCanvas, player);
+    drawPlayerRadarCanvas(radarCanvas as HTMLCanvasElement, player);
   }
 
-  function drawPlayerRadarCanvas(canvas, p) {
-    const ctx = canvas.getContext('2d');
+  function drawPlayerRadarCanvas(canvas: HTMLCanvasElement, p: Player): void {
+    const ctx = canvas.getContext('2d')!;
     const w = canvas.width, h = canvas.height;
     const cx = w / 2, cy = h / 2, r = 75;
 
@@ -224,14 +226,14 @@ export function openPlayerInspectorModal(player, onUpdate) {
       const lx = cx + Math.cos(a) * (r + 18);
       const ly = cy + Math.sin(a) * (r + 14);
       ctx.fillStyle = '#00c885';
-      ctx.fillText(`${stats[i].label} ${stats[i].val}`, lx, ly);
+      ctx.fillText(`${stats[i]!.label} ${stats[i]!.val}`, lx, ly);
     }
 
     // Polígono de los atributos del jugador
     ctx.beginPath();
     for (let i = 0; i < totalAxes; i++) {
       const a = i * angleStep - Math.PI / 2;
-      const normVal = Math.min(100, Math.max(30, stats[i].val)) / 100;
+      const normVal = Math.min(100, Math.max(30, stats[i]!.val)) / 100;
       const x = cx + Math.cos(a) * (r * normVal);
       const y = cy + Math.sin(a) * (r * normVal);
       if (i === 0) ctx.moveTo(x, y);
@@ -248,7 +250,7 @@ export function openPlayerInspectorModal(player, onUpdate) {
   const feedbackEl = document.getElementById('inspectorFeedback');
   const closeBtn = document.getElementById('btnCloseInspector');
 
-  closeBtn.addEventListener('click', () => {
+  closeBtn!.addEventListener('click', () => {
     modal.classList.add('hidden');
   });
 
@@ -256,20 +258,21 @@ export function openPlayerInspectorModal(player, onUpdate) {
     const roleSelect = document.getElementById('selectIndividualRole');
     if (roleSelect) {
       roleSelect.addEventListener('change', (e) => {
-        player.individualInstruction = e.target.value;
+        const target = e.target as HTMLSelectElement;
+        player.individualInstruction = target.value;
         db.saveGame();
         sfx.playClick();
-        feedbackEl.innerText = `¡Rol Táctico guardado: "${e.target.value}"!`;
-        feedbackEl.classList.remove('hidden');
-        setTimeout(() => feedbackEl.classList.add('hidden'), 2000);
+        feedbackEl!.innerText = `¡Rol Táctico guardado: "${target.value}"!`;
+        feedbackEl!.classList.remove('hidden');
+        setTimeout(() => feedbackEl!.classList.add('hidden'), 2000);
       });
     }
 
     // 1. VENDER JUGADOR
-    document.getElementById('btnSellPlayer').addEventListener('click', () => {
+    document.getElementById('btnSellPlayer')!.addEventListener('click', () => {
       sfx.playClick();
       const availableTeams = Object.values(db.teams).filter(t => t.id !== userTeamId);
-      const buyerTeam = availableTeams[Math.floor(Math.random() * availableTeams.length)];
+      const buyerTeam = availableTeams[Math.floor(Math.random() * availableTeams.length)]!;
       
       const offerMultiplier = 1.05 + Math.random() * 0.20;
       const offerFee = Math.round(player.value * offerMultiplier);
@@ -300,7 +303,7 @@ export function openPlayerInspectorModal(player, onUpdate) {
     });
 
     // 2. RENOVAR CONTRATO
-    document.getElementById('btnRenewContract').addEventListener('click', () => {
+    document.getElementById('btnRenewContract')!.addEventListener('click', () => {
       sfx.playClick();
       const newWage = Math.round(player.salary * 1.10);
       const newYears = Math.min(5, (player.contractYears || 2) + 2);
@@ -325,10 +328,10 @@ export function openPlayerInspectorModal(player, onUpdate) {
     });
 
     // 3. PROPONER TRUEQUE / INTERCAMBIO
-    document.getElementById('btnSwapPlayer').addEventListener('click', () => {
+    document.getElementById('btnSwapPlayer')!.addEventListener('click', () => {
       sfx.playClick();
       const availableTeams = Object.values(db.teams).filter(t => t.id !== userTeamId);
-      const targetTeam = availableTeams[Math.floor(Math.random() * availableTeams.length)];
+      const targetTeam = availableTeams[Math.floor(Math.random() * availableTeams.length)]!;
       const targetPlayers = db.getTeamPlayers(targetTeam.id);
       
       const suitableTarget = targetPlayers.find(p => Math.abs(p.overall - player.overall) <= 3) || targetPlayers[0];
