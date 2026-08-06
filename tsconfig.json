@@ -1,0 +1,51 @@
+{
+  // ==========================================================================
+  // ENTRENADOR LEYENDA - TypeScript Config (Fase 1: build con dist/)
+  // ==========================================================================
+  // Estrategia de migración incremental:
+  //   1. Los archivos .js/.ts se cargan como ES modules nativos en el navegador
+  //      vía index.html -> ./dist/js/app.js (build generado).
+  //   2. `npm run build` (tsc) emite TODO el programa (js + ts) a dist/,
+  //      conservando la estructura de directorios. dist/js/ tiene la misma
+  //      profundidad que js/, por lo que los imports relativos a assets/
+  //      (../../assets/audio/sfx.js) siguen resolviendo dentro de dist/.
+  //   3. La emisión in-place (outDir === fuente) es IMPOSIBLE en tsc: lanza
+  //      TS5055 ("would overwrite input file") por cada .js existente.
+  //   4. `npm run typecheck` = tsc --noEmit (validación sin generar nada).
+  //   5. Para migrar un archivo: renómbralo de .js a .ts; los importadores
+  //      siguen usando "./x.js" (moduleResolution bundler mapea .js -> .ts y
+  //      la emisión regenera el .js en dist/).
+  // ==========================================================================
+  "compilerOptions": {
+    // ── Lenguaje objetivo (compatible con navegadores modernos) ──────────
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    // ── Rigor: el objetivo del juego es eliminar bugs silenciosos ─────────
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // ── Migración incremental: JS convive con TS sin ser revisado aún ─────
+    "allowJs": true,
+    "checkJs": false,
+
+    // ── Emisión a dist/ (build) ──────────────────────────────────────────
+    "outDir": "dist",
+    "sourceMap": false,
+
+    // ── Compatibilidad y limpieza ─────────────────────────────────────────
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": ["js/**/*.ts", "js/**/*.js"],
+  "exclude": ["node_modules", "dist"]
+}

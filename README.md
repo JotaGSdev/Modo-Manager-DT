@@ -147,11 +147,23 @@ Si deseas ejecutar o modificar el proyecto en tu máquina local:
    git clone https://github.com/JotaGSdev/Modo-Manager-DT.git
    cd Modo-Manager-DT
    ```
-2. Ejecuta un servidor local en Python o Node:
+2. El proyecto se migra gradualmente a **TypeScript**: compila el código a la carpeta `dist/` y ejecuta un servidor local:
    ```bash
+   npm install          # instala TypeScript (solo la primera vez)
+   npm run build        # compila los módulos .js/.ts a dist/ (genera dist/js/app.js)
    python -m http.server 8080
    ```
 3. Abre tu navegador en `http://localhost:8080` o juega la versión alojada en [GitHub Pages](https://jotagsdev.github.io/Modo-Manager-DT/).
+
+### 🛠️ Comandos de TypeScript
+
+| Comando | Descripción |
+|---|---|
+| `npm run build` | Compila todo el programa a `dist/` (requerido antes de abrir el juego) |
+| `npm run typecheck` | Valida tipos con `strict` sin generar archivos |
+| `npm run watch` | Recompila automáticamente al guardar cambios en desarrollo |
+
+La fuente de verdad vive en `js/` (archivos `.js` y `.ts`); `dist/` es un artefacto generado y no debe editarse. Los tipos de dominio están en `js/types.ts`.
 
 ---
 

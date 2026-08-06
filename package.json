@@ -1,0 +1,14 @@
+{
+  "name": "entrenador-leyenda",
+  "version": "3.1.0",
+  "private": true,
+  "description": "Entrenador Leyenda - simulador de carrera de director técnico de fútbol (25 temporadas).",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
