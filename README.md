@@ -10,7 +10,7 @@
 **Un simulador profundo, adictivo y realista de gestión futbolística para navegador web (2026 - 2051).**  
 Dirige clubes de todo el mundo, desarrolla canteranos, gestiona selecciones nacionales en Copas del Mundo y domina el vestuario en una trayectoria profesional de **hasta 25 temporadas**.
 
-[🎮 JUGAR AHORA EN LÍNEA](https://jotagsdev.github.io/Modo-Manager-DT/) • [☕ APOYAR EL PROYECTO](https://ko-fi.com/jotags)
+[🎮 JUGAR AHORA EN LÍNEA](https://modo-manager-dt.vercel.app/) • [☕ APOYAR EL PROYECTO](https://ko-fi.com/jotags)
 
 </div>
 
