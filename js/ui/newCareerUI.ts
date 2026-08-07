@@ -1,11 +1,12 @@
 /**
  * ============================================================================
- * ENTRENADOR LEYENDA - SELECCIÓN INICIAL DE CARRERA (newCareerUI.js v2.4)
+ * ENTRENADOR LEYENDA - SELECCIÓN INICIAL DE CARRERA (newCareerUI.ts v2.4)
  * ============================================================================
  * Flujo Narrativo en 3 Pasos Obligatorio con Picker Visual de Banderas SVG:
  * 1. PASO 1: Presentación Oficial del DT (Nombre, Edad 30-65, Selector Visual de País con Banderas SVG Reales).
  * 2. PASO 2: Selección de Filosofía Táctica Real (Tiki-Taka, Gegenpressing, Catenaccio, Bandas, Contraataque).
  * 3. PASO 3: Selección Automática de 3 Ofertas de Clubes Modestos/Bajos de su PAÍS DE ORIGEN.
+ * Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
  */
 
 import { db } from '../data/db.js';
@@ -13,17 +14,27 @@ import { renderTeamBadgeSVG, renderCountryFlagSVG } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
 import { MANAGER_ARCHETYPES } from '../engine/tactics.js';
 
-export function renderNewCareer(container, onCareerStarted) {
+import type { EventFrequency, ManagerArchetypeKey, Team } from '../types.js';
+
+/** Oferta de club nacional del Paso 3 (equipo + carta narrativa de la directiva) */
+interface ClubOffer {
+  team: Team & { leagueName: string; country: string; region: string };
+  projectType: string;
+  badgeColor: string;
+  letterMessage: string;
+}
+
+export function renderNewCareer(container: HTMLElement, onCareerStarted: () => void): void {
   let currentStep = 1;
 
   // Estado inicial obligatorio: Todo entrenador comienza como Novato de Cantera en su país
   let managerName = 'Director Técnico';
   let managerAge = 35;
   let managerCountry = 'Perú'; // Por defecto
-  let selectedArchetype = 'TIKI_TAKA';
+  let selectedArchetype: ManagerArchetypeKey = 'TIKI_TAKA';
 
   // v2.0: Opciones avanzadas de partida (Paso 4)
-  let eventFrequency = 'normal'; // 'off'|'baja'|'normal'|'alta'
+  let eventFrequency: EventFrequency = 'normal'; // 'off'|'baja'|'normal'|'alta'
   let enableRegens = true;
   let enableManagerMarket = true;
 
@@ -33,15 +44,15 @@ export function renderNewCareer(container, onCareerStarted) {
   /**
    * Selecciona 3 proyectos modestos/bajos EXCLUSIVAMENTE del PAÍS DE ORIGEN del DT principiante.
    */
-  const getMatchingTeams = () => {
+  const getMatchingTeams = (): ClubOffer[] => {
     let homeCountryLeagues = db.leagues.filter(l => l.country.toLowerCase() === managerCountry.toLowerCase());
-    
+
     if (homeCountryLeagues.length === 0) {
       const sampleLeague = db.leagues.find(l => l.country === 'Perú') || db.leagues[0];
-      homeCountryLeagues = [sampleLeague];
+      if (sampleLeague) homeCountryLeagues = [sampleLeague];
     }
 
-    const homeTeams = [];
+    const homeTeams: Array<Team & { leagueName: string; country: string; region: string }> = [];
     homeCountryLeagues.forEach(l => {
       l.teams.forEach(t => {
         homeTeams.push({
@@ -55,11 +66,11 @@ export function renderNewCareer(container, onCareerStarted) {
 
     homeTeams.sort((a, b) => a.overall - b.overall);
 
-    const club1 = homeTeams[0] || homeTeams[0];
-    const club2 = homeTeams[Math.floor(homeTeams.length / 2)] || homeTeams[1];
-    const club3 = homeTeams[homeTeams.length - 1] || homeTeams[homeTeams.length - 1];
+    const club1 = homeTeams[0]!;
+    const club2 = homeTeams[Math.floor(homeTeams.length / 2)]!;
+    const club3 = homeTeams[homeTeams.length - 1]!;
 
-    const archetypeData = MANAGER_ARCHETYPES[selectedArchetype] || MANAGER_ARCHETYPES['TIKI_TAKA'];
+    const archetypeData = MANAGER_ARCHETYPES[selectedArchetype] || MANAGER_ARCHETYPES['TIKI_TAKA']!;
 
     return [
       {
@@ -346,13 +357,13 @@ export function renderNewCareer(container, onCareerStarted) {
 
     // EVENT LISTENERS POR PASO
     if (currentStep === 1) {
-      const nameInput = document.getElementById('inputManagerName');
-      const ageInput = document.getElementById('inputManagerAge');
-      const countryCard = document.getElementById('selectedCountryCard');
-      const countryModal = document.getElementById('countryGridModal');
+      const nameInput = document.getElementById('inputManagerName') as HTMLInputElement;
+      const ageInput = document.getElementById('inputManagerAge') as HTMLInputElement;
+      const countryCard = document.getElementById('selectedCountryCard')!;
+      const countryModal = document.getElementById('countryGridModal')!;
 
-      nameInput.addEventListener('input', (e) => { managerName = e.target.value; });
-      ageInput.addEventListener('input', (e) => { managerAge = parseInt(e.target.value) || 35; });
+      nameInput.addEventListener('input', (e) => { managerName = (e.target as HTMLInputElement).value; });
+      ageInput.addEventListener('input', (e) => { managerAge = parseInt((e.target as HTMLInputElement).value) || 35; });
 
       countryCard.addEventListener('click', () => {
         sfx.playClick();
@@ -362,7 +373,7 @@ export function renderNewCareer(container, onCareerStarted) {
       document.querySelectorAll('.country-option-item').forEach(item => {
         item.addEventListener('click', (e) => {
           sfx.playClick();
-          managerCountry = e.currentTarget.dataset.country;
+          managerCountry = (e.currentTarget as HTMLElement).dataset.country!;
           countryModal.classList.add('hidden');
 
           // Actualizar UI del card
@@ -372,14 +383,14 @@ export function renderNewCareer(container, onCareerStarted) {
           if (noteCountry) noteCountry.innerText = managerCountry;
 
           // Re-renderizar tarjeta del país
-          countryCard.querySelector('div').innerHTML = `
+          countryCard.querySelector('div')!.innerHTML = `
             ${renderCountryFlagSVG(managerCountry, 26)}
             <strong style="font-size: 1.05rem; color: #ffffff;">${managerCountry}</strong>
           `;
         });
       });
 
-      document.getElementById('btnNextToStep2').addEventListener('click', () => {
+      document.getElementById('btnNextToStep2')!.addEventListener('click', () => {
         sfx.playClick();
         managerName = nameInput.value || 'Director Técnico';
         currentStep = 2;
@@ -389,25 +400,25 @@ export function renderNewCareer(container, onCareerStarted) {
       document.querySelectorAll('.archetype-card-step').forEach(card => {
         card.addEventListener('click', (e) => {
           sfx.playClick();
-          selectedArchetype = e.currentTarget.dataset.id;
-          document.querySelectorAll('.archetype-card-step').forEach(c => {
+          selectedArchetype = (e.currentTarget as HTMLElement).dataset.id as ManagerArchetypeKey;
+          document.querySelectorAll<HTMLElement>('.archetype-card-step').forEach(c => {
             c.classList.remove('selected');
             c.style.borderColor = 'transparent';
             c.style.background = '#0f172a';
           });
-          e.currentTarget.classList.add('selected');
-          e.currentTarget.style.borderColor = MANAGER_ARCHETYPES[selectedArchetype]?.badgeColor || 'var(--accent-green)';
-          e.currentTarget.style.background = '#141d2e';
+          (e.currentTarget as HTMLElement).classList.add('selected');
+          (e.currentTarget as HTMLElement).style.borderColor = MANAGER_ARCHETYPES[selectedArchetype]?.badgeColor || 'var(--accent-green)';
+          (e.currentTarget as HTMLElement).style.background = '#141d2e';
         });
       });
 
-      document.getElementById('btnBackToStep1').addEventListener('click', () => {
+      document.getElementById('btnBackToStep1')!.addEventListener('click', () => {
         sfx.playClick();
         currentStep = 1;
         renderStep();
       });
 
-      document.getElementById('btnNextToStep3').addEventListener('click', () => {
+      document.getElementById('btnNextToStep3')!.addEventListener('click', () => {
         sfx.playWhistle();
         currentStep = 3;
         renderStep();
@@ -428,16 +439,16 @@ export function renderNewCareer(container, onCareerStarted) {
       });
 
       document.getElementById('btnConfirmStartGame')?.addEventListener('click', () => {
-        const freqSelect = document.getElementById('selectEventFreqConfig');
-        const regensCheck = document.getElementById('checkEnableRegensConfig');
-        const marketCheck = document.getElementById('checkEnableManagerMarketConfig');
+        const freqSelect = document.getElementById('selectEventFreqConfig') as HTMLSelectElement | null;
+        const regensCheck = document.getElementById('checkEnableRegensConfig') as HTMLInputElement | null;
+        const marketCheck = document.getElementById('checkEnableManagerMarketConfig') as HTMLInputElement | null;
 
-        if (freqSelect) eventFrequency = freqSelect.value;
+        if (freqSelect) eventFrequency = freqSelect.value as EventFrequency;
         if (regensCheck) enableRegens = regensCheck.checked;
         if (marketCheck) enableManagerMarket = marketCheck.checked;
 
         sfx.playGoal();
-        db.newCareer(selectedTeamIdForStart, managerName, managerCountry, managerAge, selectedArchetype, {
+        db.newCareer(selectedTeamIdForStart!, managerName, managerCountry, managerAge, selectedArchetype, {
           eventFrequency,
           enableRegens,
           enableManagerMarket
@@ -447,7 +458,7 @@ export function renderNewCareer(container, onCareerStarted) {
     }
   };
 
-  let selectedTeamIdForStart = null;
+  let selectedTeamIdForStart: string | null = null;
 
   /**
    * Renderiza las 3 tarjetas de ofertas de clubes nacionales en el Paso 3
@@ -492,7 +503,7 @@ export function renderNewCareer(container, onCareerStarted) {
 
     document.querySelectorAll('.btn-sign-club').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        selectedTeamIdForStart = e.currentTarget.dataset.id;
+        selectedTeamIdForStart = (e.currentTarget as HTMLElement).dataset.id!;
         sfx.playClick();
         currentStep = 4;
         renderStep();

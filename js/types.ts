@@ -41,6 +41,13 @@ export type ManagerArchetypeId = (typeof MANAGER_ARCHETYPE_IDS)[number];
 /** Claves del objeto MANAGER_ARCHETYPES (tactics.ts) */
 export type ManagerArchetypeKey = 'TIKI_TAKA' | 'GEGENPRESSING' | 'CATENACCIO' | 'WING_PLAY' | 'DIRECT_ATTACK';
 
+/**
+ * Valor real de gameState.managerArchetype en runtime:
+ * el wizard (newCareerUI) produce keys (TIKI_TAKA...), pero los saves
+ * antiguos guardan IDs (GUARDIOLA...). Ambos conviven.
+ */
+export type ManagerArchetype = ManagerArchetypeKey | ManagerArchetypeId;
+
 /** Información de un arquetipo de DT (MANAGER_ARCHETYPES) */
 export interface ManagerArchetypeInfo {
   id: string;
@@ -379,7 +386,7 @@ export interface SkillLevels {
 
 /** Habilidades tácticas del DT y su EXP */
 export interface ManagerTactics {
-  archetype: ManagerArchetypeId;
+  archetype: ManagerArchetype;
   exp: number;
   skillLevels: SkillLevels; // 1-10
 }
@@ -489,7 +496,7 @@ export interface GameState {
   managerName: string;
   managerCountry: string;
   managerAge: number;
-  managerArchetype: ManagerArchetypeId;
+  managerArchetype: ManagerArchetype;
   clubPhilosophy: string;
   tacticalFidelityWeeks: number;
 
@@ -736,3 +743,10 @@ export interface ContractYearEndResult {
   action: 'SACKED' | 'CONTRACT_EXPIRED' | 'CONTINUE';
   contract: ManagerContract;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 8. TIPOS COMPARTIDOS DE UI
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Firma del router de vistas (app.js App.navigateTo) — usada por todas las UIs */
+export type NavigateFn = (view: string, params?: Record<string, unknown>) => void;

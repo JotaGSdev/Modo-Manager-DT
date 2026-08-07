@@ -1,4 +1,5 @@
 // Vista de Partido Estilo PES — Marcador Dinámico en Vivo con Posesión, xG, Tiros, Tarjetas y Selector de Velocidad
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
 import { MatchEngine } from '../engine/matchEngine.js';
@@ -7,26 +8,48 @@ import { renderTeamBadgeSVG } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
 import { PenaltyEngine } from '../engine/penaltyEngine.js';
 
-function launchOutcomeParticles(canvas, outcome) {
+import type { MatchEvent, NavigateFn, TacticalOrder, Team, TensionOption } from '../types.js';
+
+/**
+ * Evento de partido con `type` ampliado a string: matchUI compara con tipos
+ * históricos que el motor ya no emite ('yellow_card', 'shot_on_target_home'...)
+ * y crea comentarios sintéticos ('commentary'). La unión estricta MatchEventType
+ * se mantiene para el motor.
+ */
+type LooseMatchEvent = Omit<MatchEvent, 'type'> & { type: string };
+
+/** Partícula de confeti del overlay cinematográfico */
+interface Particle {
+  x: number;
+  y: number;
+  r: number;
+  speedY: number;
+  speedX: number;
+  color: string;
+  tilt: number;
+}
+
+function launchOutcomeParticles(canvas: HTMLCanvasElement | null, outcome: string): void {
   if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const particles = [];
+  const cnv: HTMLCanvasElement = canvas; // const local para conservar el narrow dentro de draw()
+  const ctx = cnv.getContext('2d')!;
+  cnv.width = window.innerWidth;
+  cnv.height = window.innerHeight;
+  const particles: Particle[] = [];
   let colors = ['#00c885', '#0096c7', '#e5a93c', '#ffffff'];
   let particleCount = 120;
   if (outcome === 'loss') { colors = ['#d90429', '#64748b', '#334155']; particleCount = 65; }
   else if (outcome === 'draw') { colors = ['#0096c7', '#94a3b8', '#3b82f6']; particleCount = 60; }
   for (let i = 0; i < particleCount; i++) {
     particles.push({
-      x: Math.random() * canvas.width, y: Math.random() * canvas.height - canvas.height,
+      x: Math.random() * cnv.width, y: Math.random() * cnv.height - cnv.height,
       r: Math.random() * 5 + 3, speedY: Math.random() * 3 + 2, speedX: (Math.random() - 0.5) * 2,
-      color: colors[Math.floor(Math.random() * colors.length)], tilt: Math.random() * 10 - 5
+      color: colors[Math.floor(Math.random() * colors.length)]!, tilt: Math.random() * 10 - 5
     });
   }
-  let animationFrame;
+  let animationFrame: number | undefined;
   function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, cnv.width, cnv.height);
     particles.forEach(p => {
       ctx.beginPath();
       if (outcome === 'loss') {
@@ -37,48 +60,55 @@ function launchOutcomeParticles(canvas, outcome) {
         ctx.fillRect(p.x + p.tilt, p.y, p.r, p.r * 1.4);
       }
       p.y += p.speedY; p.x += p.speedX;
-      if (p.y > canvas.height) { p.y = -15; p.x = Math.random() * canvas.width; }
+      if (p.y > cnv.height) { p.y = -15; p.x = Math.random() * cnv.width; }
     });
     animationFrame = requestAnimationFrame(draw);
   }
   draw();
-  setTimeout(() => { cancelAnimationFrame(animationFrame); ctx.clearRect(0, 0, canvas.width, canvas.height); }, 5000);
+  setTimeout(() => { if (animationFrame) cancelAnimationFrame(animationFrame); ctx.clearRect(0, 0, cnv.width, cnv.height); }, 5000);
 }
 
-export function renderMatch(container, rival, mode = 'live', isFinal = false, navigateTo) {
-  const gameState = db.gameState;
-  const userTeam = db.teams[gameState.userTeamId];
+export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live', isFinal = false, navigateTo: NavigateFn): void {
+  const gameState = db.gameState!;
+  const userTeam = db.teams[gameState.userTeamId]!;
   const engine = new MatchEngine(userTeam, rival, userTeam.overall, rival.overall, gameState.matchBonus?.moraleBonus || 0);
 
   let simSpeed = 90;
-  let simTimer = null;
+  let simTimer: number | null = null;
 
-  const commentaryPool = [
-    (t, tm) => `El estadio vibra con cada toque de bal\u00f3n de ${tm}.`,
-    (t, tm) => `El relator enmudece tras una jugada magistral de ${tm}.`,
-    (t, tm) => `Combinaci\u00f3n letal entre los mediocampistas de ${tm}.`,
-    (t, tm) => `El juego sigue parejo. Ambos equipos buscan el espacio libre.`,
-    (t, tm) => `Min ${t}' — El ritmo del partido es electrizante.`,
-    (t, tm) => `El entrenador ajusta la presi\u00f3n alta desde el banquillo.`,
-    (t, tm) => `Intento de combinaci\u00f3n por banda izquierda de ${tm}.`,
-    (t, tm) => `La defensa rival cierra con una barrida in extremis.`,
-    (t, tm) => `Transici\u00f3n r\u00e1pida de ${tm}. \u00a1El mediocampo corre!`,
-    (t, tm) => `La afici\u00f3n alienta sin parar desde las gradas.`,
-    (t, tm) => `El asistente levanta el bander\u00edn. Fuera de juego anulado.`,
-    (t, tm) => `Duelo intenso en el centro del campo.`,
-    (t, tm) => `El capit\u00e1n de ${tm} exige concentraci\u00f3n al resto.`,
-    (t, tm) => `Min ${t}' — El partido entra en su fase decisiva.`,
-    (t, tm) => `El mediocampo de ${tm} recupera el esf\u00e9rico ante la presi\u00f3n rival.`,
-    (t, tm) => `VAR revisando una posible jugada. El estadio espera.`,
-    (t, tm) => `El extremo intenta el uno contra uno por la derecha.`,
-    (t, tm) => `${tm} mantiene el plan de juego propuesto desde el banquillo.`,
-    (t, tm) => `El lateral sube a apoyar. Buena amplitud de ${tm}.`,
-    (t, tm) => `Los primeros 45 minutos han sido fren\u00e9ticos. Se van al descanso.`,
-    (t, tm) => `Se nota la influencia t\u00e1ctica del DT en la presi\u00f3n de ${tm}.`,
+  // FIX: idempotencia de la sesión de partido. resolveChoice puede ejecutarse 2 veces
+  // (countdown expirado + clic del usuario en el mismo momento de tensión), lo que creaba
+  // setInterval(tick) duplicados; el huérfano disparaba finishMatchSession() en bucle y
+  // corrompía el save (semana/budget/puntos creciendo sin fin). Este flag hace que la
+  // sesión solo se cierre una vez por partido.
+  let matchSessionCompleted = false;
+
+  const commentaryPool: Array<(t: number, tm: string) => string> = [
+    (_t, tm) => `El estadio vibra con cada toque de bal\u00f3n de ${tm}.`,
+    (_t, tm) => `El relator enmudece tras una jugada magistral de ${tm}.`,
+    (_t, tm) => `Combinaci\u00f3n letal entre los mediocampistas de ${tm}.`,
+    (_t, _tm) => `El juego sigue parejo. Ambos equipos buscan el espacio libre.`,
+    (t, _tm) => `Min ${t}' — El ritmo del partido es electrizante.`,
+    (_t, _tm) => `El entrenador ajusta la presi\u00f3n alta desde el banquillo.`,
+    (_t, tm) => `Intento de combinaci\u00f3n por banda izquierda de ${tm}.`,
+    (_t, _tm) => `La defensa rival cierra con una barrida in extremis.`,
+    (_t, tm) => `Transici\u00f3n r\u00e1pida de ${tm}. \u00a1El mediocampo corre!`,
+    (_t, _tm) => `La afici\u00f3n alienta sin parar desde las gradas.`,
+    (_t, _tm) => `El asistente levanta el bander\u00edn. Fuera de juego anulado.`,
+    (_t, _tm) => `Duelo intenso en el centro del campo.`,
+    (_t, tm) => `El capit\u00e1n de ${tm} exige concentraci\u00f3n al resto.`,
+    (t, _tm) => `Min ${t}' — El partido entra en su fase decisiva.`,
+    (_t, tm) => `El mediocampo de ${tm} recupera el esf\u00e9rico ante la presi\u00f3n rival.`,
+    (_t, _tm) => `VAR revisando una posible jugada. El estadio espera.`,
+    (_t, _tm) => `El extremo intenta el uno contra uno por la derecha.`,
+    (_t, tm) => `${tm} mantiene el plan de juego propuesto desde el banquillo.`,
+    (_t, tm) => `El lateral sube a apoyar. Buena amplitud de ${tm}.`,
+    (_t, _tm) => `Los primeros 45 minutos han sido fren\u00e9ticos. Se van al descanso.`,
+    (_t, tm) => `Se nota la influencia t\u00e1ctica del DT en la presi\u00f3n de ${tm}.`,
     (t, tm) => `Min ${t}' — El portero de ${tm} est\u00e1 atento ante cualquier remate.`,
-    (t, tm) => `Disputa a\u00e9rea en el área de ${tm}. El árbitro no cobra nada.`,
-    (t, tm) => `El pivot de ${tm} gana el duelo en el centro del terreno.`,
-    (t, tm) => `Repliegue defensivo organizado de ${tm} ante la presi\u00f3n rival.`,
+    (_t, tm) => `Disputa a\u00e9rea en el \u00e1rea de ${tm}. El \u00e1rbitro no cobra nada.`,
+    (_t, tm) => `El pivot de ${tm} gana el duelo en el centro del terreno.`,
+    (_t, tm) => `Repliegue defensivo organizado de ${tm} ante la presi\u00f3n rival.`,
   ];
 
   container.innerHTML = `
@@ -224,7 +254,7 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
 
   let homeShotsOnTarget = 0, awayShotsOnTarget = 0;
 
-  const addLog = (event) => {
+  const addLog = (event: LooseMatchEvent) => {
     if (!event || !logEl) return;
     const item = document.createElement('div');
     const isGoal = event.type === 'goal_home' || event.type === 'goal_away';
@@ -234,7 +264,7 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
     logEl.prepend(item);
   };
 
-  const showGoalFlash = (scorerName, teamName) => {
+  const showGoalFlash = (scorerName: string, teamName: string) => {
     const el = document.getElementById('goalFlash');
     const txt = document.getElementById('goalFlashText');
     if (!el || !txt) return;
@@ -245,8 +275,8 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
   };
 
   const updateStats = () => {
-    if (hScoreEl) hScoreEl.innerText = engine.homeScore;
-    if (aScoreEl) aScoreEl.innerText = engine.awayScore;
+    if (hScoreEl) hScoreEl.innerText = String(engine.homeScore);
+    if (aScoreEl) aScoreEl.innerText = String(engine.awayScore);
     if (timeEl) timeEl.innerText = `${engine.minute}'`;
     if (possBarEl) possBarEl.style.width = `${engine.homePossession}%`;
     if (homePossEl) homePossEl.innerText = `${engine.homePossession}%`;
@@ -257,13 +287,14 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
     if (awayXGEl) awayXGEl.innerText = engine.awayXG.toFixed(2);
   };
 
-  document.querySelectorAll('.speed-btn').forEach(btn => {
+  document.querySelectorAll<HTMLElement>('.speed-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-      const speed = parseInt(e.currentTarget.dataset.speed);
-      document.querySelectorAll('.speed-btn').forEach(b => { b.style.background = '#0f172a'; b.style.color = '#fff'; b.style.borderColor = 'var(--border-color)'; });
-      e.currentTarget.style.background = 'rgba(0,150,199,0.25)';
-      e.currentTarget.style.color = 'var(--accent-cyan)';
-      e.currentTarget.style.borderColor = 'var(--accent-cyan)';
+      const target = e.currentTarget as HTMLElement;
+      const speed = parseInt(target.dataset.speed!);
+      document.querySelectorAll<HTMLElement>('.speed-btn').forEach(b => { b.style.background = '#0f172a'; b.style.color = '#fff'; b.style.borderColor = 'var(--border-color)'; });
+      target.style.background = 'rgba(0,150,199,0.25)';
+      target.style.color = 'var(--accent-cyan)';
+      target.style.borderColor = 'var(--accent-cyan)';
       if (speed === 0) {
         if (simTimer) clearInterval(simTimer);
         while (!engine.isFinished) { const ev = engine.tickMinute(); if (ev) processEvent(ev); }
@@ -273,7 +304,7 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
       }
       simSpeed = speed;
       if (simTimer) clearInterval(simTimer);
-      simTimer = setInterval(tick, simSpeed);
+      simTimer = window.setInterval(tick, simSpeed);
     });
   });
 
@@ -282,27 +313,27 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
   const btnRadar = document.getElementById('tabRadarView');
   const logContainer = document.getElementById('logViewContainer');
   const radarContainer = document.getElementById('radarViewContainer');
-  const radarCanvas = document.getElementById('matchRadarCanvas');
+  const radarCanvas = document.getElementById('matchRadarCanvas') as HTMLCanvasElement | null;
 
   btnLog?.addEventListener('click', () => {
     btnLog.classList.add('active');
-    btnRadar.classList.remove('active');
-    logContainer.classList.remove('hidden');
-    radarContainer.classList.add('hidden');
+    btnRadar?.classList.remove('active');
+    logContainer?.classList.remove('hidden');
+    radarContainer?.classList.add('hidden');
   });
 
   btnRadar?.addEventListener('click', () => {
     btnRadar.classList.add('active');
-    btnLog.classList.remove('active');
-    radarContainer.classList.remove('hidden');
-    logContainer.classList.add('hidden');
+    btnLog?.classList.remove('active');
+    radarContainer?.classList.remove('hidden');
+    logContainer?.classList.add('hidden');
     drawMatchRadarCanvas(radarCanvas, engine);
   });
 
   // Renderizador Radar 2D en Canvas puro
-  function drawMatchRadarCanvas(canvas, eng) {
+  function drawMatchRadarCanvas(canvas: HTMLCanvasElement | null, eng: MatchEngine): void {
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d')!;
     const w = canvas.width, h = canvas.height;
 
     ctx.clearRect(0, 0, w, h);
@@ -359,7 +390,7 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
     ctx.stroke();
   }
 
-  const addTimelineIcon = (ev) => {
+  const addTimelineIcon = (ev: LooseMatchEvent) => {
     const eventsEl = document.getElementById('matchTimelineEvents');
     if (!eventsEl) return;
     const pct = Math.min(100, (ev.minute / 90) * 100);
@@ -378,9 +409,17 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
   };
 
   // ── MANEJO DEL MODAL DE MOMENTO DE TENSIÓN ──────────────────────────
-  let tensionCountdownInterval = null;
+  let tensionCountdownInterval: number | null = null;
 
-  const triggerTensionUI = (tensionEvent) => {
+  const triggerTensionUI = (tensionEvent: MatchEvent) => {
+    // FIX: limpiar cualquier countdown previo. Con AUTO el motor lanza 2 momentos de
+    // tensión en el mismo tick síncrono; sin esto el 2º triggerTensionUI sobrescribía
+    // tensionCountdownInterval y el 1º countdown quedaba huérfano, disparándose cada
+    // 100ms para siempre y corrompiendo el save (finishMatchSession en bucle).
+    if (tensionCountdownInterval) {
+      clearInterval(tensionCountdownInterval);
+      tensionCountdownInterval = null;
+    }
     if (simTimer) clearInterval(simTimer);
 
     const modal = document.getElementById('tensionMomentModal');
@@ -389,53 +428,67 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
     const optionsContainer = document.getElementById('tensionOptionsContainer');
     const timerBar = document.getElementById('tensionTimerBar');
 
-    titleEl.innerText = tensionEvent.title;
-    descEl.innerText = tensionEvent.description;
-    optionsContainer.innerHTML = '';
+    titleEl!.innerText = tensionEvent.title || '';
+    descEl!.innerText = tensionEvent.description || '';
+    optionsContainer!.innerHTML = '';
 
-    modal.classList.remove('hidden');
+    modal!.classList.remove('hidden');
 
     let secondsLeft = 10;
-    timerBar.style.width = '100%';
+    timerBar!.style.width = '100%';
 
-    const resolveChoice = (optionId) => {
-      if (tensionCountdownInterval) clearInterval(tensionCountdownInterval);
+    const resolveChoice = (optionId: TacticalOrder) => {
+      if (tensionCountdownInterval) {
+        clearInterval(tensionCountdownInterval);
+        tensionCountdownInterval = null;
+      }
       engine.applyTacticalDecision(optionId);
-      modal.classList.add('hidden');
+      modal!.classList.add('hidden');
 
       const badge = document.getElementById('activeTacticalOrderBadge');
       if (badge) {
-        const labels = { PRESSING: '⚡ PRESIÓN ALTA', LOW_BLOCK: '🚌 BLOQUE BAJO', COUNTER: '🎯 CONTRAATAQUE' };
+        const labels: Record<TacticalOrder, string> = { PRESSING: '⚡ PRESIÓN ALTA', LOW_BLOCK: '🚌 BLOQUE BAJO', COUNTER: '🎯 CONTRAATAQUE' };
         badge.innerText = `ORDEN ACTIVA: ${labels[optionId] || optionId}`;
       }
 
-      if (simSpeed > 0) {
-        simTimer = setInterval(tick, simSpeed);
+      // FIX: limpiar SIEMPRE el timer previo antes de recrearlo. Sin esto, un segundo
+      // resolveChoice (countdown expirado + clic del usuario) creaba setInterval(tick)
+      // duplicados y el huérfano disparaba finishMatchSession() en bucle.
+      if (simTimer) clearInterval(simTimer);
+      // FIX: solo reanudar la simulación si el partido no terminó.
+      if (simSpeed > 0 && !engine.isFinished) {
+        simTimer = window.setInterval(tick, simSpeed);
+      } else {
+        simTimer = null;
       }
     };
 
-    tensionEvent.options.forEach(opt => {
+    (tensionEvent.options || []).forEach((opt: TensionOption) => {
       const btn = document.createElement('button');
       btn.className = 'btn-secondary';
       btn.style.cssText = 'text-align:left; padding:12px 16px; border-color:var(--accent-cyan); display:flex; flex-direction:column; gap:4px; font-size:0.85rem;';
       btn.innerHTML = `<strong>${opt.label}</strong><span class="text-sub" style="font-size:0.75rem;">${opt.desc}</span>`;
       btn.addEventListener('click', () => resolveChoice(opt.id));
-      optionsContainer.appendChild(btn);
+      optionsContainer!.appendChild(btn);
     });
 
-    tensionCountdownInterval = setInterval(() => {
+    // FIX: el countdown se limpia a sí mismo con su propio id (no con la variable
+    // global, que puede haber sido sobrescrita por un 2º momento de tensión en AUTO).
+    const countdownId = window.setInterval(() => {
       secondsLeft -= 0.1;
       const pct = Math.max(0, (secondsLeft / 10) * 100);
-      timerBar.style.width = `${pct}%`;
+      timerBar!.style.width = `${pct}%`;
 
       if (secondsLeft <= 0) {
-        clearInterval(tensionCountdownInterval);
+        clearInterval(countdownId);
+        if (tensionCountdownInterval === countdownId) tensionCountdownInterval = null;
         resolveChoice('LOW_BLOCK'); // Opción más conservadora por defecto
       }
     }, 100);
+    tensionCountdownInterval = countdownId;
   };
 
-  const processEvent = (ev) => {
+  const processEvent = (ev: LooseMatchEvent | null) => {
     if (!ev) return;
 
     // Actualizar barra de tiempo de línea de tiempo
@@ -445,7 +498,7 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
     addTimelineIcon(ev);
 
     if (ev.type === 'tension_moment') {
-      triggerTensionUI(ev);
+      triggerTensionUI(ev as MatchEvent);
       return;
     }
 
@@ -463,13 +516,13 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
     else if (ev.type === 'shot_on_target_away') { awayShotsOnTarget++; }
 
     if (Math.random() < 0.28) {
-      const fn = commentaryPool[Math.floor(Math.random() * commentaryPool.length)];
+      const fn = commentaryPool[Math.floor(Math.random() * commentaryPool.length)]!;
       addLog({ minute: ev.minute, type: 'commentary', text: fn(ev.minute, Math.random() < 0.5 ? userTeam.name : rival.name) });
     }
     addLog(ev);
 
     // Redibujar radar si está visible
-    if (!radarContainer.classList.contains('hidden')) {
+    if (radarContainer && !radarContainer.classList.contains('hidden')) {
       drawMatchRadarCanvas(radarCanvas, engine);
     }
   };
@@ -478,12 +531,15 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
     const ev = engine.tickMinute();
     processEvent(ev);
     updateStats();
-    if (engine.isFinished) { clearInterval(simTimer); finishMatchSession(); }
+    if (engine.isFinished) { if (simTimer) clearInterval(simTimer); finishMatchSession(); }
   };
 
-  simTimer = setInterval(tick, simSpeed);
+  simTimer = window.setInterval(tick, simSpeed);
 
   const finishMatchSession = () => {
+    // FIX: la sesión solo se procesa una vez por partido (ver matchSessionCompleted).
+    if (matchSessionCompleted) return;
+    matchSessionCompleted = true;
     const totalTicketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
     gameState.budget += Math.round(totalTicketRevenue * 0.25);
     if (gameState.finances) {
@@ -531,37 +587,37 @@ export function renderMatch(container, rival, mode = 'live', isFinal = false, na
     showMatchCinematicOverlay(engine.homeScore, engine.awayScore, false);
   };
 
-  const showMatchCinematicOverlay = (userGoals, rivalGoals, wasPenalties) => {
+  const showMatchCinematicOverlay = (userGoals: number, rivalGoals: number, wasPenalties: boolean) => {
     const modalEl = document.getElementById('matchCinematicModal');
     const cardEl = document.getElementById('cinematicCard');
     const titleEl = document.getElementById('cinematicTitle');
     const subEl = document.getElementById('cinematicSubtitle');
     const scoreEl = document.getElementById('cinematicScore');
     const statsEl = document.getElementById('cinematicStats');
-    const canvasEl = document.getElementById('cinematicCanvas');
+    const canvasEl = document.getElementById('cinematicCanvas') as HTMLCanvasElement | null;
     const btnFinish = document.getElementById('btnFinishMatch');
     if (!modalEl) return;
-    scoreEl.innerText = wasPenalties ? `Penales: ${userGoals} - ${rivalGoals}` : `${userGoals} - ${rivalGoals}`;
+    scoreEl!.innerText = wasPenalties ? `Penales: ${userGoals} - ${rivalGoals}` : `${userGoals} - ${rivalGoals}`;
     const userRank = (gameState.standings || []).findIndex(s => s.teamId === userTeam.id) + 1;
     const userPts = (gameState.standings || []).find(s => s.teamId === userTeam.id)?.points || 0;
-    statsEl.innerHTML = `Posici\u00f3n: <strong>#${userRank}</strong> &middot; <strong>${userPts} pts</strong> &middot; Jornada ${gameState.week - 1}/${gameState.maxWeeks}`;
+    statsEl!.innerHTML = `Posici\u00f3n: <strong>#${userRank}</strong> &middot; <strong>${userPts} pts</strong> &middot; Jornada ${gameState.week - 1}/${gameState.maxWeeks}`;
     let outcomeClass = 'draw';
     if (userGoals > rivalGoals) {
       outcomeClass = 'win';
-      titleEl.innerText = wasPenalties ? '\u{1F3C6} \u00a1CAMPEONES EN PENALES!' : '\u{1F3C6} \u00a1VICTORIA TRIUNFAL!';
-      subEl.innerText = `\u00a1Espectacular rendimiento de ${userTeam.name}!`;
+      titleEl!.innerText = wasPenalties ? '\u{1F3C6} \u00a1CAMPEONES EN PENALES!' : '\u{1F3C6} \u00a1VICTORIA TRIUNFAL!';
+      subEl!.innerText = `\u00a1Espectacular rendimiento de ${userTeam.name}!`;
       sfx.playGoal && sfx.playGoal();
     } else if (userGoals < rivalGoals) {
       outcomeClass = 'loss';
-      titleEl.innerText = '\u{1F494} DERROTA DOLOROSA';
-      subEl.innerText = `Ca\u00edda ante ${rival.name}. El equipo debe reponerse.`;
+      titleEl!.innerText = '\u{1F494} DERROTA DOLOROSA';
+      subEl!.innerText = `Ca\u00edda ante ${rival.name}. El equipo debe reponerse.`;
     } else {
-      titleEl.innerText = '\u2696\uFE0F EMPATE LUCHADO';
-      subEl.innerText = `Reparto de puntos en una intensa batalla.`;
+      titleEl!.innerText = '\u2696\uFE0F EMPATE LUCHADO';
+      subEl!.innerText = `Reparto de puntos en una intensa batalla.`;
     }
-    cardEl.className = `cinematic-card ${outcomeClass}`;
+    cardEl!.className = `cinematic-card ${outcomeClass}`;
     modalEl.classList.remove('hidden');
     setTimeout(() => launchOutcomeParticles(canvasEl, outcomeClass), 100);
-    btnFinish.addEventListener('click', () => { sfx.playClick && sfx.playClick(); navigateTo('dashboard'); });
+    btnFinish!.addEventListener('click', () => { sfx.playClick && sfx.playClick(); navigateTo('dashboard'); });
   };
 }

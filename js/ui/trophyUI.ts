@@ -1,9 +1,11 @@
 // Vista de la Sala de Trofeos, Vitrina 3D con Sombras SVG e Historial de Clubes Dirigidos
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
-import { TrophyRoomEngine } from '../engine/trophyRoom.js';
-import { renderCountryFlagSVG, renderTeamBadgeSVG } from './badgeHelper.js';
-import { sfx } from '../../assets/audio/sfx.js';
+import { renderCountryFlagSVG } from './badgeHelper.js';
+
+/** Claves de los SVG vectoriales de trofeos (TROPHY_SVGS) */
+type TrophySvgKey = keyof typeof TROPHY_SVGS;
 
 // SVG Vectoriales con sombras 3D por Tipo de Trofeo
 const TROPHY_SVGS = {
@@ -81,11 +83,10 @@ const TROPHY_SVGS = {
   `
 };
 
-export function renderTrophyRoom(container) {
-  const gameState = db.gameState;
+export function renderTrophyRoom(container: HTMLElement): void {
+  const gameState = db.gameState!;
   const trophies = gameState.trophies || [];
   const careerHistory = gameState.careerHistory || [];
-  const userTeam = db.teams[gameState.userTeamId];
 
   container.innerHTML = `
     <div class="trophy-layout">
@@ -120,7 +121,7 @@ export function renderTrophyRoom(container) {
               const isMundial = t.title.toLowerCase().includes('mundial');
               const isCont = t.title.toLowerCase().includes('champions') || t.title.toLowerCase().includes('libertadores');
               const isCup = t.title.toLowerCase().includes('copa') && !isCont;
-              const trophyType = isMundial ? 'MUNDIAL' : (isCont ? 'CONTINENTAL' : (isCup ? 'COPA' : 'LIGA'));
+              const trophyType: TrophySvgKey = isMundial ? 'MUNDIAL' : (isCont ? 'CONTINENTAL' : (isCup ? 'COPA' : 'LIGA'));
 
               return `
                 <div class="glass-panel text-center trophy-card" style="padding: 16px; border: 1px solid var(--accent-gold); background: #0f172a; border-radius: 12px; transition: transform 0.2s ease;">

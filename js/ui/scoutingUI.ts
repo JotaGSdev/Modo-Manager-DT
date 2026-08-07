@@ -1,17 +1,18 @@
 /**
  * ============================================================================
- * ENTRENADOR LEYENDA - CENTRO DE ANÁLISIS Y MONITOREO MULTILIGA (scoutingUI.js)
+ * ENTRENADOR LEYENDA - CENTRO DE ANÁLISIS Y MONITOREO MULTILIGA (scoutingUI.ts)
  * ============================================================================
  * v2.0 — Permite monitorear hasta 5 ligas externas, ver tablas de goleadores
  * internacionales y enviar ojeadores directamente desde las tablas de datos.
+ * Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
  */
 
 import { db } from '../data/db.js';
 import { sfx } from '../../assets/audio/sfx.js';
-import { renderTeamBadgeSVG } from './badgeHelper.js';
+import type { Player } from '../types.js';
 
-export function renderScoutingView(container) {
-  const gameState = db.gameState;
+export function renderScoutingView(container: HTMLElement): void {
+  const gameState = db.gameState!;
   const userLeagueId = gameState.userLeagueId;
   const availableLeagues = db.leagues.filter(l => l.id !== userLeagueId);
 
@@ -35,7 +36,7 @@ export function renderScoutingView(container) {
     }).sort((a, b) => b.points - a.points);
 
     // Obtener los mejores jugadores de la liga monitoreada
-    const topPlayers = [];
+    const topPlayers: Player[] = [];
     leagueTeams.forEach(t => {
       const players = db.getTeamPlayers(t.id);
       topPlayers.push(...players);
@@ -139,7 +140,7 @@ export function renderScoutingView(container) {
     document.querySelectorAll('.btn-select-league').forEach(btn => {
       btn.addEventListener('click', (e) => {
         sfx.playClick();
-        activeLeagueId = e.currentTarget.dataset.id;
+        activeLeagueId = (e.currentTarget as HTMLElement).dataset.id!;
         renderView();
       });
     });
@@ -156,8 +157,7 @@ export function renderScoutingView(container) {
 
     document.querySelectorAll('.btn-scout-direct').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const pid = e.currentTarget.dataset.id;
-        const pname = e.currentTarget.dataset.name;
+        const pname = (e.currentTarget as HTMLElement).dataset.name;
         if (gameState.budget < 20000) {
           alert('Presupuesto insuficiente para enviar ojeador privado (€20,000 requeridos).');
           return;

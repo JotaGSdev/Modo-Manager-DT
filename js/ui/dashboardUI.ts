@@ -1,30 +1,35 @@
 // Vista Principal (Dashboard Integrado en 1 Sola Pantalla - Zero Scroll)
 // Incluye Tabla de Posiciones Interactiva por Competición & Carrusel de Fases de Copas
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
 import { MatchEngine } from '../engine/matchEngine.js';
-import { TrophyRoomEngine } from '../engine/trophyRoom.js';
 import { CompetitionsEngine } from '../engine/competitionsEngine.js';
 import { TransferEngine } from '../engine/transfers.js';
 import { EventsEngine } from '../engine/eventsEngine.js';
 import { ContractEngine } from '../engine/contracts.js';
-import { renderTeamBadgeSVG, renderCountryFlagSVG } from './badgeHelper.js';
+import { renderTeamBadgeSVG } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
-let activeCompTab = 'LEAGUE'; // 'LEAGUE' | 'NATIONAL_CUP' | 'CONTINENTAL_CUP'
+import type { CupPhase, EvolutionReportEntry, GameEvent, League, NavigateFn, Team } from '../types.js';
+
+/** Pestañas del selector de competición del dashboard */
+type CompTab = 'LEAGUE' | 'NATIONAL_CUP' | 'CONTINENTAL_CUP';
+
+let activeCompTab: CompTab = 'LEAGUE'; // 'LEAGUE' | 'NATIONAL_CUP' | 'CONTINENTAL_CUP'
 let currentCupPhaseIdx = 0;
 
-export function renderDashboard(container, navigateTo) {
-  const gameState = db.gameState;
+export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn): void {
+  const gameState = db.gameState!;
   CompetitionsEngine.initCupProgressIfMissing();
 
-  const userTeam = db.teams[gameState.userTeamId] || { name: 'Mi Club', short: 'DT', overall: 75, colors: ['#00aaff', '#00ffaa'], stadium: 'Estadio Principal', leagueId: 'arg_1' };
-  const league = db.leagues.find(l => l.id === userTeam.leagueId) || db.leagues[0] || { name: 'Liga Principal', country: 'Sudamérica' };
+  const userTeam: Team = db.teams[gameState.userTeamId] || { id: gameState.userTeamId, name: 'Mi Club', short: 'DT', overall: 75, colors: ['#00aaff', '#00ffaa'], stadium: 'Estadio Principal', leagueId: 'arg_1', budget: 0, reputation: 50 };
+  const league: League = db.leagues.find(l => l.id === userTeam.leagueId) || db.leagues[0] || { id: 'lig_1', name: 'Liga Principal', country: 'Sudamérica', region: 'Sudamérica', tier: 1, reputation: 60, teams: [] };
 
   const otherTeams = (league.teams || []).filter(t => t.id !== userTeam.id);
-  const nextRival = otherTeams.length > 0 
-    ? otherTeams[(gameState.week - 1) % otherTeams.length]
-    : { id: 'rival_gen', name: 'Rival FC', short: 'RIV', overall: 73, colors: ['#cc0000', '#000000'], stadium: 'Estadio Rival' };
+  const nextRival: Team = otherTeams.length > 0
+    ? otherTeams[(gameState.week - 1) % otherTeams.length]!
+    : { id: 'rival_gen', name: 'Rival FC', short: 'RIV', overall: 73, colors: ['#cc0000', '#000000'], stadium: 'Estadio Rival', budget: 0, reputation: 50 };
 
   const midSeasonWeek = Math.floor((gameState.maxWeeks || 38) / 2);
   const isSeasonCompleted = gameState.week >= gameState.maxWeeks;
@@ -37,10 +42,10 @@ export function renderDashboard(container, navigateTo) {
   const userPosLabel = userRank > 0 ? `#${userRank} lugar` : 'Competidor';
 
   const squad = db.getTeamPlayers(userTeam.id);
-  const topClubScorer = [...squad].sort((a, b) => (b.seasonGoals || 0) - (a.seasonGoals || 0))[0] || { name: 'Sin registros', seasonGoals: 0 };
-  const topClubAssister = squad[1] || squad[0] || { name: 'Sin registros', overall: 75 };
+  const topClubScorer: { name: string; seasonGoals: number } = [...squad].sort((a, b) => (b.seasonGoals || 0) - (a.seasonGoals || 0))[0] || { name: 'Sin registros', seasonGoals: 0 };
+  const topClubAssister: { name: string; overall: number } = squad[1] || squad[0] || { name: 'Sin registros', overall: 75 };
 
-  const natCupName = CompetitionsEngine.getNationalCupName(userTeam.country);
+  const natCupName = CompetitionsEngine.getNationalCupName(userTeam.country || '');
   let contCupName = 'Copa CONMEBOL Libertadores';
   if (userTeam.region === 'Europa') contCupName = 'UEFA Champions League';
   else if (userTeam.region === 'Norteamérica') contCupName = 'Concacaf Champions Cup';
@@ -235,7 +240,7 @@ export function renderDashboard(container, navigateTo) {
       const totalPhases = progressList ? progressList.length : 0;
       currentCupPhaseIdx = Math.max(0, Math.min(currentCupPhaseIdx, totalPhases - 1));
 
-      const phase = progressList[currentCupPhaseIdx] || { phaseName: 'Fase Inicial', status: 'PENDIENTE', score: '- -', rivalName: 'Por definir' };
+      const phase: CupPhase = progressList?.[currentCupPhaseIdx] || { phaseIndex: 0, week: 0, phaseName: 'Fase Inicial', cupName: '', status: 'PENDIENTE', score: '- -', rivalName: 'Por definir' };
 
       let statusBadge = '<span style="background: #334155; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">PENDIENTE ⏳</span>';
       if (phase.status === 'CLASIFICADO' || phase.status === 'VICTORIA') {
@@ -269,7 +274,7 @@ export function renderDashboard(container, navigateTo) {
 
           <!-- PUNTOS INDICADORES DE FASES DE COPA -->
           <div style="display: flex; gap: 6px; justify-content: center;">
-            ${progressList.map((p, idx) => `
+            ${(progressList || []).map((_p, idx) => `
               <div style="width: 8px; height: 8px; border-radius: 50%; background: ${idx === currentCupPhaseIdx ? 'var(--accent-green)' : '#334155'}; transition: background 0.2s ease;"></div>
             `).join('')}
           </div>
@@ -299,7 +304,7 @@ export function renderDashboard(container, navigateTo) {
 
   document.getElementById('selectCompetitionTab')?.addEventListener('change', (e) => {
     sfx.playClick();
-    activeCompTab = e.target.value;
+    activeCompTab = (e.target as HTMLSelectElement).value as CompTab;
     currentCupPhaseIdx = 0;
     renderCompTab();
   });
@@ -326,7 +331,7 @@ export function renderDashboard(container, navigateTo) {
       sfx.playWhistle();
       const targetWeek = gameState.week < midSeasonWeek ? midSeasonWeek : gameState.maxWeeks;
 
-      let pendingEvent = null;
+      let pendingEvent: GameEvent | null = null;
 
       while (gameState.week < targetWeek && gameState.week < gameState.maxWeeks) {
         const event = EventsEngine.getEventForWeek(gameState.week);
@@ -334,7 +339,6 @@ export function renderDashboard(container, navigateTo) {
           pendingEvent = event;
         }
 
-        const squad = db.getTeamPlayers(userTeam.id);
         const currentRival = otherTeams[(gameState.week - 1) % otherTeams.length] || nextRival;
         const match = new MatchEngine(userTeam, currentRival, userTeam.overall, currentRival.overall, gameState.matchBonus?.moraleBonus || 0);
         const res = match.simulateFullMatch();
@@ -350,7 +354,6 @@ export function renderDashboard(container, navigateTo) {
           gameState.finances.weeklyWageTotal = (gameState.finances.weeklyWageTotal || 0) + weeklyWage;
         }
 
-        const userStandingLocal = gameState.standings.find(s => s.teamId === userTeam.id);
         const userStanding = gameState.standings.find(s => s.teamId === userTeam.id);
         const rivalStanding = gameState.standings.find(s => s.teamId === currentRival.id);
 
@@ -412,9 +415,9 @@ export function renderDashboard(container, navigateTo) {
     });
   }
 
-  function showMidSeasonModal() {
-    const modal = document.getElementById('seasonModal');
-    const content = document.getElementById('seasonModalContent');
+  function showMidSeasonModal(): void {
+    const modal = document.getElementById('seasonModal')!;
+    const content = document.getElementById('seasonModalContent')!;
     modal.classList.remove('hidden');
 
     content.innerHTML = `
@@ -431,16 +434,16 @@ export function renderDashboard(container, navigateTo) {
       </div>
     `;
 
-    document.getElementById('btnContinueFromMidSeason').addEventListener('click', () => {
+    document.getElementById('btnContinueFromMidSeason')!.addEventListener('click', () => {
       sfx.playClick();
       modal.classList.add('hidden');
       renderDashboard(container, navigateTo);
     });
   }
 
-  function showEndOfSeasonModal() {
-    const modal = document.getElementById('seasonModal');
-    const content = document.getElementById('seasonModalContent');
+  function showEndOfSeasonModal(): void {
+    const modal = document.getElementById('seasonModal')!;
+    const content = document.getElementById('seasonModalContent')!;
     modal.classList.remove('hidden');
 
     const isChampion = userRank === 1;
@@ -448,7 +451,7 @@ export function renderDashboard(container, navigateTo) {
     gameState.budget += prizeMoney;
 
     if (gameState.season >= 2050) {
-      db.gameState.isCareerFinished = true;
+      gameState.isCareerFinished = true;
       content.innerHTML = `
         <div style="font-size: 3rem; margin-bottom: 10px;">🏆👑</div>
         <h2>¡CARRERA PROFESIONAL COMPLETADA DE 25 TEMPORADAS!</h2>
@@ -458,21 +461,23 @@ export function renderDashboard(container, navigateTo) {
         </div>
       `;
 
-      document.getElementById('btnFinish25Years').addEventListener('click', () => {
+      document.getElementById('btnFinish25Years')!.addEventListener('click', () => {
         modal.classList.add('hidden');
         navigateTo('trophies');
       });
       return;
     }
 
-    const contract = ContractEngine.evaluatePerformance();
+    // El contrato existe siempre: app.js lo inicializa en el arranque (evaluatePerformance || startClubContract)
+    const contract = ContractEngine.evaluatePerformance()!;
     const isContractExpired = (contract.yearsRemaining || 0) <= 0;
 
     const squad = db.getTeamPlayers(userTeam.id);
     const topScorer = [...squad].sort((a, b) => (b.seasonGoals || 0) - (a.seasonGoals || 0))[0] || squad[0];
     const mvpName = topScorer ? `${topScorer.name} (${topScorer.pos}, ${topScorer.seasonGoals || 0} Goles)` : 'Sin destacar';
 
-    const seasonGrade = (Math.min(10, Math.max(1, (10 - userRank * 0.4) + (isChampion ? 2.5 : 0)))).toFixed(1);
+    const seasonGradeNum = Math.min(10, Math.max(1, (10 - userRank * 0.4) + (isChampion ? 2.5 : 0)));
+    const seasonGrade = seasonGradeNum.toFixed(1);
 
     let headline = 'EL RIVAL LE PASÓ EL TRAPO';
     let headlineColor = 'var(--accent-red)';
@@ -499,7 +504,7 @@ export function renderDashboard(container, navigateTo) {
 
         <div style="background: #0f172a; border: 1px solid var(--border-color); padding: 12px 18px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
           <span style="font-weight: 800; font-size: 0.95rem; color: #fff;">NOTA DE LA TEMPORADA</span>
-          <strong style="font-size: 2.2rem; color: ${seasonGrade >= 7 ? 'var(--accent-green)' : 'var(--accent-gold)'}; font-weight: 900;">${seasonGrade}</strong>
+          <strong style="font-size: 2.2rem; color: ${seasonGradeNum >= 7 ? 'var(--accent-green)' : 'var(--accent-gold)'}; font-weight: 900;">${seasonGrade}</strong>
         </div>
 
         <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 14px; border-radius: 10px; margin-bottom: 16px; font-size: 0.85rem;">
@@ -546,11 +551,11 @@ export function renderDashboard(container, navigateTo) {
       </div>
     `;
 
-    document.querySelectorAll('.btn-mourinho-answer').forEach(btn => {
+    document.querySelectorAll<HTMLButtonElement>('.btn-mourinho-answer').forEach(btn => {
       btn.addEventListener('click', (e) => {
         sfx.playClick();
-        const bonusType = e.currentTarget.dataset.bonus;
-        const feedback = document.getElementById('mourinhoFeedback');
+        const bonusType = (e.currentTarget as HTMLElement).dataset.bonus;
+        const feedback = document.getElementById('mourinhoFeedback')!;
         if (bonusType === 'board') {
           if (gameState.contract) gameState.contract.boardConfidence = Math.min(100, gameState.contract.boardConfidence + 5);
           feedback.innerText = '¡Declaración icónica! La directiva valoró tu contundencia (+5% Confianza).';
@@ -559,7 +564,7 @@ export function renderDashboard(container, navigateTo) {
           feedback.innerText = '¡Tensión en la sala de prensa! El vestuario cerró filas contigo (+5% Moral).';
         }
         feedback.classList.remove('hidden');
-        document.querySelectorAll('.btn-mourinho-answer').forEach(b => b.disabled = true);
+        document.querySelectorAll<HTMLButtonElement>('.btn-mourinho-answer').forEach(b => b.disabled = true);
       });
     });
 
@@ -567,7 +572,7 @@ export function renderDashboard(container, navigateTo) {
       sfx.playGoal();
       ContractEngine.startClubContract(gameState.userTeamId, 3);
       db.processSeasonPlayerEvolution();
-      showEvolutionReportModal(db.gameState.lastSeasonEvolutionReport, () => {
+      showEvolutionReportModal(gameState.lastSeasonEvolutionReport, () => {
         renderDashboard(container, navigateTo);
       });
     });
@@ -581,20 +586,20 @@ export function renderDashboard(container, navigateTo) {
     document.getElementById('btnAdvanceSeason')?.addEventListener('click', () => {
       sfx.playGoal();
       db.processSeasonPlayerEvolution();
-      showEvolutionReportModal(db.gameState.lastSeasonEvolutionReport, () => {
+      showEvolutionReportModal(gameState.lastSeasonEvolutionReport, () => {
         renderDashboard(container, navigateTo);
       });
     });
   }
 
-  function showEvolutionReportModal(report, onContinue) {
-    const modal = document.getElementById('seasonModal');
-    const content = document.getElementById('seasonModalContent');
+  function showEvolutionReportModal(report: EvolutionReportEntry[] | null | undefined, onContinue?: () => void): void {
+    const modal = document.getElementById('seasonModal')!;
+    const content = document.getElementById('seasonModalContent')!;
     modal.classList.remove('hidden');
 
     content.innerHTML = `
       <div style="text-align: left;">
-        <h2 style="color: var(--accent-green); margin-bottom: 6px;">📈 REPORTE DE EVOLUCIÓN DE PLANTILLA (${db.gameState.season}/${db.gameState.season + 1})</h2>
+        <h2 style="color: var(--accent-green); margin-bottom: 6px;">📈 REPORTE DE EVOLUCIÓN DE PLANTILLA (${gameState.season}/${gameState.season + 1})</h2>
         <p class="text-sub mb-3">Tus futbolistas han envejecido +1 año. Revisa los crecimientos de media y desarrollos alcanzados:</p>
 
         <div class="table-responsive mb-4" style="max-height: 280px; overflow-y: auto;">
@@ -630,7 +635,7 @@ export function renderDashboard(container, navigateTo) {
 
         <div class="modal-actions text-center">
           <button id="btnContinueToNewSeasonDashboard" class="btn-primary btn-large" style="width: 100%;">
-            🚀 INICIAR NUEVA TEMPORADA ${db.gameState.season}/${db.gameState.season + 1}
+            🚀 INICIAR NUEVA TEMPORADA ${gameState.season}/${gameState.season + 1}
           </button>
         </div>
       </div>

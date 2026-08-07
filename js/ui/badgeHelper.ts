@@ -1,7 +1,10 @@
 // Generador e Integrador de Escudos de Equipos y Banderas de Países
 // Compatible con API-Football CDN (https://media.api-sports.io) y Assets Locales PNG / SVG
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
-const COUNTRY_FLAG_CODES = {
+import type { Team } from '../types.js';
+
+const COUNTRY_FLAG_CODES: Record<string, string> = {
   'Argentina': 'ar', 'Brasil': 'br', 'Colombia': 'co', 'Chile': 'cl', 'Uruguay': 'uy',
   'Perú': 'pe', 'Ecuador': 'ec', 'Paraguay': 'py', 'Bolivia': 'bo', 'Venezuela': 've',
   'España': 'es', 'Inglaterra': 'gb', 'Italia': 'it', 'Alemania': 'de', 'Francia': 'fr',
@@ -12,7 +15,7 @@ const COUNTRY_FLAG_CODES = {
   'Australia': 'au', 'Marruecos': 'ma', 'Egipto': 'eg'
 };
 
-const TEAM_API_FOOTBALL_IDS = {
+const TEAM_API_FOOTBALL_IDS: Record<string, number> = {
   'real_madrid': 541, 'barcelona': 529, 'atletico': 530, 'boca': 1064, 'river': 1065,
   'man_city': 50, 'man_utd': 33, 'liverpool': 40, 'arsenal': 42, 'chelsea': 49,
   'juventus': 496, 'inter': 505, 'milan': 489, 'psg': 85, 'bayern': 157,
@@ -23,7 +26,7 @@ const TEAM_API_FOOTBALL_IDS = {
   'san_lorenzo': 1067, 'estudiantes': 1068, 'velez': 1070
 };
 
-const COUNTRY_FLAGS_EMOJI = {
+const COUNTRY_FLAGS_EMOJI: Record<string, string> = {
   'Argentina': '🇦🇷', 'Brasil': '🇧🇷', 'Colombia': '🇨🇴', 'Chile': '🇨🇱', 'Uruguay': '🇺🇾',
   'Perú': '🇵🇪', 'Ecuador': '🇪🇨', 'Paraguay': '🇵🇾', 'Bolivia': '🇧🇴', 'Venezuela': '🇻🇪',
   'España': '🇪🇸', 'Inglaterra': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Italia': '🇮🇹', 'Alemania': '🇩🇪', 'Francia': '🇫🇷',
@@ -34,20 +37,20 @@ const COUNTRY_FLAGS_EMOJI = {
   'Australia': '🇦🇺', 'Marruecos': '🇲🇦', 'Egipto': '🇪🇬'
 };
 
-export function getCountryFlag(countryName) {
+export function getCountryFlag(countryName: string): string {
   return COUNTRY_FLAGS_EMOJI[countryName] || '🏳️';
 }
 
-export function getCountryCode(countryName) {
+export function getCountryCode(countryName: string): string {
   return COUNTRY_FLAG_CODES[countryName] || 'ar';
 }
 
 /**
  * Renderiza la imagen vectorial oficial SVG de la bandera de un país
- * @param {string} countryName - Nombre del país
- * @param {number} [height=20] - Altura en px
+ * @param countryName - Nombre del país
+ * @param height - Altura en px (por defecto 20)
  */
-export function renderCountryFlagSVG(countryName, height = 20) {
+export function renderCountryFlagSVG(countryName: string, height = 20): string {
   const code = COUNTRY_FLAG_CODES[countryName];
   if (!code) return getCountryFlag(countryName);
 
@@ -64,12 +67,13 @@ export function renderCountryFlagSVG(countryName, height = 20) {
 }
 
 /**
- * Renderiza el escudo oficial en PNG o el escudo heráldico vectorial SVG de reserva
- * @param {Object} team - Objeto del equipo
- * @param {number} [size=52] - Tamaño en px
- * @returns {string} Markup HTML
+ * Renderiza el escudo oficial en PNG o el escudo heráldico vectorial SVG de reserva.
+ * Acepta Team | null | undefined: los callers la llaman con lookups que pueden fallar.
+ * @param team - Objeto del equipo
+ * @param size - Tamaño en px (por defecto 52)
+ * @returns Markup HTML
  */
-export function renderTeamBadgeSVG(team, size = 52) {
+export function renderTeamBadgeSVG(team: Team | null | undefined, size = 52): string {
   if (!team) return '';
 
   const apiId = TEAM_API_FOOTBALL_IDS[team.id];

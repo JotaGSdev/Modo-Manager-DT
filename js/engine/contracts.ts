@@ -3,7 +3,7 @@
 
 import { db } from '../data/db.js';
 
-import type { ContractYearEndResult, JobOffer, ManagerContract } from '../types.js';
+import type { ClubJobOffer, ContractYearEndResult, ManagerContract, NationalTeamJobOffer } from '../types.js';
 
 export class ContractEngine {
   /**
@@ -147,12 +147,12 @@ export class ContractEngine {
   /**
    * Genera 3 ofertas de empleo de clubes y selecciones nacionales interesadas según la reputación del DT
    */
-  static generateJobOffers(): JobOffer[] {
+  static generateJobOffers(): (ClubJobOffer | NationalTeamJobOffer)[] {
     const gameState = db.gameState;
     if (!gameState) return [];
 
     const rep = gameState.reputation || 75;
-    const offers: JobOffer[] = [];
+    const offers: (ClubJobOffer | NationalTeamJobOffer)[] = [];
 
     const availableTeams = Object.values(db.teams).filter(t => t.id !== gameState.userTeamId);
     availableTeams.sort((a, b) => Math.abs(a.reputation - rep) - Math.abs(b.reputation - rep));

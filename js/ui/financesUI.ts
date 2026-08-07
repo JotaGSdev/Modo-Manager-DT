@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * ENTRENADOR LEYENDA - VISTA DE FINANZAS DEL CLUB (financesUI.js)
+ * ENTRENADOR LEYENDA - VISTA DE FINANZAS DEL CLUB (financesUI.ts)
  * ============================================================================
  * Pestaña dedicada al control económico y contable del club estilo FIFA / EA FC.
  * Muestra:
@@ -9,22 +9,24 @@
  * 3. Desglose detallado de Gastos (Salarios acumulados, Compras de jugadores).
  * 4. Tabla completa de la nómina salarial de la plantilla.
  * 5. Historial de finanzas y rendimiento por temporada del DT.
+ * Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
  */
 
 import { db } from '../data/db.js';
 import { sfx } from '../../assets/audio/sfx.js';
+import type { NavigateFn } from '../types.js';
 
 /**
  * Renderiza el panel de Finanzas del Club en el contenedor especificado.
- * @param {HTMLElement} container - Elemento HTML contenedor principal
- * @param {Function} navigateTo - Función de navegación entre vistas
+ * @param container - Elemento HTML contenedor principal
+ * @param navigateTo - Función de navegación entre vistas
  */
-export function renderFinances(container, navigateTo) {
-  const gameState = db.gameState;
-  const userTeam = db.teams[gameState.userTeamId] || { name: 'Mi Club' };
+export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): void {
+  const gameState = db.gameState!;
+  const userTeam = db.teams[gameState.userTeamId] || { id: gameState.userTeamId, name: 'Mi Club', short: 'FC', overall: 70, colors: ['#00aaff', '#00ffaa'], stadium: 'Estadio Principal', budget: 0, reputation: 50 };
   const squad = db.getTeamPlayers(userTeam.id);
 
-  // Garantizar objeto de finanzas
+  // Garantizar objeto de finanzas (solo partidas heredadas sin el campo)
   if (!gameState.finances) {
     gameState.finances = {
       ticketRevenue: 0,
@@ -32,7 +34,8 @@ export function renderFinances(container, navigateTo) {
       playerSales: 0,
       playerPurchases: 0,
       leaguePrize: 0,
-      balance: 0
+      balance: 0,
+      budgetAtSeasonStart: 0
     };
   }
 
@@ -51,7 +54,6 @@ export function renderFinances(container, navigateTo) {
   const netBalance = totalIncome - totalExpenses;
 
   // Estimación del premio por posición actual
-  const userStanding = (gameState.standings || []).find(s => s.teamId === userTeam.id);
   const userRank = (gameState.standings || []).findIndex(s => s.teamId === userTeam.id) + 1;
   let estimatedPrize = 10000000;
   if (userRank === 1) estimatedPrize = 40000000;

@@ -1,14 +1,17 @@
 // Vista de la Cantera (Youth Academy) con Ojeadores por Nivel y Scouting por Regiones del Mundo
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
 import { YouthAcademyEngine, SCOUT_LEVEL_DATA } from '../engine/youthAcademy.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
-export function renderYouth(container) {
-  const gameState = db.gameState;
+import type { Region } from '../types.js';
+
+export function renderYouth(container: HTMLElement): void {
+  const gameState = db.gameState!;
   const academy = gameState.youthAcademy || [];
   const scoutLevel = gameState.scoutLevel || 1;
-  const scoutData = SCOUT_LEVEL_DATA[scoutLevel] || SCOUT_LEVEL_DATA[1];
+  const scoutData = SCOUT_LEVEL_DATA[scoutLevel] || SCOUT_LEVEL_DATA[1]!;
   const nextScoutData = SCOUT_LEVEL_DATA[scoutLevel + 1];
 
   const renderProspects = () => {
@@ -50,7 +53,7 @@ export function renderYouth(container) {
     // Eventos de Promocionar
     document.querySelectorAll('.btn-promote').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const id = e.target.dataset.id;
+        const id = (e.target as HTMLElement).dataset.id;
         const player = academy.find(p => p.id === id);
         if (player) {
           const res = YouthAcademyEngine.promoteToFirstTeam(player);
@@ -68,8 +71,8 @@ export function renderYouth(container) {
     // Eventos de Descartar
     document.querySelectorAll('.btn-dismiss').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const id = e.target.dataset.id;
-        const res = YouthAcademyEngine.dismissProspect(id);
+        const id = (e.target as HTMLElement).dataset.id;
+        const res = YouthAcademyEngine.dismissProspect(id!);
         if (res.success) {
           sfx.playClick();
           renderYouth(container);
@@ -165,11 +168,11 @@ export function renderYouth(container) {
   // Eventos de Botones de Región
   document.querySelectorAll('.btn-region').forEach(btn => {
     btn.addEventListener('click', (e) => {
-      const region = e.target.dataset.region;
+      const region = (e.target as HTMLElement).dataset.region as Region;
       sfx.playClick();
       const res = YouthAcademyEngine.scoutNewProspects(region);
       if (res.success) {
-        alert(`¡Tu ojeador Nivel ${scoutLevel} (${scoutData.name}) regresó de ${region} con ${res.prospects.length} nuevos talentos juveniles!`);
+        alert(`¡Tu ojeador Nivel ${scoutLevel} (${scoutData.name}) regresó de ${region} con ${res.prospects?.length || 0} nuevos talentos juveniles!`);
         renderYouth(container);
       } else {
         alert(res.reason);

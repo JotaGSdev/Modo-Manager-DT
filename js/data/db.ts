@@ -23,7 +23,7 @@ import { TransferEngine } from '../engine/transfers.js';
 import { ContractEngine } from '../engine/contracts.js';
 import { ManagerMarketEngine } from '../engine/managerMarketEngine.js';
 
-import type { EvolutionReportEntry, GameState, League, ManagerArchetypeId, NewCareerOptions, Player, SaveData, Standing } from '../types.js';
+import type { EvolutionReportEntry, GameState, League, ManagerArchetype, NewCareerOptions, Player, SaveData, Standing } from '../types.js';
 
 class DatabaseManager {
   /** Lista de ligas cargadas */
@@ -139,7 +139,7 @@ class DatabaseManager {
     managerName = 'Director Técnico',
     managerCountry = 'Argentina',
     managerAge = 35,
-    managerArchetype: ManagerArchetypeId = 'GUARDIOLA',
+    managerArchetype: ManagerArchetype = 'GUARDIOLA',
     options: NewCareerOptions = {}
   ): GameState | null {
     const userTeam = this.teams[userTeamId];

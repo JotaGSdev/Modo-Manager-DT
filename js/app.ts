@@ -8,6 +8,7 @@
  * 3. Renderizado de la Navbar superior estilo EA FC (DT, Club, Presupuesto, Confianza, Temporada).
  * 4. Navegación entre vistas sin recarga de página (Single Page Application - SPA).
  * 5. Manejo defensivo de errores con sanitización y recuperación automática.
+ * Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
  */
 
 import { db } from './data/db.js';
@@ -25,27 +26,26 @@ import { renderScoutingView } from './ui/scoutingUI.js';
 import { ContractEngine } from './engine/contracts.js';
 import { sfx } from '../assets/audio/sfx.js';
 import { renderCountryFlagSVG } from './ui/badgeHelper.js';
+import type { Team } from './types.js';
 
 class App {
-  constructor() {
-    /** @type {string} Vista activa actual en pantalla */
-    this.currentView = 'dashboard';
+  /** Vista activa actual en pantalla (propiedad pública como en el JS original) */
+  currentView: string = 'dashboard';
 
-    /** @type {HTMLElement|null} Referencia al contenedor HTML <main id="mainContent"> */
-    this.mainContainer = null;
-  }
+  /** Referencia al contenedor HTML <main id="mainContent"> */
+  private mainContainer: HTMLElement | null = null;
 
   /**
    * Punto de entrada de la aplicación.
    * Carga la BD y decide si mostrar la selección de carrera o el dashboard.
    */
-  async init() {
+  async init(): Promise<void> {
     await db.init();
     const appEl = document.getElementById('app');
-    
+
     // Si no hay guardado previo ni estado de juego activo, ir a Nueva Carrera
     if (!db.hasSave() && !db.gameState) {
-      renderNewCareer(appEl, () => this.startMainLayout());
+      renderNewCareer(appEl!, () => this.startMainLayout());
     } else {
       db.loadGame();
       this.startMainLayout();
@@ -55,11 +55,12 @@ class App {
   /**
    * Construye el marco principal (Navbar + Sidebar + Main Content)
    */
-  startMainLayout() {
-    const appEl = document.getElementById('app');
-    const userTeam = db.teams[db.gameState.userTeamId] || { name: 'Mi Club' };
-    const contract = ContractEngine.evaluatePerformance() || ContractEngine.startClubContract(db.gameState.userTeamId, 3);
-    const seasonLabel = `${db.gameState.season}/${db.gameState.season + 1}`;
+  startMainLayout(): void {
+    const appEl = document.getElementById('app')!;
+    const gameState = db.gameState!;
+    const userTeam = db.teams[gameState.userTeamId] || { id: gameState.userTeamId, name: 'Mi Club', short: 'FC', overall: 70, colors: ['#00aaff', '#00ffaa'], stadium: 'Estadio Principal', budget: 0, reputation: 50 };
+    const contract = ContractEngine.evaluatePerformance() || ContractEngine.startClubContract(gameState.userTeamId, 3);
+    const seasonLabel = `${gameState.season}/${gameState.season + 1}`;
 
     appEl.innerHTML = `
       <!-- Navbar Superior estilo EA FC con KPIs en Tiempo Real -->
@@ -67,9 +68,9 @@ class App {
         <div class="brand-logo">⚽ ENTRENADOR LEYENDA</div>
 
         <div class="manager-status-bar" id="topStatusBar">
-          <div class="status-pill">DT: <strong id="topManagerDisplay">${db.gameState.managerName}</strong></div>
+          <div class="status-pill">DT: <strong id="topManagerDisplay">${gameState.managerName}</strong></div>
           <div class="status-pill">Club: <strong id="topClubDisplay">${userTeam.name}</strong></div>
-          <div class="status-pill">Presupuesto: <strong class="text-highlight" id="topBudgetDisplay">€${(db.gameState.budget / 1000000).toFixed(1)}M</strong></div>
+          <div class="status-pill">Presupuesto: <strong class="text-highlight" id="topBudgetDisplay">€${(gameState.budget / 1000000).toFixed(1)}M</strong></div>
           <div class="status-pill">Confianza Directiva: <strong class="text-highlight" id="topConfidenceDisplay">${contract.boardConfidence}%</strong></div>
           <div class="status-pill">Temporada: <strong id="topSeasonDisplay">${seasonLabel}</strong></div>
         </div>
@@ -114,13 +115,14 @@ class App {
       item.addEventListener('click', (e) => {
         sfx.playClick();
         document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        this.navigateTo(e.currentTarget.dataset.view);
+        const target = e.currentTarget as HTMLElement;
+        target.classList.add('active');
+        this.navigateTo(target.dataset.view!);
       });
     });
 
     // Event listener para Reiniciar Carrera
-    document.getElementById('btnResetCareer').addEventListener('click', () => {
+    document.getElementById('btnResetCareer')!.addEventListener('click', () => {
       if (confirm('¿Estás seguro de reiniciar la carrera actual de DT? Se perderán los datos de guardado.')) {
         localStorage.removeItem('entrenador_leyenda_save');
         location.reload();
@@ -134,8 +136,9 @@ class App {
   /**
    * Sincronización instantánea de los KPIs en la barra superior (DT, Club, Presupuesto, Confianza, Temporada)
    */
-  updateTopStatusBar() {
+  updateTopStatusBar(): void {
     if (!db.gameState) return;
+    const gameState = db.gameState;
 
     const contract = ContractEngine.evaluatePerformance();
 
@@ -147,15 +150,15 @@ class App {
     const navContract = document.getElementById('navItemContract');
 
     if (mDisplay) {
-      const country = db.gameState.managerCountry || '';
-      const age = db.gameState.managerAge ? ` (${db.gameState.managerAge}a)` : '';
-      mDisplay.innerHTML = `${db.gameState.managerName || 'Director Técnico'} ${country ? renderCountryFlagSVG(country, 16) : ''}${age}`;
+      const country = gameState.managerCountry || '';
+      const age = gameState.managerAge ? ` (${gameState.managerAge}a)` : '';
+      mDisplay.innerHTML = `${gameState.managerName || 'Director Técnico'} ${country ? renderCountryFlagSVG(country, 16) : ''}${age}`;
     }
     
-    const userTeam = db.teams[db.gameState.userTeamId];
+    const userTeam = db.teams[gameState.userTeamId];
     if (cDisplay && userTeam) cDisplay.innerText = userTeam.name;
 
-    if (bDisplay) bDisplay.innerText = `€${(db.gameState.budget / 1000000).toFixed(1)}M`;
+    if (bDisplay) bDisplay.innerText = `€${(gameState.budget / 1000000).toFixed(1)}M`;
     
     if (confDisplay && contract) {
       confDisplay.innerText = `${contract.boardConfidence}%`;
@@ -163,7 +166,7 @@ class App {
     }
 
     if (sDisplay) {
-      sDisplay.innerText = `${db.gameState.season}/${db.gameState.season + 1}`;
+      sDisplay.innerText = `${gameState.season}/${gameState.season + 1}`;
     }
 
     if (navContract && contract) {
@@ -174,7 +177,7 @@ class App {
   /**
    * Controla la visibilidad del botón de donaciones voluntarias al final de la trayectoria
    */
-  checkSupportTipVisibility() {
+  checkSupportTipVisibility(): void {
     const tipBtn = document.getElementById('supportTipBtn');
     if (!tipBtn) return;
 
@@ -188,10 +191,10 @@ class App {
 
   /**
    * Cambia la vista activa del juego (Router SPA)
-   * @param {string} viewName - Nombre de la vista destino
-   * @param {Object} [params={}] - Parámetros adicionales para la vista (ej. rival, mode, isFinal)
+   * @param viewName - Nombre de la vista destino
+   * @param params - Parámetros adicionales para la vista (ej. rival, mode, isFinal)
    */
-  navigateTo(viewName, params = {}) {
+  navigateTo(viewName: string, params: Record<string, unknown> = {}): void {
     this.currentView = viewName;
     if (!this.mainContainer) return;
     this.updateTopStatusBar();
@@ -217,7 +220,9 @@ class App {
       } else if (viewName === 'trophies') {
         renderTrophyRoom(this.mainContainer);
       } else if (viewName === 'match') {
-        renderMatch(this.mainContainer, params.rival, params.mode, params.isFinal, (v, p) => this.navigateTo(v, p));
+        // Contrato que establece dashboardUI al navegar: { rival: Team, mode?, isFinal? }
+        const matchParams = params as { rival: Team; mode?: string; isFinal?: boolean };
+        renderMatch(this.mainContainer, matchParams.rival, matchParams.mode, matchParams.isFinal, (v: string, p?: Record<string, unknown>) => this.navigateTo(v, p));
       }
     } catch (err) {
       console.error(`Error al renderizar vista '${viewName}':`, err);

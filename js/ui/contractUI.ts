@@ -1,20 +1,22 @@
 // Vista de Evaluación de Contrato, Renovaciones y Ofertas de Clubes & Selecciones Nacionales
+// Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
 import { ContractEngine } from '../engine/contracts.js';
 import { renderTeamBadgeSVG, getCountryFlag } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
 import { ManagerMarketEngine } from '../engine/managerMarketEngine.js';
+import type { NavigateFn } from '../types.js';
 
-export function renderContractView(container, navigateTo) {
-  const gameState = db.gameState;
+export function renderContractView(container: HTMLElement, navigateTo: NavigateFn): void {
+  const gameState = db.gameState!;
   let contract = ContractEngine.evaluatePerformance();
 
   if (!contract) {
     contract = ContractEngine.startClubContract(gameState.userTeamId, 3);
   }
 
-  const team = db.teams[gameState.userTeamId];
+  const team = db.teams[gameState.userTeamId]!;
   const nationalTeam = gameState.nationalTeamContract ? gameState.nationalTeamContract.teamName : null;
 
   container.innerHTML = `
@@ -136,7 +138,7 @@ export function renderContractView(container, navigateTo) {
     </div>
   `;
 
-  document.getElementById('btnRenewContract').addEventListener('click', () => {
+  document.getElementById('btnRenewContract')!.addEventListener('click', () => {
     if (contract.renewalChance < 60) {
       alert('La directiva no renovará tu contrato por falta de resultados en la temporada.');
       return;
@@ -147,10 +149,10 @@ export function renderContractView(container, navigateTo) {
     renderContractView(container, navigateTo);
   });
 
-  document.getElementById('btnSearchJobOffers').addEventListener('click', () => {
+  document.getElementById('btnSearchJobOffers')!.addEventListener('click', () => {
     sfx.playClick();
     const offers = ContractEngine.generateJobOffers();
-    const containerEl = document.getElementById('jobOffersContainer');
+    const containerEl = document.getElementById('jobOffersContainer')!;
     containerEl.classList.remove('hidden');
 
     containerEl.innerHTML = `
@@ -185,25 +187,26 @@ export function renderContractView(container, navigateTo) {
 
     document.querySelectorAll('.btn-accept-job').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const type = e.target.dataset.type;
-        const targetId = e.target.dataset.id;
-        const targetName = e.target.dataset.name;
+        const target = e.target as HTMLElement;
+        const type = target.dataset.type;
+        const targetId = target.dataset.id!;
+        const targetName = target.dataset.name;
         sfx.playWhistle();
 
         if (type === 'NATIONAL_TEAM') {
           gameState.nationalTeamContract = {
             teamId: targetId,
-            teamName: targetName,
+            teamName: targetName || 'Selección Nacional',
             startYear: gameState.season
           };
           alert(`¡CARGO ASUMIDO! Ahora eres el Seleccionador Oficial de la ${targetName} para competir en Eliminatorias y el Mundial.`);
           renderContractView(container, navigateTo);
         } else {
-          const newTeam = db.teams[targetId];
+          const newTeam = db.teams[targetId]!;
           gameState.userTeamId = targetId;
-          gameState.userLeagueId = newTeam.leagueId;
+          gameState.userLeagueId = newTeam.leagueId || '';
           gameState.budget = newTeam.budget;
-          gameState.wageBudget = newTeam.wageBudget;
+          gameState.wageBudget = newTeam.wageBudget || Math.round((newTeam.budget || 0) * 0.3);
           gameState.reputation = newTeam.reputation;
 
           ContractEngine.startClubContract(targetId, 3);
