@@ -83,6 +83,23 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
   // sesión solo se cierre una vez por partido.
   let matchSessionCompleted = false;
 
+  /** Etiquetas de las órdenes tácticas (compartidas por el modal interactivo y el modo AUTO) */
+  const TACTICAL_ORDER_LABELS: Record<TacticalOrder, string> = {
+    PRESSING: '⚡ PRESIÓN ALTA',
+    LOW_BLOCK: '🚌 BLOQUE BAJO',
+    COUNTER: '🎯 CONTRAATAQUE'
+  };
+
+  /** Decisión táctica registrada en un momento de tensión (para el resumen del final) */
+  interface TensionDecision {
+    minute: number;
+    homeScore: number;
+    awayScore: number;
+    order: TacticalOrder;
+    source: 'manual' | 'automatic';
+  }
+  const tensionDecisions: TensionDecision[] = [];
+
   const commentaryPool: Array<(t: number, tm: string) => string> = [
     (_t, tm) => `El estadio vibra con cada toque de bal\u00f3n de ${tm}.`,
     (_t, tm) => `El relator enmudece tras una jugada magistral de ${tm}.`,
@@ -233,6 +250,10 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
         <p id="cinematicSubtitle" class="cinematic-subtitle">Rendimiento deportivo en la jornada</p>
         <div id="cinematicScore" class="cinematic-score">0 - 0</div>
         <div id="cinematicStats" style="font-size:0.82rem; color:var(--text-sub); margin:10px 0;"></div>
+        <div id="cinematicTacticalSummary" style="margin-top:8px; border-top:1px dashed rgba(255,255,255,0.12); padding-top:10px; text-align:left;">
+          <div style="font-size:0.68rem; font-weight:900; color:var(--accent-gold); letter-spacing:1px; margin-bottom:8px;">⚙️ GESTIÓN TÁCTICA EN MOMENTOS CLAVE</div>
+          <div id="tacticalSummaryList" style="display:flex; flex-direction:column; gap:6px;"></div>
+        </div>
         <button id="btnFinishMatch" class="btn-primary btn-large" style="width:100%; margin-top:14px;">CONTINUAR AL DASHBOARD &#x26BD;</button>
       </div>
     </div>
@@ -296,13 +317,21 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
       target.style.color = 'var(--accent-cyan)';
       target.style.borderColor = 'var(--accent-cyan)';
       if (speed === 0) {
+        // AUTO: simulación síncrona de todo el partido sin modales de tensión.
         if (simTimer) clearInterval(simTimer);
+        simSpeed = 0;
+        // Si AUTO se pulsa con un modal de tensión abierto, resolverlo por contexto
+        // para que el partido termine sin un modal flotando sobre el overlay.
+        cancelOpenTensionModal();
         while (!engine.isFinished) { const ev = engine.tickMinute(); if (ev) processEvent(ev); }
         updateStats();
         finishMatchSession();
         return;
       }
       simSpeed = speed;
+      // Al cambiar de velocidad con el modal de tensión abierto (1x→2x/4x), resolverlo
+      // por contexto en lugar de dejar el modal flotando mientras la simulación avanza.
+      cancelOpenTensionModal();
       if (simTimer) clearInterval(simTimer);
       simTimer = window.setInterval(tick, simSpeed);
     });
@@ -411,6 +440,67 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
   // ── MANEJO DEL MODAL DE MOMENTO DE TENSIÓN ──────────────────────────
   let tensionCountdownInterval: number | null = null;
 
+  /**
+   * Aplica una orden táctica al motor y refleja la orden activa en el badge.
+   * Compartida por el modal interactivo y por el modo AUTO (que la aplica por defecto).
+   */
+  const applyTacticalOrder = (optionId: TacticalOrder, source: 'manual' | 'automatic' = 'manual') => {
+    engine.applyTacticalDecision(optionId);
+    const badge = document.getElementById('activeTacticalOrderBadge');
+    if (badge) {
+      badge.innerText = `ORDEN ACTIVA: ${TACTICAL_ORDER_LABELS[optionId] || optionId}`;
+    }
+    // Registrar para el resumen táctico del final del partido (marcador del momento).
+    tensionDecisions.push({
+      minute: engine.minute,
+      homeScore: engine.homeScore,
+      awayScore: engine.awayScore,
+      order: optionId,
+      source
+    });
+  };
+
+  /** El equipo del usuario actúa como local (el motor usa userTeam como homeTeam) */
+  const isUserHomeTeam = (): boolean => db.gameState?.userTeamId === engine.homeTeam.id;
+
+  /**
+   * Orden táctica que AUTO aplica por defecto según el contexto del marcador en el
+   * momento de la tensión: ganando → BLOQUE BAJO (asegura el resultado), perdiendo →
+   * PRESIÓN ALTA (busca el empate), empatado → CONTRAATAQUE (equilibrio ofensivo).
+   */
+  const getAutoTacticalDefault = (): TacticalOrder => {
+    const userGoals = isUserHomeTeam() ? engine.homeScore : engine.awayScore;
+    const rivalGoals = isUserHomeTeam() ? engine.awayScore : engine.homeScore;
+    if (userGoals > rivalGoals) return 'LOW_BLOCK';
+    if (userGoals < rivalGoals) return 'PRESSING';
+    return 'COUNTER';
+  };
+
+  /**
+   * Decisión automática del modo AUTO: aplica la orden según el contexto del marcador
+   * (getAutoTacticalDefault) y la registra en la bitácora para el minuto dado. Compartida
+   * por el botón AUTO (momento pendiente cancelado) y por processEvent (momentos durante la simulación).
+   */
+  const applyAutoDefaultDecision = (minute: number) => {
+    const decision = getAutoTacticalDefault();
+    applyTacticalOrder(decision, 'automatic');
+    addLog({ minute, type: 'commentary', text: `🤖 DECISIÓN AUTOMÁTICA: ${TACTICAL_ORDER_LABELS[decision]} aplicado ante el momento clave del minuto ${minute}'.` });
+  };
+
+  /**
+   * Cierra el modal de tensión si está abierto, cancela su countdown y aplica la
+   * decisión por contexto al momento pendiente. Usado al cambiar de velocidad
+   * (1x/2x/4x) y con AUTO, para que la simulación nunca avance con un modal flotando.
+   */
+  const cancelOpenTensionModal = () => {
+    if (tensionCountdownInterval) { clearInterval(tensionCountdownInterval); tensionCountdownInterval = null; }
+    const modal = document.getElementById('tensionMomentModal');
+    if (modal) modal.classList.add('hidden');
+    if (engine.pendingTensionMoment) {
+      applyAutoDefaultDecision(engine.pendingTensionMoment.minute);
+    }
+  };
+
   const triggerTensionUI = (tensionEvent: MatchEvent) => {
     // FIX: limpiar cualquier countdown previo. Con AUTO el motor lanza 2 momentos de
     // tensión en el mismo tick síncrono; sin esto el 2º triggerTensionUI sobrescribía
@@ -437,19 +527,20 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     let secondsLeft = 10;
     timerBar!.style.width = '100%';
 
-    const resolveChoice = (optionId: TacticalOrder) => {
+    // FIX: resolver cada momento de tensión una sola vez. Si el countdown expira al
+    // mismo instante que el clic del usuario, el 2º resolveChoice ya no aplica nada
+    // (evita decisiones duplicadas en el resumen táctico y refuerza el fix anti-corrupción).
+    let tensionResolved = false;
+
+    const resolveChoice = (optionId: TacticalOrder, source: 'manual' | 'automatic' = 'manual') => {
+      if (tensionResolved) return;
+      tensionResolved = true;
       if (tensionCountdownInterval) {
         clearInterval(tensionCountdownInterval);
         tensionCountdownInterval = null;
       }
-      engine.applyTacticalDecision(optionId);
+      applyTacticalOrder(optionId, source);
       modal!.classList.add('hidden');
-
-      const badge = document.getElementById('activeTacticalOrderBadge');
-      if (badge) {
-        const labels: Record<TacticalOrder, string> = { PRESSING: '⚡ PRESIÓN ALTA', LOW_BLOCK: '🚌 BLOQUE BAJO', COUNTER: '🎯 CONTRAATAQUE' };
-        badge.innerText = `ORDEN ACTIVA: ${labels[optionId] || optionId}`;
-      }
 
       // FIX: limpiar SIEMPRE el timer previo antes de recrearlo. Sin esto, un segundo
       // resolveChoice (countdown expirado + clic del usuario) creaba setInterval(tick)
@@ -482,7 +573,9 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
       if (secondsLeft <= 0) {
         clearInterval(countdownId);
         if (tensionCountdownInterval === countdownId) tensionCountdownInterval = null;
-        resolveChoice('LOW_BLOCK'); // Opción más conservadora por defecto
+        // Misma decisión por contexto que AUTO: ganando → BLOQUE BAJO, perdiendo →
+        // PRESIÓN ALTA, empatado → CONTRAATAQUE.
+        resolveChoice(getAutoTacticalDefault(), 'automatic');
       }
     }, 100);
     tensionCountdownInterval = countdownId;
@@ -498,7 +591,13 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     addTimelineIcon(ev);
 
     if (ev.type === 'tension_moment') {
-      triggerTensionUI(ev as MatchEvent);
+      // AUTO: aplicar la decisión táctica por defecto directamente, sin abrir el modal,
+      // para que el partido termine sin un modal flotando sobre el overlay cinematográfico.
+      if (simSpeed === 0) {
+        applyAutoDefaultDecision(ev.minute);
+      } else {
+        triggerTensionUI(ev as MatchEvent);
+      }
       return;
     }
 
@@ -601,6 +700,31 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     const userRank = (gameState.standings || []).findIndex(s => s.teamId === userTeam.id) + 1;
     const userPts = (gameState.standings || []).find(s => s.teamId === userTeam.id)?.points || 0;
     statsEl!.innerHTML = `Posici\u00f3n: <strong>#${userRank}</strong> &middot; <strong>${userPts} pts</strong> &middot; Jornada ${gameState.week - 1}/${gameState.maxWeeks}`;
+
+    // ── Resumen táctico: decisiones tomadas en cada momento de tensión ──
+    const summaryList = document.getElementById('tacticalSummaryList');
+    if (summaryList) {
+      if (tensionDecisions.length === 0) {
+        summaryList.innerHTML = `<div style="font-size:0.72rem; color:var(--text-sub); text-align:center;">No hubo momentos de tensión en este partido.</div>`;
+      } else {
+        const userIsHome = isUserHomeTeam();
+        summaryList.innerHTML = tensionDecisions.map(d => {
+          const userGoals = userIsHome ? d.homeScore : d.awayScore;
+          const rivalGoals = userIsHome ? d.awayScore : d.homeScore;
+          const ctx = userGoals > rivalGoals ? 'GANANDO' : (userGoals < rivalGoals ? 'PERDIENDO' : 'EMPATE');
+          const ctxColor = userGoals > rivalGoals ? 'var(--accent-green)' : (userGoals < rivalGoals ? 'var(--accent-red)' : 'var(--accent-gold)');
+          const sourceLabel = d.source === 'manual' ? 'DECISIÓN DT' : 'AUTOMÁTICA';
+          const sourceColor = d.source === 'manual' ? 'var(--accent-cyan)' : 'var(--text-sub)';
+          return `<div style="display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:6px; background:#0f172a; border-left:3px solid ${ctxColor};">
+            <span style="font-size:0.72rem; color:var(--text-sub); font-weight:800; min-width:44px;">⏱️ ${d.minute}'</span>
+            <span style="display:flex; align-items:baseline; gap:5px; min-width:86px;"><span style="font-size:0.72rem; font-weight:900; color:#fff;">${userGoals} - ${rivalGoals}</span><span style="font-size:0.56rem; font-weight:900; color:${ctxColor}; letter-spacing:0.5px;">${ctx}</span></span>
+            <span style="font-size:0.72rem; font-weight:900; color:var(--accent-gold); flex:1;">${TACTICAL_ORDER_LABELS[d.order] || d.order}</span>
+            <span style="font-size:0.6rem; font-weight:900; letter-spacing:0.5px; color:${sourceColor}; min-width:80px; text-align:right;">${sourceLabel}</span>
+          </div>`;
+        }).join('');
+      }
+    }
+
     let outcomeClass = 'draw';
     if (userGoals > rivalGoals) {
       outcomeClass = 'win';
