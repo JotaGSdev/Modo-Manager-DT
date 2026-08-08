@@ -2,7 +2,7 @@
 // v2.0: Añade campos FC IQ, Team Spirit, historial estadístico y sistema de Regens.
 // Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
-import type { AIManager, ManagerArchetypeId, Player, Position, Team } from '../types.js';
+import type { AIManager, ManagerArchetypeId, Player, Position, RetiredLegend, Team } from '../types.js';
 
 export function calculatePositionOvr(pos: Position, pac: number, sho: number, pas: number, dri: number, def: number, phy: number): number {
   let ovr = 70;
@@ -162,7 +162,294 @@ const LAST_NAMES: string[] = ['Rodríguez', 'González', 'Fernández', 'López',
 
 const POSITIONS_NEEDED: Position[] = ['POR', 'POR', 'DFC', 'DFC', 'DFC', 'DFC', 'LD', 'LI', 'MCD', 'MC', 'MC', 'MCO', 'EI', 'ED', 'DC', 'DC', 'MI', 'MD', 'DFC', 'MC', 'DC', 'POR'];
 
+// ═══════════════════════════════════════════════════════════════════════════
+// v3.2 — JUGADORES REALES (extraídos de API-Football, season 2024)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Registro de un jugador real extraído (scripts/extract_real_players.js) */
+export interface RealPlayerRecord {
+  name: string;
+  /** Posición genérica de API-Football: Goalkeeper | Defender | Midfielder | Attacker */
+  apiPos: string;
+  age: number;
+  nationality: string | null;
+  number: number | null;
+}
+
+/** Caché de la base de jugadores reales (assets/data/real_players.json) */
+let realPlayersCache: { dataSeason: number; players: Record<string, RealPlayerRecord[]> } | null = null;
+
+/**
+ * Carga asíncrona de la base de jugadores reales. La llama db.init() antes de
+ * generar plantillas; si falla o no se ha llamado, generateTeamPlayers usa el
+ * generador procedural como respaldo.
+ */
+export async function loadRealPlayers(): Promise<void> {
+  if (realPlayersCache) return;
+  try {
+    const res = await fetch('./assets/data/real_players.json');
+    realPlayersCache = await res.json();
+  } catch {
+    realPlayersCache = { dataSeason: 2024, players: {} };
+  }
+}
+
+/** Devuelve la plantilla real de un equipo (vacía si no hay datos o no se cargó) */
+export function getRealPlayers(teamId: string): RealPlayerRecord[] {
+  return realPlayersCache ? (realPlayersCache.players[teamId] || []) : [];
+}
+
+/** Mapa de clase genérica API → posiciones del juego */
+const API_POS_CANDIDATES: Record<string, Position[]> = {
+  'Goalkeeper': ['POR'],
+  'Defender': ['DFC', 'LI', 'LD'],
+  'Midfielder': ['MCD', 'MC', 'MCO', 'MI', 'MD'],
+  'Attacker': ['DC', 'EI', 'ED']
+};
+
+/**
+ * Asigna la posición principal de un jugador real según su dorsal (estilo
+ * fútbol) y, en su defecto, su clase genérica de API-Football.
+ */
+function pickRealPosition(rec: RealPlayerRecord): Position {
+  if (rec.apiPos === 'Goalkeeper') return 'POR';
+  if (rec.number != null) {
+    if (rec.number >= 2 && rec.number <= 5) return 'DFC';
+    if (rec.number >= 6 && rec.number <= 8) return 'MC';
+    if (rec.number >= 9 && rec.number <= 11) return 'DC';
+  }
+  const candidates = API_POS_CANDIDATES[rec.apiPos] || ['MC'];
+  return candidates[Math.floor(Math.random() * candidates.length)]!;
+}
+
+/**
+ * Genera los 6 atributos (pac, sho, pas, dri, def, phy) para una posición y un
+ * nivel objetivo. Compartido por el generador procedural y los jugadores reales.
+ */
+function generateAttributesForPosition(pos: Position, baseTarget: number): { pac: number; sho: number; pas: number; dri: number; def: number; phy: number } {
+  let pac: number, sho: number, pas: number, dri: number, def: number, phy: number;
+  if (pos === 'POR') {
+    pac = 40 + Math.floor(Math.random() * 25);
+    sho = 15; pas = 35 + Math.floor(Math.random() * 30); dri = 20;
+    def = baseTarget + Math.floor(Math.random() * 6);
+    phy = baseTarget + Math.floor(Math.random() * 6);
+  } else if (pos === 'DFC') {
+    pac = baseTarget - 10 + Math.floor(Math.random() * 12);
+    sho = 40 + Math.floor(Math.random() * 20);
+    pas = baseTarget - 15 + Math.floor(Math.random() * 10);
+    dri = baseTarget - 15 + Math.floor(Math.random() * 10);
+    def = Math.min(90, baseTarget + 6 + Math.floor(Math.random() * 5));
+    phy = Math.min(90, baseTarget + 5 + Math.floor(Math.random() * 5));
+  } else if (pos === 'DC' || pos === 'EI' || pos === 'ED') {
+    pac = Math.min(92, baseTarget + 8);
+    sho = Math.min(91, baseTarget + 6);
+    pas = baseTarget - 10 + Math.floor(Math.random() * 10);
+    dri = Math.min(91, baseTarget + 6);
+    def = 30 + Math.floor(Math.random() * 20);
+    phy = baseTarget - 5 + Math.floor(Math.random() * 10);
+  } else {
+    pac = baseTarget - 5 + Math.floor(Math.random() * 10);
+    sho = baseTarget - 8 + Math.floor(Math.random() * 10);
+    pas = Math.min(90, baseTarget + 6);
+    dri = Math.min(90, baseTarget + 5);
+    def = baseTarget - 10 + Math.floor(Math.random() * 15);
+    phy = baseTarget - 5 + Math.floor(Math.random() * 10);
+  }
+  return { pac, sho, pas, dri, def, phy };
+}
+
+/**
+ * Busca la semilla de estrella de un jugador real por APELLIDO y equipo
+ * (los nombres de API-Football vienen abreviados: 'K. Mbappé' ↔ 'Kylian Mbappé').
+ */
+function starFor(teamId: string, realName: string): StarPlayerSeed | null {
+  const normLast = (realName || '').split(' ').pop()?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+  if (!normLast) return null;
+  return STAR_PLAYERS.find(s => {
+    if (s.teamId !== teamId) return false;
+    const starLast = s.name.split(' ').pop()?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+    return starLast === normLast;
+  }) || null;
+}
+
+/**
+ * Construye la plantilla (22 jugadores) de un equipo a partir de sus jugadores
+ * reales: cada hueco de POSITIONS_NEEDED se llena con el real de la clase
+ * adecuada (posición primaria exacta primero, clase genérica después); los
+ * huecos sin candidato se completan con generados procedurales. Las estrellas
+ * de STAR_PLAYERS conservan sus atributos artesanales.
+ */
+/** Entrada candidata para un hueco de plantilla: un real de la API (con su
+ * posible semilla de estrella) o una estrella artesanal inyectada (r = null). */
+interface SquadEntry {
+  r: RealPlayerRecord | null;
+  star: StarPlayerSeed | null;
+  primary: Position;
+  used: boolean;
+}
+
+function buildSquadFromRealPlayers(team: Team): Player[] | null {
+  const reals = getRealPlayers(team.id);
+  if (!reals || reals.length < 16) return null;
+
+  const ageOffset = Math.max(0, 2026 - (realPlayersCache?.dataSeason || 2024));
+  const targetOvr = team.overall || 72;
+
+  const normLast = (name: string): string => (name || '').split(' ').pop()?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+
+  const entries: SquadEntry[] = reals.map(r => ({
+    r,
+    star: starFor(team.id, r.name),
+    primary: pickRealPosition(r),
+    used: false
+  }));
+
+  // Garantizar la presencia de las estrellas artesanales del club aunque la
+  // plantilla de la API no las incluya (p. ej. Cavani ya no estaba en el squad
+  // 2024-25 de Boca). Se inyectan como entradas con atributos propios.
+  STAR_PLAYERS.filter(s => s.teamId === team.id).forEach(s => {
+    const alreadyPresent = entries.some(e => e.r && normLast(e.r.name) === normLast(s.name));
+    if (!alreadyPresent) {
+      entries.push({ r: null, star: s, primary: s.pos, used: false });
+    }
+  });
+
+  const players: Player[] = [];
+  let realIndex = 0;
+
+  for (const slotPos of POSITIONS_NEEDED) {
+    // Pase 1: estrellas en su posición natural (identidad del club)
+    let chosen = entries.find(e => !e.used && e.star && e.primary === slotPos) || null;
+    // Pase 2: posición primaria exacta
+    if (!chosen) {
+      chosen = entries.find(e => !e.used && e.primary === slotPos) || null;
+    }
+    // Pase 3: misma clase genérica (Defender/Midfielder/Attacker)
+    if (!chosen) {
+      chosen = entries.find(e => !e.used && e.r && (API_POS_CANDIDATES[e.r.apiPos] || []).includes(slotPos)) || null;
+    }
+
+    if (chosen) {
+      chosen.used = true;
+      players.push(buildRealPlayer(team, chosen, slotPos, ageOffset, targetOvr, realIndex++));
+    } else {
+      players.push(buildProceduralPlayer(team, slotPos, players.length));
+    }
+  }
+  return players;
+}
+
+/** Construye el objeto Player de un jugador real en un hueco de la plantilla */
+function buildRealPlayer(
+  team: Team,
+  entry: SquadEntry,
+  slotPos: Position,
+  ageOffset: number,
+  targetOvr: number,
+  index: number
+): Player {
+  const { r, star } = entry;
+  // r es null solo cuando la entrada es una estrella inyectada (star no null)
+  const pos = star ? star.pos : slotPos;
+  const attrs = star
+    ? { pac: star.pac, sho: star.sho, pas: star.pas, dri: star.dri, def: star.def, phy: star.phy }
+    : generateAttributesForPosition(slotPos, Math.min(88, Math.max(58, targetOvr + Math.floor((Math.random() - 0.5) * 8))));
+
+  const ovr = calculatePositionOvr(pos, attrs.pac, attrs.sho, attrs.pas, attrs.dri, attrs.def, attrs.phy);
+  const age = Math.max(15, star ? star.age : r!.age + ageOffset);
+  const pot = star
+    ? star.pot
+    : Math.min(94, Math.max(ovr, ovr + Math.floor((34 - age) / 2) + Math.floor(Math.random() * 4)));
+  const value = star ? star.val : calculatePlayerMarketValue(ovr, age, pot);
+  const salary = star ? star.sal : calculatePlayerSalary(value, ovr);
+
+  return {
+    id: `${team.id}_real_${index}`,
+    // Las estrellas conservan su nombre completo artesanal (la API abrevia
+    // como 'T. Courtois'); el resto mantiene el nombre real del dataset.
+    name: star ? star.name : r!.name,
+    pos,
+    age,
+    overall: ovr,
+    potential: pot,
+    pac: attrs.pac, sho: attrs.sho, pas: attrs.pas, dri: attrs.dri, def: attrs.def, phy: attrs.phy,
+    value,
+    salary,
+    contractYears: 3 + Math.floor(Math.random() * 3),
+    morale: 85 + Math.floor(Math.random() * 15),
+    form: 75 + Math.floor(Math.random() * 20),
+    appearances: 0,
+    seasonGoals: 0,
+    ratingAvg: 0,
+    teamId: team.id,
+    statsHistory: [],
+    fcIqRole: null,
+    personalityRole: null,
+    tacticalAffinity: {
+      possession: 50 + Math.floor((Math.random() - 0.5) * 40),
+      counterattack: 50 + Math.floor((Math.random() - 0.5) * 40),
+      highPress: 50 + Math.floor((Math.random() - 0.5) * 40)
+    },
+    isRegen: false,
+    regenOriginName: null,
+    // La API no devuelve nacionalidad en /players/squads: se usa el país del
+    // club como aproximación realista (la mayoría de plantillas son locales).
+    country: (star ? (team.country || undefined) : (r!.nationality || team.country || undefined))
+  };
+}
+
+/** Genera un jugador procedural para un hueco concreto (sin estrella) */
+function buildProceduralPlayer(team: Team, pos: Position, index: number): Player {
+  const targetOvr = team.overall || 72;
+  const age = 18 + Math.floor(Math.random() * 16);
+  const baseTarget = Math.min(88, Math.max(58, targetOvr + Math.floor((Math.random() - 0.5) * 8)));
+  const attrs = generateAttributesForPosition(pos, baseTarget);
+  const ovr = calculatePositionOvr(pos, attrs.pac, attrs.sho, attrs.pas, attrs.dri, attrs.def, attrs.phy);
+  const pot = Math.min(94, Math.max(ovr, ovr + Math.floor((34 - age) / 2) + Math.floor(Math.random() * 4)));
+  const fName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)]!;
+  const lName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)]!;
+  const value = calculatePlayerMarketValue(ovr, age, pot);
+  const salary = calculatePlayerSalary(value, ovr);
+
+  return {
+    id: `${team.id}_gen_${index}`,
+    name: `${fName} ${lName}`,
+    pos,
+    age,
+    overall: ovr,
+    potential: pot,
+    pac: attrs.pac, sho: attrs.sho, pas: attrs.pas, dri: attrs.dri, def: attrs.def, phy: attrs.phy,
+    value,
+    salary,
+    contractYears: 2 + Math.floor(Math.random() * 4),
+    morale: 80 + Math.floor(Math.random() * 20),
+    form: 70 + Math.floor(Math.random() * 25),
+    appearances: 0,
+    seasonGoals: 0,
+    ratingAvg: 0,
+    teamId: team.id,
+    statsHistory: [],
+    fcIqRole: null,
+    personalityRole: null,
+    tacticalAffinity: {
+      possession: 50 + Math.floor((Math.random() - 0.5) * 40),
+      counterattack: 50 + Math.floor((Math.random() - 0.5) * 40),
+      highPress: 50 + Math.floor((Math.random() - 0.5) * 40)
+    },
+    isRegen: false,
+    regenOriginName: null
+  };
+}
+
+/**
+ * Genera la plantilla de un equipo (22 jugadores): usa la plantilla REAL
+ * extraída de API-Football cuando existe (con estrellas artesanales), y
+ * cae al generador procedural (estrellas + aleatorios) en el resto.
+ */
 export function generateTeamPlayers(team: Team): Player[] {
+  const realSquad = buildSquadFromRealPlayers(team);
+  if (realSquad) return realSquad;
+
   const players: Player[] = [];
 
   // Agregar estrellas predefinidas
@@ -186,92 +473,13 @@ export function generateTeamPlayers(team: Team): Player[] {
       phy: star.phy,
       value: val,
       salary: sal,
-      contractYears: 3 + Math.floor(Math.random() * 3), // 3 a 5 años de contrato
+      contractYears: 3 + Math.floor(Math.random() * 3),
       morale: 85 + Math.floor(Math.random() * 15),
       form: 75 + Math.floor(Math.random() * 20),
       appearances: 0,
       seasonGoals: 0,
       ratingAvg: 0,
       teamId: team.id,
-      // ── v2.0: Campos de roles y seguimiento ────────────────────────────
-      statsHistory: [],
-      fcIqRole: null,        // rol FC IQ asignado (ej: 'Box Crasher', 'Inverted Wingback')
-      personalityRole: null, // rol de personalidad ('captain'|'youngStar'|'rebel'|'mentor')
-      tacticalAffinity: {   // afinidad con estilos de juego (0-100)
-        possession: 50 + Math.floor((Math.random() - 0.5) * 40),
-        counterattack: 50 + Math.floor((Math.random() - 0.5) * 40),
-        highPress: 50 + Math.floor((Math.random() - 0.5) * 40)
-      },
-      isRegen: false,
-      regenOriginName: null
-    });
-  });
-
-  const targetOvr = team.overall || 72;
-
-  let count = players.length;
-  for (let i = count; i < 22; i++) {
-    const pos = POSITIONS_NEEDED[i % POSITIONS_NEEDED.length]!;
-    const age = 18 + Math.floor(Math.random() * 16);
-    const ovrOffset = Math.floor((Math.random() - 0.5) * 8);
-    const baseTarget = Math.min(88, Math.max(58, targetOvr + ovrOffset));
-
-    let pac: number, sho: number, pas: number, dri: number, def: number, phy: number;
-    if (pos === 'POR') {
-      pac = 40 + Math.floor(Math.random() * 25);
-      sho = 15; pas = 35 + Math.floor(Math.random() * 30); dri = 20;
-      def = baseTarget + Math.floor(Math.random() * 6);
-      phy = baseTarget + Math.floor(Math.random() * 6);
-    } else if (pos === 'DFC') {
-      pac = baseTarget - 10 + Math.floor(Math.random() * 12);
-      sho = 40 + Math.floor(Math.random() * 20);
-      pas = baseTarget - 15 + Math.floor(Math.random() * 10);
-      dri = baseTarget - 15 + Math.floor(Math.random() * 10);
-      def = Math.min(90, baseTarget + 6 + Math.floor(Math.random() * 5));
-      phy = Math.min(90, baseTarget + 5 + Math.floor(Math.random() * 5));
-    } else if (pos === 'DC' || pos === 'EI' || pos === 'ED') {
-      pac = Math.min(92, baseTarget + 8);
-      sho = Math.min(91, baseTarget + 6);
-      pas = baseTarget - 10 + Math.floor(Math.random() * 10);
-      dri = Math.min(91, baseTarget + 6);
-      def = 30 + Math.floor(Math.random() * 20);
-      phy = baseTarget - 5 + Math.floor(Math.random() * 10);
-    } else {
-      pac = baseTarget - 5 + Math.floor(Math.random() * 10);
-      sho = baseTarget - 8 + Math.floor(Math.random() * 10);
-      pas = Math.min(90, baseTarget + 6);
-      dri = Math.min(90, baseTarget + 5);
-      def = baseTarget - 10 + Math.floor(Math.random() * 15);
-      phy = baseTarget - 5 + Math.floor(Math.random() * 10);
-    }
-
-    const ovr = calculatePositionOvr(pos, pac, sho, pas, dri, def, phy);
-    const pot = Math.min(94, Math.max(ovr, ovr + Math.floor((34 - age) / 2) + Math.floor(Math.random() * 4)));
-
-    const fName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)]!;
-    const lName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)]!;
-
-    const value = calculatePlayerMarketValue(ovr, age, pot);
-    const salary = calculatePlayerSalary(value, ovr);
-
-    players.push({
-      id: `${team.id}_gen_${i}`,
-      name: `${fName} ${lName}`,
-      pos: pos,
-      age: age,
-      overall: ovr,
-      potential: pot,
-      pac, sho, pas, dri, def, phy,
-      value: value,
-      salary: salary,
-      contractYears: 2 + Math.floor(Math.random() * 4), // 2 a 5 años de contrato
-      morale: 80 + Math.floor(Math.random() * 20),
-      form: 70 + Math.floor(Math.random() * 25),
-      appearances: 0,
-      seasonGoals: 0,
-      ratingAvg: 0,
-      teamId: team.id,
-      // ── v2.0: Campos de roles y seguimiento ────────────────────────────
       statsHistory: [],
       fcIqRole: null,
       personalityRole: null,
@@ -283,6 +491,11 @@ export function generateTeamPlayers(team: Team): Player[] {
       isRegen: false,
       regenOriginName: null
     });
+  });
+
+  let count = players.length;
+  for (let i = count; i < 22; i++) {
+    players.push(buildProceduralPlayer(team, POSITIONS_NEEDED[i % POSITIONS_NEEDED.length]!, i));
   }
 
   return players;
@@ -313,6 +526,123 @@ const MANAGER_ARCHETYPES_LIST: ManagerArchetypeId[] = ['GUARDIOLA', 'KLOPP', 'SI
  * @param teamId - ID del equipo
  * @param teamReputation - Reputación del equipo (30-100)
  */
+// ───────────────────────────────────────────────────────────────────
+// v2.0 — Fase 6A completa: Regens y reposición de plantillas
+// ───────────────────────────────────────────────────────────────────
+
+/** Posiciones posibles para un prospecto de reposición */
+const PROSPECT_POSITIONS: Position[] = ['POR', 'DFC', 'LI', 'LD', 'MCD', 'MC', 'MCO', 'EI', 'ED', 'DC'];
+
+/**
+ * Construye un jugador joven (16-18 años) a partir de una semilla: posición,
+ * media base, potencial y metadatos de regen. Comparte la generación de
+ * atributos por posición de generateTeamPlayers.
+ */
+function generateFromSeed(teamId: string, seed: { pos: Position; baseOvr: number; potential: number; isRegen: boolean; originName: string | null }, index: number): Player {
+  const pos = seed.pos;
+  const target = Math.max(48, Math.min(82, seed.baseOvr));
+  const age = 16 + Math.floor(Math.random() * 3); // 16-18 años
+
+  let pac: number, sho: number, pas: number, dri: number, def: number, phy: number;
+  if (pos === 'POR') {
+    pac = 40 + Math.floor(Math.random() * 25);
+    sho = 15; pas = 35 + Math.floor(Math.random() * 30); dri = 20;
+    def = Math.min(88, target + Math.floor(Math.random() * 6));
+    phy = Math.min(88, target + Math.floor(Math.random() * 6));
+  } else if (pos === 'DFC') {
+    pac = target - 8 + Math.floor(Math.random() * 12);
+    sho = 40 + Math.floor(Math.random() * 20);
+    pas = target - 12 + Math.floor(Math.random() * 10);
+    dri = target - 12 + Math.floor(Math.random() * 10);
+    def = Math.min(88, target + 6 + Math.floor(Math.random() * 5));
+    phy = Math.min(88, target + 5 + Math.floor(Math.random() * 5));
+  } else if (pos === 'DC' || pos === 'EI' || pos === 'ED') {
+    pac = Math.min(90, target + 8);
+    sho = Math.min(89, target + 6);
+    pas = target - 8 + Math.floor(Math.random() * 10);
+    dri = Math.min(89, target + 6);
+    def = 30 + Math.floor(Math.random() * 20);
+    phy = target - 4 + Math.floor(Math.random() * 10);
+  } else {
+    pac = target - 4 + Math.floor(Math.random() * 10);
+    sho = target - 6 + Math.floor(Math.random() * 10);
+    pas = Math.min(88, target + 6);
+    dri = Math.min(88, target + 5);
+    def = target - 8 + Math.floor(Math.random() * 15);
+    phy = target - 4 + Math.floor(Math.random() * 10);
+  }
+
+  const ovr = calculatePositionOvr(pos, pac, sho, pas, dri, def, phy);
+  const fName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)]!;
+  const lName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)]!;
+  const value = calculatePlayerMarketValue(ovr, age, seed.potential);
+  const salary = calculatePlayerSalary(value, ovr);
+
+  return {
+    id: `${teamId}_regen_${index}_${Date.now()}`,
+    name: `${fName} ${lName}`,
+    pos,
+    age,
+    overall: ovr,
+    potential: seed.potential,
+    pac, sho, pas, dri, def, phy,
+    value,
+    salary,
+    contractYears: 3 + Math.floor(Math.random() * 3),
+    morale: 85 + Math.floor(Math.random() * 15),
+    form: 75 + Math.floor(Math.random() * 20),
+    appearances: 0,
+    seasonGoals: 0,
+    ratingAvg: 0,
+    teamId,
+    statsHistory: [],
+    fcIqRole: null,
+    personalityRole: null,
+    tacticalAffinity: {
+      possession: 50 + Math.floor((Math.random() - 0.5) * 40),
+      counterattack: 50 + Math.floor((Math.random() - 0.5) * 40),
+      highPress: 50 + Math.floor((Math.random() - 0.5) * 40)
+    },
+    isRegen: seed.isRegen,
+    regenOriginName: seed.originName
+  };
+}
+
+/**
+ * Genera el REGEN de una leyenda retirada: un joven (16-18) con el mismo
+ * puesto y potencial que la leyenda, que nace en el club de origen.
+ * @param legend - Leyenda retirada (retiredLegends[])
+ * @param teamId - Club donde nace el regen
+ * @param index - Índice para el ID único
+ */
+export function generateRegenPlayer(legend: RetiredLegend, teamId: string, index = 0): Player {
+  return generateFromSeed(teamId, {
+    pos: legend.pos,
+    // Un regen arranca muy por debajo del nivel de su leyenda (45-65 OVR)
+    baseOvr: legend.originalOvr - 26 - Math.floor(Math.random() * 4),
+    potential: legend.originalOvr, // puede alcanzar el nivel de la leyenda
+    isRegen: true,
+    originName: legend.name
+  }, index);
+}
+
+/**
+ * Genera un prospecto juvenil genérico (no regen) para reponer una plantilla
+ * cuando se retira un jugador que no alcanzó el estatus de leyenda.
+ * @param teamId - Club destino
+ * @param index - Índice para el ID único
+ */
+export function generateYouthProspect(teamId: string, index = 0): Player {
+  const pos = PROSPECT_POSITIONS[Math.floor(Math.random() * PROSPECT_POSITIONS.length)]!;
+  return generateFromSeed(teamId, {
+    pos,
+    baseOvr: 52 + Math.floor(Math.random() * 8),
+    potential: 70 + Math.floor(Math.random() * 9),
+    isRegen: false,
+    originName: null
+  }, index);
+}
+
 export function generateAIManager(teamId: string, teamReputation = 60): AIManager {
   const fName = MANAGER_FIRST_NAMES[Math.floor(Math.random() * MANAGER_FIRST_NAMES.length)]!;
   const lName = MANAGER_LAST_NAMES[Math.floor(Math.random() * MANAGER_LAST_NAMES.length)]!;

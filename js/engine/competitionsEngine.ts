@@ -2,6 +2,7 @@
 // Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
+import { getNationalCupRoundPrize } from '../data/leaguePrizes.js';
 
 import type { ContinentalCupResult, CupPhase, NationalCupResult } from '../types.js';
 
@@ -127,7 +128,9 @@ export class CompetitionsEngine {
 
     const rivalName = `Rival Nacional (OVR ${userTeam.overall + (Math.floor(Math.random() * 7) - 3)})`;
 
-    let prize = 500000 * roundIndex;
+    // v3.9: la copa nacional escala con la riqueza de la liga (en Brasil la
+    // Copa do Brasil paga más que la liga; en ligas pequeñas reparte poco).
+    let prize = getNationalCupRoundPrize(userTeam.leagueId, roundIndex);
     let matchText = '';
 
     const currentSlot: CupPhase = gameState.nationalCupProgress!.find(p => p.phaseIndex === roundIndex) || {

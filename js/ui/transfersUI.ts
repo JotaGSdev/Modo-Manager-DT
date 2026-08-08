@@ -11,12 +11,28 @@ import type { Player, SquadRole } from '../types.js';
 export function renderTransfers(container: HTMLElement): void {
   const gameState = db.gameState!;
   const marketOpen = isTransferWindowOpen(gameState.week);
-  let currentFilters: MarketFilters = { position: 'ALL', name: '' };
+  let currentFilters: MarketFilters = { position: 'ALL', name: '', sortBy: 'ovr' };
+  // v3.8: 'market' = traspasos entre clubes (ventanas); 'free' = agentes libres (siempre)
+  let mode: 'market' | 'free' = 'market';
 
   const renderMarketList = () => {
-    const players = TransferEngine.getMarketPlayers(currentFilters);
+    const players = mode === 'free'
+      ? TransferEngine.getFreeAgents(currentFilters)
+      : TransferEngine.getMarketPlayers(currentFilters);
     const listContainer = document.getElementById('marketPlayerList');
+    const infoEl = document.getElementById('marketResultInfo');
     if (!listContainer) return;
+
+    if (infoEl) {
+      infoEl.innerHTML = players.length === 0
+        ? `<span style="color: var(--text-sub); font-size: 0.8rem;">🔍 Sin jugadores que coincidan con los filtros seleccionados.</span>`
+        : `<span style="color: ${mode === 'free' ? 'var(--accent-gold)' : 'var(--accent-cyan)'}; font-weight: 800; font-size: 0.8rem;">${mode === 'free' ? '🕊️' : '🔎'} ${players.length} ${mode === 'free' ? 'agentes libres' : 'jugadores'} encontrados</span><span style="color: var(--text-sub); font-size: 0.75rem;"> · mostrando los primeros ${Math.min(40, players.length)}</span>`;
+    }
+
+    if (players.length === 0) {
+      listContainer.innerHTML = `<div class="text-sub text-center" style="padding: 30px 10px; font-size: 0.85rem;">${mode === 'free' ? '🕊️ No hay agentes libres que coincidan. Los jugadores quedan libres cuando expira su contrato sin renovar.' : '🔍 No se encontraron jugadores. Prueba a ampliar los filtros o cambiar la liga.'}</div>`;
+      return;
+    }
 
     listContainer.innerHTML = players.slice(0, 40).map(p => `
       <div class="player-market-card ${p.isLocked ? 'locked-card' : ''}">
@@ -24,7 +40,7 @@ export function renderTransfers(container: HTMLElement): void {
           <span class="pos-tag pos-${p.pos}">${p.pos}</span>
           <div class="player-info">
             <h4>${p.name}</h4>
-            <span class="club-subtext">🏰 ${p.teamName} | Edad: ${p.age}</span>
+            <span class="club-subtext">${mode === 'free' ? '🕊️' : '🏰'} ${p.teamName} | Edad: ${p.age}</span>
           </div>
         </div>
 
@@ -34,7 +50,11 @@ export function renderTransfers(container: HTMLElement): void {
           <div class="stat-box"><span class="lbl">VALOR</span><span class="val">€${(p.value / 1000000).toFixed(1)}M</span></div>
         </div>
 
-        ${p.isLocked ? `
+        ${mode === 'free' ? `
+          <button class="btn-primary btn-sign-free" data-id="${p.id}">
+            🕊️ FIRMAR CONTRATO (sin traspaso)
+          </button>
+        ` : p.isLocked ? `
           <button class="btn-secondary" disabled style="opacity: 0.6; cursor: not-allowed; border-color: var(--accent-red); color: var(--accent-red);">
             🔒 NEGOCIACIÓN ROTA
           </button>
@@ -45,6 +65,14 @@ export function renderTransfers(container: HTMLElement): void {
         `}
       </div>
     `).join('');
+
+    document.querySelectorAll('.btn-sign-free').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const playerId = (e.target as HTMLElement).dataset.id;
+        const player = db.getPlayerById(playerId!);
+        if (player) openEAFCNegotiationWizard(player, true);
+      });
+    });
 
     document.querySelectorAll('.btn-negotiate').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -57,6 +85,18 @@ export function renderTransfers(container: HTMLElement): void {
         if (player) openEAFCNegotiationWizard(player);
       });
     });
+  };
+
+  // v3.8: conmutador Mercado ⇄ Agentes Libres
+  const setMode = (m: 'market' | 'free') => {
+    mode = m;
+    const mk = document.getElementById('btnModeMarket');
+    const fr = document.getElementById('btnModeFree');
+    const leagueSel = document.getElementById('selectLeagueFilter');
+    if (mk) { mk.style.background = m === 'market' ? 'var(--accent-cyan)' : ''; mk.style.color = m === 'market' ? '#0b111e' : ''; mk.style.borderColor = m === 'market' ? 'var(--accent-cyan)' : ''; }
+    if (fr) { fr.style.background = m === 'free' ? 'var(--accent-gold)' : ''; fr.style.color = m === 'free' ? '#0b111e' : ''; fr.style.borderColor = m === 'free' ? 'var(--accent-gold)' : ''; }
+    if (leagueSel) leagueSel.style.display = m === 'free' ? 'none' : '';
+    renderMarketList();
   };
 
   container.innerHTML = `
@@ -79,9 +119,12 @@ export function renderTransfers(container: HTMLElement): void {
         </div>
       </div>
 
-      <!-- Filtros de Búsqueda -->
+      <!-- Filtros de Búsqueda (Estilo FIFA / EA FC) -->
       <div class="filters-bar glass-panel">
-        <input type="text" id="inputSearchName" class="input-text" placeholder="🔍 Buscar por nombre de jugador..." />
+        <button id="btnModeMarket" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800; background: var(--accent-cyan); color: #0b111e; border-color: var(--accent-cyan);">🔁 Mercado</button>
+        <button id="btnModeFree" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800;">🕊️ Agentes Libres</button>
+        <span style="opacity: 0.4; margin: 0 2px;">|</span>
+        <input type="text" id="inputSearchName" class="input-text" placeholder="🔍 Buscar por nombre..." />
         
         <select id="selectPosFilter" class="input-select">
           <option value="ALL">Todas las Posiciones</option>
@@ -89,13 +132,63 @@ export function renderTransfers(container: HTMLElement): void {
           <option value="DFC">Defensas Centrales (DFC)</option>
           <option value="LI">Laterales Izquierdos (LI)</option>
           <option value="LD">Laterales Derechos (LD)</option>
+          <option value="MCD">Pivotes (MCD)</option>
           <option value="MC">Mediocampistas (MC)</option>
           <option value="MCO">Mediapuntas (MCO)</option>
+          <option value="MI">Medios Izquierdos (MI)</option>
+          <option value="MD">Medios Derechos (MD)</option>
           <option value="EI">Extremos Izquierdos (EI)</option>
           <option value="ED">Extremos Derechos (ED)</option>
           <option value="DC">Delanteros (DC)</option>
         </select>
+
+        <select id="selectOvrMin" class="input-select">
+          <option value="0">Media mín: Cualquiera</option>
+          <option value="65">Media 65+</option>
+          <option value="70">Media 70+</option>
+          <option value="75">Media 75+</option>
+          <option value="80">Media 80+</option>
+          <option value="85">Media 85+</option>
+          <option value="90">Media 90+</option>
+        </select>
+
+        <select id="selectMaxPrice" class="input-select">
+          <option value="0">Precio máx: Cualquiera</option>
+          <option value="5000000">≤ €5M</option>
+          <option value="10000000">≤ €10M</option>
+          <option value="25000000">≤ €25M</option>
+          <option value="50000000">≤ €50M</option>
+          <option value="100000000">≤ €100M</option>
+        </select>
+
+        <select id="selectMaxAge" class="input-select">
+          <option value="99">Edad máx: Cualquiera</option>
+          <option value="21">≤ 21 años</option>
+          <option value="23">≤ 23 años</option>
+          <option value="25">≤ 25 años</option>
+          <option value="28">≤ 28 años</option>
+          <option value="30">≤ 30 años</option>
+          <option value="33">≤ 33 años</option>
+        </select>
+
+        <select id="selectLeagueFilter" class="input-select">
+          <option value="ALL">Todas las Ligas</option>
+          ${db.leagues.map(l => `<option value="${l.id}">${l.name}</option>`).join('')}
+        </select>
+
+        <select id="selectSortBy" class="input-select">
+          <option value="ovr">Ordenar: Media ▼</option>
+          <option value="value">Ordenar: Valor ▼</option>
+          <option value="age">Ordenar: Edad ▲</option>
+          <option value="salary">Ordenar: Salario ▼</option>
+          <option value="name">Ordenar: Nombre A-Z</option>
+        </select>
+
+        <button id="btnClearFilters" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">✕ Limpiar</button>
       </div>
+
+      <!-- Resultado de la búsqueda -->
+      <div id="marketResultInfo" style="padding: 8px 4px 4px; min-height: 24px;"></div>
 
       <!-- Lista de Mercado -->
       <div id="marketPlayerList" class="market-list"></div>
@@ -107,6 +200,9 @@ export function renderTransfers(container: HTMLElement): void {
     </div>
   `;
 
+  document.getElementById('btnModeMarket')!.addEventListener('click', () => setMode('market'));
+  document.getElementById('btnModeFree')!.addEventListener('click', () => setMode('free'));
+
   document.getElementById('inputSearchName')!.addEventListener('input', (e) => {
     currentFilters.name = (e.target as HTMLInputElement).value;
     renderMarketList();
@@ -117,17 +213,60 @@ export function renderTransfers(container: HTMLElement): void {
     renderMarketList();
   });
 
+  document.getElementById('selectOvrMin')!.addEventListener('change', (e) => {
+    const v = parseInt((e.target as HTMLSelectElement).value, 10);
+    currentFilters.minOvr = v > 0 ? v : undefined;
+    renderMarketList();
+  });
+
+  document.getElementById('selectMaxPrice')!.addEventListener('change', (e) => {
+    const v = parseInt((e.target as HTMLSelectElement).value, 10);
+    currentFilters.maxPrice = v > 0 ? v : undefined;
+    renderMarketList();
+  });
+
+  document.getElementById('selectMaxAge')!.addEventListener('change', (e) => {
+    const v = parseInt((e.target as HTMLSelectElement).value, 10);
+    currentFilters.maxAge = v >= 99 ? undefined : v;
+    renderMarketList();
+  });
+
+  document.getElementById('selectLeagueFilter')!.addEventListener('change', (e) => {
+    const v = (e.target as HTMLSelectElement).value;
+    currentFilters.leagueId = v === 'ALL' ? undefined : v;
+    renderMarketList();
+  });
+
+  document.getElementById('selectSortBy')!.addEventListener('change', (e) => {
+    currentFilters.sortBy = (e.target as HTMLSelectElement).value as MarketFilters['sortBy'];
+    renderMarketList();
+  });
+
+  document.getElementById('btnClearFilters')!.addEventListener('click', () => {
+    currentFilters = { position: 'ALL', name: '', sortBy: 'ovr' };
+    (document.getElementById('inputSearchName') as HTMLInputElement).value = '';
+    (document.getElementById('selectPosFilter') as HTMLSelectElement).value = 'ALL';
+    (document.getElementById('selectOvrMin') as HTMLSelectElement).value = '0';
+    (document.getElementById('selectMaxPrice') as HTMLSelectElement).value = '0';
+    (document.getElementById('selectMaxAge') as HTMLSelectElement).value = '99';
+    (document.getElementById('selectLeagueFilter') as HTMLSelectElement).value = 'ALL';
+    (document.getElementById('selectSortBy') as HTMLSelectElement).value = 'ovr';
+    renderMarketList();
+  });
+
   renderMarketList();
 
   /**
-   * Wizard de Negociación por Pasos al estilo EA FC / FIFA con Indicadores Presupuestarios Visibles
+   * Wizard de Negociación por Pasos al estilo EA FC / FIFA con Indicadores Presupuestarios Visibles.
+   * v3.8: con isFreeAgent=true se salta el Paso 1 (no hay club vendedor) y se
+   * negocia solo el contrato — los agentes libres pueden ficharse cualquier semana.
    */
-  function openEAFCNegotiationWizard(player: Player): void {
+  function openEAFCNegotiationWizard(player: Player, isFreeAgent = false): void {
     const modal = document.getElementById('negotiationModal')!;
     const content = document.getElementById('modalContent')!;
     modal.classList.remove('hidden');
 
-    let agreedFee = Math.round(player.value * 1.05);
+    let agreedFee = isFreeAgent ? 0 : Math.round(player.value * 1.05);
 
     const renderStep1 = () => {
       content.innerHTML = `
@@ -229,7 +368,7 @@ export function renderTransfers(container: HTMLElement): void {
       const defaultWage = Math.round(player.salary * 1.10);
 
       content.innerHTML = `
-        <h3>✍️ Negociación de Contrato (Paso 2 de 2: Con el Jugador)</h3>
+        <h3>✍️ Negociación de Contrato (${isFreeAgent ? 'Agente Libre — sin traspaso' : 'Paso 2 de 2: Con el Jugador'})</h3>
         <p class="text-sub">Jugador: <strong>${player.name}</strong> | Rol Deseado: <strong>${player.overall >= 80 ? 'Crucial / Titular' : 'Rotación'}</strong></p>
 
         <!-- BANNER DE PRESUPUESTO SALARIAL Y PRIMAS PARA PASO 2 -->
@@ -387,6 +526,10 @@ export function renderTransfers(container: HTMLElement): void {
       });
     };
 
-    renderStep1();
+    if (isFreeAgent) {
+      renderStep2();
+    } else {
+      renderStep1();
+    }
   }
 }

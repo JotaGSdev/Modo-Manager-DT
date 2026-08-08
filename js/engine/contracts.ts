@@ -140,7 +140,11 @@ export class ContractEngine {
       return { action: 'CONTRACT_EXPIRED', contract };
     }
 
-    db.saveGame();
+    // v3.5: no guarda aquí. processSeasonPlayerEvolution (único llamador)
+    // persiste todo al final con su saveGame de cierre de temporada; el
+    // guardado intermedio solo duplicaba la serialización (y dejaba una
+    // ventana en la que un corte a mitad de la transición persistía un
+    // contrato ya decrementado con la temporada sin avanzar).
     return { action: 'CONTINUE', contract };
   }
 

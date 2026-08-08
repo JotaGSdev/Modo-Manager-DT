@@ -24,6 +24,11 @@ export function renderSquad(container: HTMLElement): void {
     const listEl = document.getElementById('squadTableBody');
     if (!listEl) return;
 
+    // XI real que juega el motor: los 11 primeros del array de plantilla (no el
+    // orden visual por posición). Marca visual titular/suplente para que coincida
+    // con lo que sale al campo en los partidos.
+    const xiIds = new Set(squad.slice(0, 11).map(p => p.id));
+
     // Ordenar ordenadamente por posición heráldica de fútbol y luego por media (OVR)
     let filtered = [...squad].sort((a, b) => {
       const p1 = POS_ORDER[a.pos] || 99;
@@ -59,7 +64,7 @@ export function renderSquad(container: HTMLElement): void {
         <tr class="player-squad-row" data-id="${p.id}" style="cursor: pointer;">
           <td><span class="pos-tag pos-${p.pos}">${p.pos}</span></td>
           <td>
-            <strong>${p.name}</strong><br>
+            <strong>${p.name} ${xiIds.has(p.id) ? '<span class="xi-badge starter">XI</span>' : '<span class="xi-badge bench">SUP</span>'}</strong><br>
             <span class="text-sub" style="font-size: 0.75rem;">Rol: ${roleText}</span>
           </td>
           <td><strong>${p.age}a</strong></td>

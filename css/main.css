@@ -148,6 +148,7 @@ body {
 
 .main-content {
   flex: 1;
+  min-width: 0; /* Permite encoger bajo el min-content de las tablas (evita scroll horizontal) */
   padding: 16px 24px;
   max-width: 1440px;
   margin: 0 auto;

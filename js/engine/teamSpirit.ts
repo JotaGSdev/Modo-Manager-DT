@@ -119,7 +119,9 @@ export class TeamSpiritEngine {
       (gameState.teamSpirit || 50) + drift
     ));
 
-    db.saveGame();
+    // Nota: no se llama a db.saveGame() aquí — los llamadores (dashboardUI,
+    // matchUI) guardan la partida al completar el bloque semanal. Evita
+    // serializar el save decenas de veces dentro de un mismo bucle.
   }
 
   /**

@@ -17,11 +17,12 @@
  */
 
 import { db } from '../data/db.js';
+import { calculatePositionOvr } from '../data/teamData.js';
 import { TACTICAL_MATCHUP_MATRIX, cleanStyle } from './probability.js';
 
 import type {
   ActionResult, AffinityKey, FCIQRole, Formation, FormationId, ManagerArchetypeInfo,
-  ManagerArchetypeKey, MatchupBonus, PlayStyle, Player, RoleModifiers, SkillLevels,
+  ManagerArchetypeKey, MatchupBonus, PlayStyle, Player, Position, RoleModifiers, SkillLevels,
   StartingXIEntry, TacticsConfig
 } from '../types.js';
 
@@ -271,6 +272,28 @@ export function calculateFCIQEffectiveOvr(player: Player): number {
 
 export class TacticsEngine {
   /**
+   * Media efectiva de un jugador en el slot que OCCUPA.
+   * - En su posición natural → su overall (con rol FC IQ si lo tiene asignado).
+   * - Fuera de puesto → la media real calculada con SUS atributos para ese slot
+   *   (un POR de DC cae a ~50, un DFC de DC a ~63), en vez de mostrar el overall
+   *   natural sin cambios. El rol FC IQ solo aplica en la posición natural: es
+   *   una instrucción específica de puesto, así que fuera de él se usan atributos
+   *   base (decisión de diseño para evitar medias infladas jugando en otro slot).
+   * @param player - Jugador
+   * @param slotRole - Rol del slot de la formación (posición en la que juega)
+   */
+  static getSlotOvr(player: Player, slotRole: Position): number {
+    if (player.pos === slotRole) {
+      return calculateFCIQEffectiveOvr(player);
+    }
+    return calculatePositionOvr(
+      slotRole,
+      player.pac || 70, player.sho || 60, player.pas || 60,
+      player.dri || 65, player.def || 50, player.phy || 65
+    );
+  }
+
+  /**
    * Obtiene la alineación titular ideal para una plantilla de jugadores y formación elegida.
    * @param players - Plantilla de futbolistas
    * @param formationName - Nombre de la formación (ej. '4-3-3')
@@ -357,16 +380,12 @@ export class TacticsEngine {
 
     startingXI.forEach(item => {
       const p = item.player;
-      let posPenalty = 0;
 
-      if (p.pos !== item.slot.role) {
-        posPenalty = 4;
-      }
-
-      // Aplicar modificadores de Rol FC IQ si están asignados
-      let baseOvr = p.overall;
+      // Media efectiva en el slot que ocupa: si juega fuera de puesto, se usa la
+      // media real con sus atributos en ESE slot (un POR de DC baja a ~50), en
+      // lugar de una penalización plana de -4 sobre su overall natural.
+      const baseOvr = TacticsEngine.getSlotOvr(p, item.slot.role as Position);
       if (p.fcIqRole) {
-        baseOvr = calculateFCIQEffectiveOvr(p);
         fcIqRoleCount++;
       }
 
@@ -376,7 +395,7 @@ export class TacticsEngine {
         affinityBonus = Math.round((p.tacticalAffinity[styleAffinityKey] - 50) * 0.04);
       }
 
-      const effectiveOvr = Math.max(50, baseOvr - posPenalty + affinityBonus);
+      const effectiveOvr = Math.max(50, baseOvr + affinityBonus);
       totalOvr += effectiveOvr;
 
       if (p.morale >= 85) chemistryPoints += 2;

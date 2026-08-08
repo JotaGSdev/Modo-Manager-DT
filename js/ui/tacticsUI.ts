@@ -3,17 +3,50 @@
 
 import { db } from '../data/db.js';
 import { TacticsEngine, FORMATIONS, FC_IQ_ROLES } from '../engine/tactics.js';
+import { cleanStyle } from '../engine/probability.js';
 import { openPlayerInspectorModal } from './playerInspectorUI.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
-import type { FCIQRole, FormationId, PlayStyle, SkillLevels } from '../types.js';
+import type { FCIQRole, FormationId, PlayStyle, Player, Position, SkillLevels, StartingXIEntry } from '../types.js';
 
 export function renderTactics(container: HTMLElement): void {
   const gameState = db.gameState!;
   const squad = db.getTeamPlayers(gameState.userTeamId);
   const currentFormation: FormationId = gameState.tactics.formation || '4-3-3';
-  const { startingXI, substitutes } = TacticsEngine.getBestStartingXI(squad, currentFormation);
+
+  // ── XI REAL (el que juega el motor = los 11 primeros del array de plantilla) ──
+  // Encaje por ÍNDICE: cada jugador ocupa el slot de la formación con su mismo
+  // índice en el array (player[i] → slot[i]). Así, soltar una carta sobre otra
+  // (el drop intercambia sus índices) coloca al jugador EXACTAMENTE en el slot
+  // de la carta objetivo, y los intercambios titular↔titular son visibles.
+  // El XI inicial (tras la reparación de db.ts) viene ordenado por formación,
+  // por lo que los roles de slot coinciden con las posiciones reales.
+  const formation = FORMATIONS[currentFormation] || FORMATIONS['4-3-3'];
+  const buildXITable = (): { startingXI: StartingXIEntry[]; substitutes: Player[] } => {
+    const slots = formation.positions;
+    const startingXI: StartingXIEntry[] = [];
+    const substitutes: Player[] = [];
+
+    squad.forEach((p, i) => {
+      if (i < slots.length) {
+        startingXI.push({ player: p, slot: slots[i]! });
+      } else {
+        substitutes.push(p);
+      }
+    });
+
+    return { startingXI, substitutes };
+  };
+
+  // La reparación de XIs inválidos (p.ej. 2 porteros en el top 11) se hace UNA
+  // sola vez al cargar/crear la partida en db.ts — aquí la cancha refleja siempre
+  // el orden real del array para que el drag & drop del DT nunca se "deshaga".
+  const { startingXI, substitutes } = buildXITable();
   const effectiveOvr = TacticsEngine.calculateEffectiveRating(startingXI, gameState.tactics);
+
+  // Estilo normalizado: carreras con arquetipo GEGENPRESSING nacen con 'Presión Alta'
+  // y el dropdown solo ofrece 'Gegenpressing' — cleanStyle unifica la selección.
+  const displayStyle = cleanStyle(gameState.tactics.style || 'Tiki-Taka');
 
   let draggedPlayerId: string | null = null;
 
@@ -22,7 +55,7 @@ export function renderTactics(container: HTMLElement): void {
       <!-- Cancha 2D interactiva con Drag and Drop -->
       <div class="pitch-container glass-panel">
         <div class="pitch-header">
-          <h3>⚽ Formación Táctica: ${currentFormation} (Arrastra jugadores para cambiar posiciones)</h3>
+          <h3>⚽ Formación Táctica: ${currentFormation} — suelta un jugador sobre una carta para moverlo a ese puesto exacto</h3>
           <span class="ovr-badge stat-ovr">Nivel Táctico: ${effectiveOvr}</span>
         </div>
         
@@ -35,9 +68,17 @@ export function renderTactics(container: HTMLElement): void {
 
           <!-- Jugadores en cancha con selector de Rol FC IQ (v2.0) -->
           ${startingXI.map((item, idx) => {
-            const playerPos = item.slot.role;
+            // El rol FC IQ es un atributo del jugador: se listan los roles de su
+            // posición real, no los del slot (que puede diferir si se juega fuera de puesto).
+            const playerPos = item.player.pos;
             const availableRoles = FC_IQ_ROLES[playerPos] || ['Estándar'];
             const currentRole = item.player.fcIqRole || availableRoles[0];
+
+            // Media REAL en el slot que ocupa: si juega fuera de puesto (p.ej. un
+            // POR de DC) se recalcula con sus atributos en ese slot y baja de verdad.
+            const slotOvr = TacticsEngine.getSlotOvr(item.player, item.slot.role as Position);
+            const outOfPosition = item.player.pos !== item.slot.role;
+            const naturalOvr = item.player.overall;
 
             return `
               <div class="player-pitch-card" 
@@ -45,7 +86,12 @@ export function renderTactics(container: HTMLElement): void {
                    data-id="${item.player.id}" 
                    data-idx="${idx}"
                    style="left: ${item.slot.x}%; top: ${item.slot.y}%;">
-                <div class="player-number">${item.player.overall}</div>
+                <div class="player-number ${outOfPosition ? 'oop' : ''}"
+                     title="${outOfPosition
+                       ? `${item.player.name} (${item.player.pos}) · Media natural ${naturalOvr} · Como ${item.slot.role}: ${slotOvr}`
+                       : `${item.player.name} (${item.player.pos}) · Media ${slotOvr}`}">
+                  ${slotOvr}${outOfPosition ? ' <span class="oop-arrow">▼</span>' : ''}
+                </div>
                 <div class="player-name">${item.player.name.split(' ').pop()}</div>
                 <div class="player-pos-badge" style="background:var(--accent-gold); color:#000;">${item.slot.role}</div>
                 
@@ -85,11 +131,11 @@ export function renderTactics(container: HTMLElement): void {
         <div class="form-group mb-3">
           <label>Estilo de Juego Real:</label>
           <select id="selectStyle" class="input-select">
-            <option value="Tiki-Taka" ${gameState.tactics.style === 'Tiki-Taka' ? 'selected' : ''}>⚽ Tiki-Taka & Juego de Posición</option>
-            <option value="Gegenpressing" ${gameState.tactics.style === 'Gegenpressing' ? 'selected' : ''}>⚡ Gegenpressing & Presión Alta</option>
-            <option value="Catenaccio" ${gameState.tactics.style === 'Catenaccio' ? 'selected' : ''}>🚌 Catenaccio & Bloque Bajo (El Autobús)</option>
-            <option value="Juego por Bandas" ${gameState.tactics.style === 'Juego por Bandas' ? 'selected' : ''}>🌊 Juego por Bandas & Centros</option>
-            <option value="Contraataque" ${gameState.tactics.style === 'Contraataque' ? 'selected' : ''}>🎯 Contraataque Directo & Balón Largo</option>
+            <option value="Tiki-Taka" ${displayStyle === 'Tiki-Taka' ? 'selected' : ''}>⚽ Tiki-Taka & Juego de Posición</option>
+            <option value="Gegenpressing" ${displayStyle === 'Gegenpressing' ? 'selected' : ''}>⚡ Gegenpressing & Presión Alta</option>
+            <option value="Catenaccio" ${displayStyle === 'Catenaccio' ? 'selected' : ''}>🚌 Catenaccio & Bloque Bajo (El Autobús)</option>
+            <option value="Juego por Bandas" ${displayStyle === 'Juego por Bandas' ? 'selected' : ''}>🌊 Juego por Bandas & Centros</option>
+            <option value="Contraataque" ${displayStyle === 'Contraataque' ? 'selected' : ''}>🎯 Contraataque Directo & Balón Largo</option>
           </select>
         </div>
 

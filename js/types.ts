@@ -112,6 +112,8 @@ export type Region = 'Sudamérica' | 'Europa' | 'Norteamérica' | 'Centroaméric
 export type FeedType =
   | 'RUMOR_SALIDA' | 'FILTRACIÓN_SALARIAL' | 'CRISIS_FINANCIERA' | 'DERECHOS_TV'
   | 'CAMBIO_DT' | 'OFERTA_DT_JUGADOR' | 'AGENTE_EXIGE' | 'RIVAL_SONDEA' | 'DESCONTENTO'
+  | 'TRASPASO_IA' // traspaso entre clubes rivales (TransferEngine.processAITransfers)
+  | 'INVERSOR_IA' // inyección de capital en un club IA en el suelo (TransferEngine)
   | (string & {}); // tolera tipos nuevos sin perder autocompletado
 
 /** Estados de avance en fases de copa */
@@ -176,6 +178,22 @@ export interface StatsHistoryEntry {
   ratingAvg: number;
   ovr: number;
 }
+
+/**
+ * Entrada de histórico en su FORMA DE PERSISTENCIA compacta (v3.6): tupla
+ * [season, goals, appearances, ratingAvg, ovr]. Ocupa ~2.6× menos que el
+ * objeto StatsHistoryEntry y es el grueso del peso del save con el universo
+ * completo (~11.000 jugadores × 10 temporadas ≈ 7MB en objetos JSON). Se
+ * guarda así en SaveData.players y se expande de vuelta a StatsHistoryEntry
+ * en loadGame; la forma EN MEMORIA del juego no cambia.
+ */
+export type CompactStatsHistory = [season: number, goals: number, appearances: number, ratingAvg: number, ovr: number];
+
+/**
+ * Jugador en su forma persistida (SaveData.players): idéntico a Player salvo
+ * por el histórico, comprimido a tuplas (v3.6).
+ */
+export type CompactPlayer = Omit<Player, 'statsHistory'> & { statsHistory: CompactStatsHistory[] };
 
 /**
  * Futbolista de una plantilla (teamData.js generateTeamPlayers).
@@ -249,6 +267,8 @@ export interface Team {
   name: string;
   short: string;
   budget: number;
+  /** Presupuesto original de leagues.json: ancla del tope económico IA (v3.3) */
+  baseBudget?: number;
   wageBudget?: number;
   reputation: number;
   overall: number;
@@ -289,6 +309,22 @@ export interface AIManager {
 export interface ManagerMarketState {
   aiManagers: Record<string, AIManager>;
   lastRotationWeek: number;
+}
+
+/**
+ * Salud económica de un club IA (v3.4): seguimiento multi-temporada usado
+ * por las consecuencias duras de la economía — temporadas consecutivas con
+ * el presupuesto pegado al suelo y temporadas sin cubrir la masa salarial.
+ */
+export interface AIClubHealth {
+  /** Temporadas consecutivas con el presupuesto en el suelo */
+  floorSeasons: number;
+  /** Temporadas consecutivas sin cubrir la masa salarial (crisis) */
+  crisisSeasons: number;
+  /** Última temporada en la que el club vendió a su estrella (venta forzosa) */
+  lastStarSaleSeason: number;
+  /** Última temporada en la que el club recibió un inversor */
+  lastInvestorSeason: number;
 }
 
 /** Oferta de empleo (contracts.js generateJobOffers) */
@@ -558,6 +594,21 @@ export interface GameState {
   retiredLegends: RetiredLegend[];
   enableRegens: boolean;
 
+  // ── Agentes libres (v3.8) ────────────────────────────────────────────────
+  /**
+   * Jugadores sin contrato tras expirar su vínculo (contractYears === 0 al
+   * cierre de temporada). Pueden ficharse sin pagar traspaso, cualquier
+   * semana del año. Los clubes IA también los firman para reponer huecos.
+   */
+  freeAgents: Player[];
+  /**
+   * Migración v3.8: en la PRIMERA evolución tras cargar una partida antigua,
+   * los contratos ya vencidos se renuevan un año en vez de purgar plantillas
+   * (el mecanismo anterior nunca expulsaba a nadie, así que los saves viejos
+   * acumulan muchos jugadores en 0 años). Se desactiva tras la primera.
+   */
+  freeAgencyGrace?: boolean;
+
   // ── Configuración de eventos ────────────────────────────────────────────
   eventFrequency: EventFrequency;
   seasonEventsCount?: number;
@@ -598,7 +649,27 @@ export interface NewCareerOptions {
 /** Formato completo de guardado en localStorage */
 export interface SaveData {
   gameState: GameState;
-  players: Record<string, Player[]>;
+  /**
+   * Plantillas en forma compacta de persistencia (v3.6): el histórico por
+   * jugador se guarda como tuplas [season, goals, apps, rating, ovr] para
+   * mantener el save bajo la cuota de localStorage con el universo completo.
+   * loadGame expande las tuplas a StatsHistoryEntry (y tolera saves antiguos
+   * que ya venían en formato objeto).
+   */
+  players: Record<string, CompactPlayer[]>;
+  /**
+   * Presupuestos IA persistidos (v3.3): sin esto la economía rival vive solo
+   * en memoria — db.teams se reconstruye desde leagues.json en cada carga y
+   * todo el dinero acumulado por ingresos y traspasos se perdería al recargar.
+   */
+  aiBudgets?: Record<string, number>;
+  /**
+   * Salud económica de los clubes IA (v3.4): temporadas consecutivas en el
+   * suelo y en crisis, para las consecuencias duras (venta de estrella,
+   * inversor y crisis visible en The Feed). Sin esto el seguimiento se
+   * reiniciaría en cada carga y las consecuencias nunca se activarían.
+   */
+  aiClubHealth?: Record<string, AIClubHealth>;
 }
 
 // Sincronizador global registrado por app.js (window.updateGlobalUI)

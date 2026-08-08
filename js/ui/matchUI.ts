@@ -658,11 +658,11 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
       rivalStanding.gd = rivalStanding.gf - rivalStanding.ga;
       if (engine.homeScore > engine.awayScore) {
         userStanding.won++; userStanding.points += 3; rivalStanding.lost++;
-        gameState.currentStreak = (gameState.currentStreak || 0) + 1;
+        gameState.currentStreak = (gameState.currentStreak || 0) < 0 ? 1 : (gameState.currentStreak || 0) + 1;
         if (gameState.currentStreak > (gameState.bestWinStreak || 0)) gameState.bestWinStreak = gameState.currentStreak;
       } else if (engine.homeScore < engine.awayScore) {
         rivalStanding.won++; rivalStanding.points += 3; userStanding.lost++;
-        gameState.currentStreak = 0;
+        gameState.currentStreak = (gameState.currentStreak || 0) > 0 ? -1 : (gameState.currentStreak || 0) - 1;
       } else {
         userStanding.drawn++; userStanding.points += 1;
         rivalStanding.drawn++; rivalStanding.points += 1;
@@ -672,6 +672,8 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     MatchEngine.simulateAllRivalMatches(userTeam.id, rival.id);
     CompetitionsEngine.processCupWeek(gameState.week);
     CompetitionsEngine.processNationalCupWeek(gameState.week);
+    // Sistemas semanales: drift de Team Spirit, rotación del mercado de DTs y OVR del equipo
+    db.weeklyHousekeeping();
     if (gameState.week < gameState.maxWeeks) {
       gameState.week++;
     }

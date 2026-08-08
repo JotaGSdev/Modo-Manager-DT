@@ -306,12 +306,32 @@ export class MatchEngine {
   }
 
   /**
+   * Orden táctica por contexto para la resolución automática de los momentos
+   * de tensión en simulación rápida (misma regla que matchUI.getAutoTacticalDefault
+   * para el modo AUTO en vivo — mantener ambas sincronizadas):
+   * ganando → BLOQUE BAJO, perdiendo → PRESIÓN ALTA, empatado → CONTRAATAQUE.
+   * @returns Orden táctica según el marcador actual
+   */
+  private resolveContextTacticalOrder(): TacticalOrder {
+    const isUserHome = db.gameState?.userTeamId === this.homeTeam.id;
+    const isUserBehind = isUserHome ? (this.awayScore > this.homeScore) : (this.homeScore > this.awayScore);
+    if (isUserBehind) return 'PRESSING';
+    if (this.homeScore === this.awayScore) return 'COUNTER';
+    return 'LOW_BLOCK';
+  }
+
+  /**
    * Simula de forma instantánea todo el partido hasta el minuto 90.
+   * Los momentos de tensión se resuelven automáticamente por contexto de marcador
+   * (la decisión táctica SÍ tiene efecto en el resultado, igual que en el modo AUTO).
    * @returns Resultado con marcador, xG, tiros y eventos
    */
   simulateFullMatch(): MatchResult {
     while (!this.isFinished) {
-      this.tickMinute();
+      const event = this.tickMinute();
+      if (event && event.type === 'tension_moment') {
+        this.applyTacticalDecision(this.resolveContextTacticalOrder());
+      }
     }
 
     MatchEngine.awardInSeasonPlayerEXP(this.homeTeam.id, this.homeScore > this.awayScore);
@@ -350,8 +370,10 @@ export class MatchEngine {
         else if (['MCO', 'MC', 'MI', 'MD'].includes(p.pos)) p.pas = Math.min(99, (p.pas || 70) + 2);
         else p.def = Math.min(99, (p.def || 70) + 2);
 
+        // Solo notificar las mejoras del equipo del usuario (evita spam del log
+        // con decenas de mejoras de jugadores IA cada semana).
         const gameState = db.gameState;
-        if (gameState && gameState.eventsLog) {
+        if (gameState && gameState.eventsLog && teamId === gameState.userTeamId) {
           gameState.eventsLog.unshift({
             date: `Semana ${gameState.week || 1}`,
             text: `⚡ MEJORA EN TIEMPO REAL: ¡${p.name} alcanzó 100 EXP por su rendimiento y subió a ${p.overall} OVR!`
@@ -400,6 +422,17 @@ export class MatchEngine {
         t1Standing.drawn++; t1Standing.points += 1;
         t2Standing.drawn++; t2Standing.points += 1;
       }
+
+      // ── Balance IA: los planteles rivales también juegan ────────────────
+      // Acreditar apariciones y EXP a los titulares de ambos equipos para que
+      // su evolución de temporada no dependa solo del envejecimiento (antes los
+      // equipos IA eran estáticos y el DT jugador dominaba sin competencia).
+      const t1Squad = db.getTeamPlayers(t1Standing.teamId);
+      const t2Squad = db.getTeamPlayers(t2Standing.teamId);
+      t1Squad.slice(0, 11).forEach(p => p.appearances = (p.appearances || 0) + 1);
+      t2Squad.slice(0, 11).forEach(p => p.appearances = (p.appearances || 0) + 1);
+      MatchEngine.awardInSeasonPlayerEXP(t1Standing.teamId, g1 > g2);
+      MatchEngine.awardInSeasonPlayerEXP(t2Standing.teamId, g2 > g1);
     }
   }
 }

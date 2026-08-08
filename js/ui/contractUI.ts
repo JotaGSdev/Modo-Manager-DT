@@ -203,13 +203,9 @@ export function renderContractView(container: HTMLElement, navigateTo: NavigateF
           renderContractView(container, navigateTo);
         } else {
           const newTeam = db.teams[targetId]!;
-          gameState.userTeamId = targetId;
-          gameState.userLeagueId = newTeam.leagueId || '';
-          gameState.budget = newTeam.budget;
-          gameState.wageBudget = newTeam.wageBudget || Math.round((newTeam.budget || 0) * 0.3);
-          gameState.reputation = newTeam.reputation;
-
-          ContractEngine.startClubContract(targetId, 3);
+          // Cambio de club COMPLETO: presupuesto, tabla de posiciones, calendario,
+          // táctica según filosofía del club, mercado de DTs y XI (db.changeClub).
+          db.changeClub(targetId);
           alert(`¡NUEVO DESAFÍO PROFESIONAL! Has asumido el cargo de DT en ${newTeam.name}.`);
           navigateTo('dashboard');
         }

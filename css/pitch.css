@@ -8,6 +8,7 @@
 
 @media (max-width: 1050px) {
   .squad-layout { grid-template-columns: 1fr; }
+  .squad-layout > * { min-width: 0; }
 }
 
 .pitch-container {
@@ -102,6 +103,18 @@
   justify-content: center;
   align-items: center;
   font-size: 0.90rem;
+}
+
+/* Fuera de puesto: la media mostrada es la calculada en el slot (suele bajar) */
+.player-number.oop {
+  background: var(--accent-red);
+  color: #ffffff;
+  border-color: #ff8fa3;
+}
+
+.oop-arrow {
+  font-size: 0.55rem;
+  margin-left: 1px;
 }
 
 .player-name {

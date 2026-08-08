@@ -350,7 +350,13 @@ export class EventsEngine {
     gameState.feedItems.unshift(feedItem);
     if (gameState.feedItems.length > 50) gameState.feedItems.pop();
 
-    db.saveGame();
+    // v3.5: YA NO GUARDA AQUÍ. El Feed es cosmético; guardar el juego entero
+    // por cada noticia serializaba ~10MB decenas de veces por temporada (el
+    // manager market genera 2-4 noticias por ronda semanal). Todos los
+    // llamadores persisten en su cierre: applyEffect guarda tras aplicar el
+    // efecto, y los bloques semanales (dashboardUI/matchUI) guardan al cerrar
+    // la jornada. Así la transición de temporada queda atómica y el save no
+    // se serializa más de una vez por temporada.
     return feedItem;
   }
 }

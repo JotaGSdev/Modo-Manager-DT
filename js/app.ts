@@ -47,8 +47,64 @@ class App {
     if (!db.hasSave() && !db.gameState) {
       renderNewCareer(appEl!, () => this.startMainLayout());
     } else {
-      db.loadGame();
-      this.startMainLayout();
+      // v3.7: verificar la integridad del save (JSON + checksum FNV-1a) antes
+      // de cargar; si está corrupto o truncado, ofrecer recuperar el último
+      // autoguardado válido en lugar de arrancar con un estado roto.
+      const integrity = db.checkSaveIntegrity();
+      if (integrity === 'corrupted') {
+        this.showSaveRecoveryModal();
+      } else {
+        db.loadGame();
+        this.startMainLayout();
+      }
+    }
+  }
+
+  /**
+   * Modal de recuperación (v3.7): se muestra cuando el save principal está
+   * corrupto o truncado. Ofrece restaurar el último autoguardado válido
+   * (si existe) o empezar una nueva carrera.
+   */
+  private showSaveRecoveryModal(): void {
+    const hasBackup = db.hasValidBackup();
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(2,6,23,.85);display:flex;align-items:center;justify-content:center;z-index:9999;';
+    overlay.innerHTML = `
+      <div class="glass-panel" style="max-width:440px;width:90%;padding:24px;text-align:center;">
+        <div style="font-size:2.4rem;">🚑</div>
+        <h2 style="color:var(--accent-red);margin:8px 0;">¡Partida dañada!</h2>
+        <p class="text-sub" style="font-size:0.9rem;line-height:1.5;">
+          El guardado principal está <strong>corrupto o truncado</strong> y no puede leerse
+          (verificación de checksum fallida).
+          ${hasBackup
+            ? 'Se encontró un <strong>autoguardado válido</strong> de tu última sesión.'
+            : 'No se encontró ningún autoguardado válido.'}
+        </p>
+        <div class="mt-4" style="display:flex;gap:12px;justify-content:center;">
+          ${hasBackup ? '<button id="btnRecoverSave" class="btn-primary" style="flex:1;">⬅️ Recuperar autoguardado</button>' : ''}
+          <button id="btnNewCareerAfterCorrupt" class="btn-secondary" style="flex:1;">🔄 Nueva carrera</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    document.getElementById('btnNewCareerAfterCorrupt')!.addEventListener('click', () => {
+      sfx.playClick();
+      db.clearSave();
+      location.reload();
+    });
+
+    const recoverBtn = document.getElementById('btnRecoverSave');
+    if (recoverBtn) {
+      recoverBtn.addEventListener('click', () => {
+        sfx.playClick();
+        if (db.recoverFromBackup()) {
+          overlay.remove();
+          this.startMainLayout();
+        } else {
+          alert('No se pudo recuperar el autoguardado. Inicia una nueva carrera.');
+        }
+      });
     }
   }
 
@@ -124,7 +180,7 @@ class App {
     // Event listener para Reiniciar Carrera
     document.getElementById('btnResetCareer')!.addEventListener('click', () => {
       if (confirm('¿Estás seguro de reiniciar la carrera actual de DT? Se perderán los datos de guardado.')) {
-        localStorage.removeItem('entrenador_leyenda_save');
+        db.clearSave();
         location.reload();
       }
     });
@@ -249,7 +305,7 @@ class App {
         location.reload();
       });
       document.getElementById('btnResetDataModal')?.addEventListener('click', () => {
-        localStorage.removeItem('entrenador_leyenda_save');
+        db.clearSave();
         location.reload();
       });
     }

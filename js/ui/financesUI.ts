@@ -13,6 +13,7 @@
  */
 
 import { db } from '../data/db.js';
+import { getLeaguePrizeByRank } from '../data/leaguePrizes.js';
 import { sfx } from '../../assets/audio/sfx.js';
 import type { NavigateFn } from '../types.js';
 
@@ -53,12 +54,10 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
   const totalExpenses = (finances.weeklyWageTotal || 0) + (finances.playerPurchases || 0);
   const netBalance = totalIncome - totalExpenses;
 
-  // Estimación del premio por posición actual
+  // Estimación del premio por posición actual (v3.9: realista por liga —
+  // antes era plano €10-40M para cualquier país).
   const userRank = (gameState.standings || []).findIndex(s => s.teamId === userTeam.id) + 1;
-  let estimatedPrize = 10000000;
-  if (userRank === 1) estimatedPrize = 40000000;
-  else if (userRank <= 4) estimatedPrize = 25000000;
-  else if (userRank <= 8) estimatedPrize = 18000000;
+  const estimatedPrize = getLeaguePrizeByRank(gameState.userLeagueId, userRank <= 0 ? 99 : userRank);
 
   container.innerHTML = `
     <div class="finances-layout">
@@ -160,7 +159,7 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
 
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
               <span>🏆 Premio Proyectado por Posición (#${userRank || '-'}):</span>
-              <strong style="color: var(--accent-gold);">+€${(estimatedPrize / 1000000).toFixed(1)}M</strong>
+              <strong style="color: var(--accent-gold);">+€${estimatedPrize >= 1000000 ? (estimatedPrize / 1000000).toFixed(1) + 'M' : (estimatedPrize / 1000).toFixed(0) + 'K'}</strong>
             </div>
 
             <div style="display: flex; justify-content: space-between; padding-top: 4px;">

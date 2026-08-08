@@ -3,6 +3,7 @@
 
 import { db } from '../data/db.js';
 import { sfx } from '../../assets/audio/sfx.js';
+import { renderCountryFlagSVG, renderTeamBadgeSVG } from './badgeHelper.js';
 
 import type { Player, Position } from '../types.js';
 
@@ -52,7 +53,7 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
         <div style="display: flex; align-items: center; gap: 14px;">
           <span class="pos-tag pos-${player.pos}" style="font-size: 1.1rem; padding: 8px 16px;">${player.pos}</span>
           <div>
-            <h2 style="margin: 0; font-size: 1.6rem;">${player.name}</h2>
+            <h2 style="margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">${player.name} ${player.country ? renderCountryFlagSVG(player.country, 18) : ''}</h2>
             <span class="text-sub">Edad Actual: <strong>${player.age} años</strong> | Morale: <strong>${player.morale || 90}%</strong> | Forma: <strong>${player.form || 85}%</strong></span>
           </div>
         </div>
@@ -138,6 +139,11 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
           </div>
         ` : ''}
       </div>
+
+      <!-- Panel de Ofertas de Venta (1-3 postores, estilo EA FC) -->
+      ${isOwnPlayer ? `
+        <div id="sellOffersPanel" class="hidden" style="background: #141d2e; border: 1px solid var(--border-color); padding: 14px; border-radius: 10px; margin-bottom: 16px;"></div>
+      ` : ''}
 
       <!-- Panel de Acciones Directivas Estilo EA FC -->
       ${isOwnPlayer ? `
@@ -268,38 +274,91 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
       });
     }
 
-    // 1. VENDER JUGADOR
+    // 1. VENDER JUGADOR — mercado con 1-3 postores reales (estilo EA FC)
     document.getElementById('btnSellPlayer')!.addEventListener('click', () => {
       sfx.playClick();
+      const offersPanel = document.getElementById('sellOffersPanel');
+      if (!offersPanel) return;
+
+      // Postores: clubes con presupuesto suficiente, ordenados por poderío económico
       const availableTeams = Object.values(db.teams).filter(t => t.id !== userTeamId);
-      const buyerTeam = availableTeams[Math.floor(Math.random() * availableTeams.length)]!;
-      
-      const offerMultiplier = 1.05 + Math.random() * 0.20;
-      const offerFee = Math.round(player.value * offerMultiplier);
-
-      if (confirm(`💰 OFERTA DE COMPRA DE ${buyerTeam.name.toUpperCase()}:\n\n¿Deseas aceptar la oferta de transferencia por €${(offerFee / 1000000).toFixed(1)}M por ${player.name}?`)) {
-        gameState.budget += offerFee;
-        gameState.wageBudget += player.salary;
-
-        const squad = db.getTeamPlayers(userTeamId);
-        const idx = squad.findIndex(p => p.id === player.id);
-        if (idx !== -1) squad.splice(idx, 1);
-
-        player.teamId = buyerTeam.id;
-        db.getTeamPlayers(buyerTeam.id).push(player);
-
-        gameState.eventsLog.unshift({
-          date: `Semana ${gameState.week}`,
-          text: `💰 VENTA OFICIAL: ${player.name} fue vendido a ${buyerTeam.name} por €${(offerFee / 1000000).toFixed(1)}M.`
-        });
-
-        db.saveGame();
-        sfx.playGoal();
-        alert(`¡VENTA COMPLETADA! ${player.name} se unió a ${buyerTeam.name}. Se sumaron €${(offerFee / 1000000).toFixed(1)}M a tu presupuesto.`);
-
-        modal.classList.add('hidden');
-        if (onUpdate) onUpdate();
+      let bidders = availableTeams
+        .filter(t => (t.budget || 0) >= player.value * 0.6)
+        .sort((a, b) => (b.budget || 0) - (a.budget || 0))
+        .slice(0, 3);
+      if (bidders.length === 0) {
+        bidders = [...availableTeams].sort(() => Math.random() - 0.5).slice(0, 2);
       }
+
+      // Cada postor ofrece entre el 95% y el 125% del valor del jugador
+      const offers = bidders.map(t => ({
+        team: t,
+        fee: Math.round(player.value * (0.95 + Math.random() * 0.30))
+      }));
+
+      offersPanel.classList.remove('hidden');
+      offersPanel.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+          <h4 style="margin: 0; color: var(--accent-green); font-size: 0.95rem;">💼 OFERTAS RECIBIDAS POR ${player.name.toUpperCase()}</h4>
+          <button class="btn-secondary btn-sm" id="btnDeclineAllOffers">✖ Rechazar todas</button>
+        </div>
+        ${offers.map(o => `
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              ${renderTeamBadgeSVG(o.team, 36)}
+              <div>
+                <strong style="font-size: 0.9rem;">${o.team.name}</strong>
+                <div class="text-sub" style="font-size: 0.72rem;">OVR ${o.team.overall} · Reputación ${o.team.reputation}</div>
+              </div>
+            </div>
+            <button class="btn-primary btn-sm btn-accept-bid" data-id="${o.team.id}" data-fee="${o.fee}">
+              💰 Aceptar €${(o.fee / 1000000).toFixed(1)}M
+            </button>
+          </div>
+        `).join('')}
+      `;
+
+      // Aceptar una oferta concreta
+      offersPanel.querySelectorAll('.btn-accept-bid').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLElement;
+          const buyerTeam = db.teams[target.dataset.id!]!;
+          const fee = Number(target.dataset.fee);
+
+          gameState.budget += fee;
+          gameState.wageBudget += player.salary;
+
+          const squad = db.getTeamPlayers(userTeamId);
+          const idx = squad.findIndex(p => p.id === player.id);
+          if (idx !== -1) squad.splice(idx, 1);
+
+          player.teamId = buyerTeam.id;
+          db.getTeamPlayers(buyerTeam.id).push(player);
+
+          if (!gameState.seasonPlayersOut) gameState.seasonPlayersOut = [];
+          gameState.seasonPlayersOut.push(`${player.name} → ${buyerTeam.name}`);
+
+          gameState.eventsLog.unshift({
+            date: `Semana ${gameState.week}`,
+            text: `💰 VENTA OFICIAL: ${player.name} fue vendido a ${buyerTeam.name} por €${(fee / 1000000).toFixed(1)}M.`
+          });
+
+          // Recalcular el OVR del equipo con el XI resultante
+          db.updateUserTeamOverall();
+          db.saveGame();
+          sfx.playGoal();
+          alert(`¡VENTA COMPLETADA! ${player.name} se unió a ${buyerTeam.name}. Se sumaron €${(fee / 1000000).toFixed(1)}M a tu presupuesto.`);
+
+          modal.classList.add('hidden');
+          if (onUpdate) onUpdate();
+        });
+      });
+
+      // Rechazar todas las ofertas
+      document.getElementById('btnDeclineAllOffers')?.addEventListener('click', () => {
+        offersPanel.classList.add('hidden');
+        offersPanel.innerHTML = '';
+      });
     });
 
     // 2. RENOVAR CONTRATO

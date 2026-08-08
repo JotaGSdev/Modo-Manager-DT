@@ -68,9 +68,9 @@ export class ManagerMarketEngine {
       const isLateInSeason = week >= 20;
 
       let sackProbability = 0;
-      if (isBottomThree && week >= 8) sackProbability += 0.20;
-      if (isBottomThree && isLateInSeason) sackProbability += 0.25;
-      if (standing.points < (week * 0.6) && week >= 12) sackProbability += 0.15;
+      if (isBottomThree && week >= 8) sackProbability += 0.12;
+      if (isBottomThree && isLateInSeason) sackProbability += 0.18;
+      if (standing.points < (week * 0.6) && week >= 12) sackProbability += 0.10;
 
       if (Math.random() < sackProbability) {
         ManagerMarketEngine.sackAIManager(teamId, week);
@@ -80,7 +80,8 @@ export class ManagerMarketEngine {
     });
 
     gameState.managerMarket.lastRotationWeek = week;
-    db.saveGame();
+    // Nota: no se guarda aquí — los llamadores (weeklyHousekeeping → dashboardUI/matchUI)
+    // persisten al cerrar el bloque semanal para evitar serializar el save varias veces.
   }
 
   /**
@@ -150,7 +151,7 @@ export class ManagerMarketEngine {
       }
     });
 
-    db.saveGame();
+    // Nota: sin saveGame aquí — los llamadores persisten al cerrar el bloque semanal.
   }
 
   /**

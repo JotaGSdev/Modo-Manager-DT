@@ -9,6 +9,7 @@ import { TransferEngine } from '../engine/transfers.js';
 import { EventsEngine } from '../engine/eventsEngine.js';
 import { ContractEngine } from '../engine/contracts.js';
 import { renderTeamBadgeSVG } from './badgeHelper.js';
+import { getLeaguePrizeByRank } from '../data/leaguePrizes.js';
 import { sfx } from '../../assets/audio/sfx.js';
 
 import type { CupPhase, EvolutionReportEntry, GameEvent, League, NavigateFn, Team } from '../types.js';
@@ -334,6 +335,9 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
       let pendingEvent: GameEvent | null = null;
 
       while (gameState.week < targetWeek && gameState.week < gameState.maxWeeks) {
+        // Sistemas semanales: drift de Team Spirit, rotación del mercado de DTs y OVR del equipo
+        db.weeklyHousekeeping();
+
         const event = EventsEngine.getEventForWeek(gameState.week);
         if (event && !pendingEvent) {
           pendingEvent = event;
@@ -367,11 +371,11 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
 
           if (res.homeScore > res.awayScore) {
             userStanding.won++; userStanding.points += 3; rivalStanding.lost++;
-            gameState.currentStreak = (gameState.currentStreak || 0) + 1;
+            gameState.currentStreak = (gameState.currentStreak || 0) < 0 ? 1 : (gameState.currentStreak || 0) + 1;
             if (gameState.currentStreak > (gameState.bestWinStreak || 0)) gameState.bestWinStreak = gameState.currentStreak;
           } else if (res.homeScore < res.awayScore) {
             rivalStanding.won++; rivalStanding.points += 3; userStanding.lost++;
-            gameState.currentStreak = 0;
+            gameState.currentStreak = (gameState.currentStreak || 0) > 0 ? -1 : (gameState.currentStreak || 0) - 1;
           } else {
             userStanding.drawn++; userStanding.points += 1;
             rivalStanding.drawn++; rivalStanding.points += 1;
@@ -446,9 +450,12 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
     const content = document.getElementById('seasonModalContent')!;
     modal.classList.remove('hidden');
 
+    // v3.9: premio realista por liga (antes €15M plano para cualquier campeón
+    // — no reflejaba la brecha entre el Brasileirão y la Liga 1).
     const isChampion = userRank === 1;
-    const prizeMoney = isChampion ? 15000000 : (userRank <= 4 ? 8000000 : 3000000);
+    const prizeMoney = getLeaguePrizeByRank(gameState.userLeagueId, userRank);
     gameState.budget += prizeMoney;
+    if (gameState.finances) gameState.finances.leaguePrize = prizeMoney;
 
     if (gameState.season >= 2050) {
       gameState.isCareerFinished = true;
@@ -510,7 +517,7 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
         <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 14px; border-radius: 10px; margin-bottom: 16px; font-size: 0.85rem;">
           <p style="margin-bottom: 6px;">🌟 <strong>MVP del Club:</strong> ${mvpName}</p>
           <p style="margin-bottom: 6px;">🏆 <strong>Posición Final:</strong> Puesto #${userRank} (${userStanding ? userStanding.points : 0} Pts | ${userStanding ? userStanding.won : 0} Victorias)</p>
-          <p style="margin-bottom: 6px;">💰 <strong>Premio por Posición:</strong> <strong class="text-highlight">+€${(prizeMoney / 1000000).toFixed(1)}M</strong></p>
+          <p style="margin-bottom: 6px;">💰 <strong>Premio por Posición:</strong> <strong class="text-highlight">+€${prizeMoney >= 1000000 ? (prizeMoney / 1000000).toFixed(1) + 'M' : (prizeMoney / 1000).toFixed(0) + 'K'}</strong> <span class="text-sub" style="font-size:0.75rem;">(según la liga)</span></p>
           <p style="margin-bottom: 6px;">🔥 <strong>Racha Más Larga:</strong> ${gameState.bestWinStreak || 0} victorias consecutivas esta temporada.</p>
           <p style="margin-bottom: 6px;">⚽ <strong>Victorias en el Clásico:</strong> ${gameState.classicWins || 0} triunfos ante el rival histórico.</p>
           <p style="margin-bottom: 0;">📋 <strong>Fichajes de la Temporada:</strong> ${(gameState.seasonPlayersIn || []).length} entradas · ${(gameState.seasonPlayersOut || []).length} salidas.</p>

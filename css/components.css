@@ -103,6 +103,60 @@
   margin-top: 10px;
 }
 
+/* Contenedor responsivo de tablas: scroll interno en vez de desbordar el layout */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+/* ── RED DE SEGURIDAD RESPONSIVE ────────────────────────────────────────────
+ * Las vistas usan grids/flex inline sin breakpoints propios; en ventanas
+ * estrechas (o al tener el sidebar fijo de 240px) desbordan el layout.
+ * Estas reglas colapsan las rejillas a 1 columna y permiten salto de línea. */
+@media (max-width: 1050px) {
+  /* Rejillas inline de 2+ columnas (dashboard, finanzas, scouting, modal) */
+  #mainContent div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* Los paneles hijos no bloquean el encogimiento del track por su min-content */
+  #mainContent div[style*="grid-template-columns"] > * {
+    min-width: 0;
+  }
+
+  /* Tarjetas de mercado/cantera y cabecera de táctica: wrap en vez de desborde */
+  .player-market-card,
+  .youth-card-actions,
+  .pitch-header {
+    flex-wrap: wrap;
+  }
+}
+
+/* Indicador visual de titular/suplente en la Plantilla (XI real del motor) */
+.xi-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-left: 7px;
+  vertical-align: middle;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.xi-badge.starter {
+  background: rgba(0, 200, 133, 0.18);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
+}
+
+.xi-badge.bench {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  border: 1px solid #334155;
+}
+
 .data-table th, .data-table td {
   padding: 11px 14px;
   text-align: left;
