@@ -80,12 +80,21 @@ export function renderTactics(container: HTMLElement): void {
             const outOfPosition = item.player.pos !== item.slot.role;
             const naturalOvr = item.player.overall;
 
+            // Badge de liderazgo: Capitán (dorado) o Mentor (plateado)
+            const role = item.player.personalityRole;
+            const leaderBadge = role === 'captain'
+              ? `<span title="Capitán del equipo — prioridad en la alineación titular" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent-gold);color:#000;font-size:0.56rem;font-weight:900;padding:1px 5px;border-radius:3px;letter-spacing:0.5px;white-space:nowrap;z-index:5;">©️ CAPITÁN</span>`
+              : role === 'mentor'
+              ? `<span title="Mentor de la plantilla — prioridad en la alineación titular" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#94a3b8;color:#000;font-size:0.56rem;font-weight:900;padding:1px 5px;border-radius:3px;letter-spacing:0.5px;white-space:nowrap;z-index:5;">🧠 MENTOR</span>`
+              : '';
+
             return `
               <div class="player-pitch-card" 
                    draggable="true" 
                    data-id="${item.player.id}" 
                    data-idx="${idx}"
-                   style="left: ${item.slot.x}%; top: ${item.slot.y}%;">
+                   style="left: ${item.slot.x}%; top: ${item.slot.y}%; position: absolute;">
+                ${leaderBadge}
                 <div class="player-number ${outOfPosition ? 'oop' : ''}"
                      title="${outOfPosition
                        ? `${item.player.name} (${item.player.pos}) · Media natural ${naturalOvr} · Como ${item.slot.role}: ${slotOvr}`

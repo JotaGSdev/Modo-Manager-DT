@@ -301,7 +301,18 @@ export class TacticsEngine {
    */
   static getBestStartingXI(players: Player[], formationName: FormationId = '4-3-3'): { startingXI: StartingXIEntry[]; substitutes: Player[] } {
     const formation = FORMATIONS[formationName] || FORMATIONS['4-3-3'];
-    const squad = [...players].sort((a, b) => b.overall - a.overall);
+
+    // Tiebreaker: cuando dos jugadores empatan en OVR, el Capitán (2) y el
+    // Mentor (1) tienen prioridad para salir de titulares — el liderazgo entra
+    // al campo. Para OVRs distintos, la media sigue siendo el criterio principal.
+    const leadershipScore = (p: Player): number =>
+      p.personalityRole === 'captain' ? 2 : p.personalityRole === 'mentor' ? 1 : 0;
+
+    const squad = [...players].sort((a, b) => {
+      const ovrDiff = b.overall - a.overall;
+      if (ovrDiff !== 0) return ovrDiff;
+      return leadershipScore(b) - leadershipScore(a);
+    });
 
     const startingXI: StartingXIEntry[] = [];
     const usedIds = new Set<string>();
