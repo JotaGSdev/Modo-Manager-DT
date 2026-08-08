@@ -9,7 +9,8 @@
     "watch": "tsc --watch",
     "test:e2e": "node tests/e2e/regression.mjs",
     "test:e2e:full": "node tests/e2e/regression.mjs --full",
-    "test:e2e:golden": "node tests/e2e/regression.mjs --update-golden"
+    "test:e2e:golden": "node tests/e2e/regression.mjs --update-golden",
+    "validate:ci": "node scripts/validate_ci_local.mjs"
   },
   "devDependencies": {
     "playwright": "^1.62.1",
