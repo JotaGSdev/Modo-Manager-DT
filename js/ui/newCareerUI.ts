@@ -1,12 +1,12 @@
 /**
  * ============================================================================
- * ENTRENADOR LEYENDA - SELECCIÓN INICIAL DE CARRERA (newCareerUI.ts v3.2)
+ * ENTRENADOR LEYENDA - SELECCIÓN INICIAL DE CARRERA (newCareerUI.ts v3.3)
  * ============================================================================
- * Flujo Narrativo de Carrera de DT en 4 Pasos con Libre Elección de Club Favorito:
- * 1. PASO 1: Perfil Oficial del DT (Nombre, Edad, Selector Visual de País con Banderas SVG).
- * 2. PASO 2: Filosofía Táctica Real (Tiki-Taka, Gegenpressing, Catenaccio, Bandas, Contraataque).
- * 3. PASO 3: Selección de Club (3 Ofertas Recomendadas de tu País O Elección de Tu Club Favorito de Cualquier Liga).
- * 4. PASO 4: Configuración de Experiencia de Juego (Eventos, Regens, Mercado IA).
+ * Flujo de Inicio de Carrera en 4 Pasos — Diseño Profesional & Libre Elección:
+ * 1. PASO 1: Perfil del DT (Nombre personalizable, Edad a elección, País sin preselección).
+ * 2. PASO 2: Filosofía Táctica (Diseño armónico ejecutivo sin saturación de colores).
+ * 3. PASO 3: Selección de Club (Libre elección por defecto + Buscador fluido sin pérdida de foco + 3 Ofertas).
+ * 4. PASO 4: Configuración de Partida (Ajustes adaptados con paleta sobria).
  */
 
 import { db } from '../data/db.js';
@@ -32,22 +32,22 @@ interface ClubOffer {
 export function renderNewCareer(container: HTMLElement, onCareerStarted: () => void): void {
   let currentStep = 1;
 
-  // Estado inicial del perfil del DT
-  let managerName = 'Director Técnico';
+  // 1. Datos iniciales del DT (Sin pre-selección forzada)
+  let managerName = ''; // Inicialmente vacío
   let managerAge = 35;
-  let managerCountry = 'Perú';
+  let managerCountry = ''; // Sin país preseleccionado por defecto
   let selectedArchetype: ManagerArchetypeKey = 'TIKI_TAKA';
 
-  // Opciones avanzadas de partida (Paso 4)
+  // 2. Opciones avanzadas de partida (Paso 4)
   let eventFrequency: EventFrequency = 'normal';
   let enableRegens = true;
   let enableManagerMarket = true;
 
-  // Selección de club para iniciar la carrera
+  // 3. Selección de club para iniciar la carrera
   let selectedTeamIdForStart: string | null = null;
 
-  // Estado de vista del Paso 3 (Ofertas Recomendadas vs Buscador de Club Favorito)
-  let step3Tab: 'RECOMMENDED' | 'FAVORITE' = 'RECOMMENDED';
+  // 4. Estado del Paso 3 (FAVORITE por defecto según requerimiento 1)
+  let step3Tab: 'RECOMMENDED' | 'FAVORITE' = 'FAVORITE';
   let favoriteFilterLeagueId = 'ALL';
   let favoriteSearchQuery = '';
 
@@ -72,10 +72,11 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
   };
 
   /**
-   * Selecciona 3 proyectos recomendados del país de origen del DT
+   * Selecciona 3 proyectos recomendados del país de origen del DT (o Perú/global si no seleccionó país aún)
    */
   const getMatchingTeams = (): ClubOffer[] => {
-    let homeCountryLeagues = db.leagues.filter(l => l.country.toLowerCase() === managerCountry.toLowerCase());
+    const targetCountry = managerCountry || 'Perú';
+    let homeCountryLeagues = db.leagues.filter(l => l.country.toLowerCase() === targetCountry.toLowerCase());
 
     if (homeCountryLeagues.length === 0) {
       const sampleLeague = db.leagues.find(l => l.country === 'Perú') || db.leagues[0];
@@ -103,7 +104,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
       budget: 2400000,
       reputation: 60,
       overall: 64,
-      colors: ['#00c885', '#000000'],
+      colors: ['#10b981', '#000000'],
       stadium: 'Estadio Carlos Vidaurre',
       leagueName: 'Liga 1 Te Apuesto',
       country: 'Perú',
@@ -119,270 +120,292 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
       {
         team: club1,
         projectType: '🌱 DESAFÍO LOCAL HUMILDE',
-        badgeColor: 'var(--accent-green)',
-        letterMessage: `La comisión de ${club1.name} en ${managerCountry} apuesta por darte tu primera oportunidad como DT profesional para plasmar tu estilo de ${archetypeData.name}.`
+        badgeColor: '#10b981',
+        letterMessage: `La comisión de ${club1.name} en ${targetCountry} apuesta por darte tu primera oportunidad como DT profesional para plasmar tu estilo de ${archetypeData.name}.`
       },
       {
         team: club2,
         projectType: '⚽ PROYECTO DE DESARROLLO NACIONAL',
-        badgeColor: 'var(--accent-cyan)',
+        badgeColor: '#38bdf8',
         letterMessage: `La directiva de ${club2.name} te invita a asumir tu primer contrato de 3 años para potenciar la plantilla con tu modelo táctico de ${archetypeData.name}.`
       },
       {
         team: club3,
         projectType: '🏟️ PROYECTO BASE DE SU PAÍS',
-        badgeColor: 'var(--accent-gold)',
+        badgeColor: '#f59e0b',
         letterMessage: `En ${club3.name} confían en tus ideas de ${archetypeData.name} para consolidar el equipo en la liga nacional durante tus primeros 3 años de experiencia.`
       }
     ];
   };
 
   /**
-   * Renderiza el paso activo del Wizard con interfaz EA FC Dark Mode
+   * Renderiza el paso activo con diseño profesional sobrio (Obsidian + Emerald Theme)
    */
   const renderStep = () => {
     container.innerHTML = `
-      <div style="min-height: 100vh; background: radial-gradient(circle at top center, #111a2e 0%, #080c14 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; color: #ffffff; font-family: 'Inter', sans-serif;">
+      <div style="min-height: 100vh; background: radial-gradient(circle at top center, #0e1726 0%, #060911 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; color: #f8fafc; font-family: 'Inter', system-ui, sans-serif;">
         
-        <!-- ENCABEZADO DE BIENVENIDA -->
-        <div class="text-center mb-4" style="max-width: 800px;">
-          <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 200, 133, 0.12); border: 1px solid var(--accent-green); padding: 6px 20px; border-radius: 20px; color: var(--accent-green); font-weight: 800; font-size: 0.82rem; margin-bottom: 14px; letter-spacing: 0.5px; box-shadow: 0 0 15px rgba(0,200,133,0.15);">
-            ⚽ INICIO DE CARRERA DE DT (TEMPORADA 1 DE 25 — 2026/2027)
+        <!-- ENCABEZADO DE NAVEGACIÓN DE CARRERA -->
+        <div class="text-center mb-4" style="max-width: 780px;">
+          <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 16px; border-radius: 20px; color: #10b981; font-weight: 800; font-size: 0.78rem; margin-bottom: 12px; letter-spacing: 0.5px;">
+            ⚽ MODO MANAGER DT (TEMPORADA 1 DE 25 — 2026/2027)
           </div>
-          <h1 style="font-size: 2.3rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 8px; color: #ffffff; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">
-            ${currentStep === 1 ? '🎙️ PASO 1: REGISTRO DEL DIRECTOR TÉCNICO' : (currentStep === 2 ? '🧩 PASO 2: FILOSOFÍA TÁCTICA DEL ENTRENADOR' : (currentStep === 3 ? '💼 PASO 3: SELECCIÓN DE TU CLUB DE FÚTBOL' : '⚙️ PASO 4: CONFIGURACIÓN DE EXPERIENCIA DE JUEGO'))}
+          <h1 style="font-size: 2.1rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 6px; color: #ffffff;">
+            ${currentStep === 1 ? '🎙️ PASO 1: PERFIL DEL DIRECTOR TÉCNICO' : (currentStep === 2 ? '🧩 PASO 2: FILOSOFÍA TÁCTICA DEL ENTRENADOR' : (currentStep === 3 ? '💼 PASO 3: SELECCIÓN DE TU CLUB DE FÚTBOL' : '⚙️ PASO 4: CONFIGURACIÓN DE PARTIDA'))}
           </h1>
-          <p class="text-sub" style="font-size: 0.94rem; color: #94a3b8; margin: 0;">
-            ${currentStep === 1 ? 'Define tu identidad como entrenador profesional. Ingresa tus datos de registro:' : (currentStep === 2 ? 'Selecciona tu modelo táctico preferido. Definirá la identidad de tu equipo en la cancha:' : (currentStep === 3 ? 'Acepta una de las 3 ofertas recomendadas o busca libremente tu club favorito para dirigir:' : 'Ajusta la dificultad y sistemas dinámicos para tu partida de 25 temporadas:'))}
+          <p class="text-sub" style="font-size: 0.9rem; color: #94a3b8; margin: 0;">
+            ${currentStep === 1 ? 'Ingresa tus datos personales de DT y selecciona tu país de origen:' : (currentStep === 2 ? 'Define tu modelo táctico de juego. Marcará el estilo de tu equipo en los partidos:' : (currentStep === 3 ? 'Selecciona tu club favorito para dirigir o revisa ofertas recomendadas:' : 'Ajusta la dificultad y el nivel de simulación para tus 25 temporadas:'))}
           </p>
         </div>
 
         <!-- INDICADOR DE PROGRESO INTERACTIVO DE 4 PASOS -->
-        <div style="display: flex; gap: 10px; margin-bottom: 28px; width: 100%; max-width: 680px; justify-content: center;">
-          <div class="step-pill ${currentStep >= 1 ? 'active' : ''}" style="flex: 1; padding: 8px; border-radius: 8px; background: ${currentStep >= 1 ? 'linear-gradient(90deg, rgba(0,200,133,0.2), rgba(0,200,133,0.05))' : 'rgba(15,23,42,0.6)'}; border: 1px solid ${currentStep >= 1 ? 'var(--accent-green)' : '#1e293b'}; text-align: center; font-size: 0.76rem; font-weight: 800; color: ${currentStep >= 1 ? 'var(--accent-green)' : '#64748b'}; transition: all 0.3s ease;">
+        <div style="display: flex; gap: 8px; margin-bottom: 26px; width: 100%; max-width: 640px; justify-content: center;">
+          <div class="step-pill ${currentStep >= 1 ? 'active' : ''}" style="flex: 1; padding: 7px; border-radius: 8px; background: ${currentStep >= 1 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.5)'}; border: 1px solid ${currentStep >= 1 ? '#10b981' : 'rgba(255,255,255,0.08)'}; text-align: center; font-size: 0.75rem; font-weight: 800; color: ${currentStep >= 1 ? '#10b981' : '#64748b'}; transition: all 0.25s ease;">
             1. 👤 PERFIL
           </div>
-          <div class="step-pill ${currentStep >= 2 ? 'active' : ''}" style="flex: 1; padding: 8px; border-radius: 8px; background: ${currentStep >= 2 ? 'linear-gradient(90deg, rgba(0,200,133,0.2), rgba(0,200,133,0.05))' : 'rgba(15,23,42,0.6)'}; border: 1px solid ${currentStep >= 2 ? 'var(--accent-green)' : '#1e293b'}; text-align: center; font-size: 0.76rem; font-weight: 800; color: ${currentStep >= 2 ? 'var(--accent-green)' : '#64748b'}; transition: all 0.3s ease;">
+          <div class="step-pill ${currentStep >= 2 ? 'active' : ''}" style="flex: 1; padding: 7px; border-radius: 8px; background: ${currentStep >= 2 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.5)'}; border: 1px solid ${currentStep >= 2 ? '#10b981' : 'rgba(255,255,255,0.08)'}; text-align: center; font-size: 0.75rem; font-weight: 800; color: ${currentStep >= 2 ? '#10b981' : '#64748b'}; transition: all 0.25s ease;">
             2. 🧩 TÁCTICA
           </div>
-          <div class="step-pill ${currentStep >= 3 ? 'active' : ''}" style="flex: 1; padding: 8px; border-radius: 8px; background: ${currentStep >= 3 ? 'linear-gradient(90deg, rgba(0,200,133,0.2), rgba(0,200,133,0.05))' : 'rgba(15,23,42,0.6)'}; border: 1px solid ${currentStep >= 3 ? 'var(--accent-green)' : '#1e293b'}; text-align: center; font-size: 0.76rem; font-weight: 800; color: ${currentStep >= 3 ? 'var(--accent-green)' : '#64748b'}; transition: all 0.3s ease;">
+          <div class="step-pill ${currentStep >= 3 ? 'active' : ''}" style="flex: 1; padding: 7px; border-radius: 8px; background: ${currentStep >= 3 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.5)'}; border: 1px solid ${currentStep >= 3 ? '#10b981' : 'rgba(255,255,255,0.08)'}; text-align: center; font-size: 0.75rem; font-weight: 800; color: ${currentStep >= 3 ? '#10b981' : '#64748b'}; transition: all 0.25s ease;">
             3. 🏟️ CLUB
           </div>
-          <div class="step-pill ${currentStep >= 4 ? 'active' : ''}" style="flex: 1; padding: 8px; border-radius: 8px; background: ${currentStep >= 4 ? 'linear-gradient(90deg, rgba(0,200,133,0.2), rgba(0,200,133,0.05))' : 'rgba(15,23,42,0.6)'}; border: 1px solid ${currentStep >= 4 ? 'var(--accent-green)' : '#1e293b'}; text-align: center; font-size: 0.76rem; font-weight: 800; color: ${currentStep >= 4 ? 'var(--accent-green)' : '#64748b'}; transition: all 0.3s ease;">
+          <div class="step-pill ${currentStep >= 4 ? 'active' : ''}" style="flex: 1; padding: 7px; border-radius: 8px; background: ${currentStep >= 4 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.5)'}; border: 1px solid ${currentStep >= 4 ? '#10b981' : 'rgba(255,255,255,0.08)'}; text-align: center; font-size: 0.75rem; font-weight: 800; color: ${currentStep >= 4 ? '#10b981' : '#64748b'}; transition: all 0.25s ease;">
             4. ⚙️ AJUSTES
           </div>
         </div>
 
-        <!-- PASO 1: PERFIL DEL DT -->
+        <!-- PASO 1: PERFIL DEL DT (REQUERIMIENTO 2: NOMBRE VACÍO + EDAD A ELECCIÓN + PAÍS SIN PRESELECCIONAR) -->
         ${currentStep === 1 ? `
-          <div class="glass-panel" style="width: 100%; max-width: 700px; padding: 32px; border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border-radius: 18px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-            <div style="display: flex; align-items: center; gap: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 18px; margin-bottom: 24px;">
-              <div style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green)); width: 62px; height: 62px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #000; box-shadow: 0 0 20px rgba(0,200,133,0.3);">
+          <div class="glass-panel" style="width: 100%; max-width: 660px; padding: 30px; border: 1px solid rgba(255,255,255,0.08); background: rgba(13, 19, 32, 0.9); backdrop-filter: blur(16px); border-radius: 16px;">
+            
+            <div style="display: flex; align-items: center; gap: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 16px; margin-bottom: 22px;">
+              <div style="background: rgba(16, 185, 129, 0.15); width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 1px solid rgba(16, 185, 129, 0.3);">
                 👔
               </div>
               <div>
-                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 900; color: #ffffff;">Perfil de Entrenador Principiante</h3>
-                <span class="text-sub" style="font-size: 0.82rem; color: #94a3b8;">0 Años de Experiencia Previa · Contrato Inicial de 3 Temporadas</span>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 900; color: #ffffff;">Registro de Entrenador Principal</h3>
+                <span class="text-sub" style="font-size: 0.8rem; color: #94a3b8;">0 Años de Experiencia Previa · Contrato Inicial de 3 Temporadas</span>
               </div>
             </div>
 
+            <!-- CAMPO NOMBRE (INICIALMENTE VACÍO) -->
             <div class="form-group mb-4">
-              <label class="form-label" style="font-size: 0.86rem; font-weight: 800; color: var(--accent-cyan); margin-bottom: 6px; display: block;">👤 Nombre Completo del DT:</label>
-              <input type="text" id="inputManagerName" class="input-text" value="${managerName}" style="width: 100%; font-size: 1rem; padding: 12px 16px; border-radius: 10px; background: #0b111e; border: 1px solid var(--border-color); color: #fff;" placeholder="Ej: Lionel Scaloni, Marcelo Bielsa, Pep Guardiola..." />
+              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">👤 Nombre Completo del DT:</label>
+              <input type="text" id="inputManagerName" class="input-text" value="${managerName}" style="width: 100%; font-size: 0.95rem; padding: 11px 14px; border-radius: 10px; background: #080d16; border: 1px solid rgba(255,255,255,0.12); color: #fff;" placeholder="Escribe tu nombre de entrenador..." />
             </div>
 
+            <!-- CAMPO EDAD LIBRE A ELECCIÓN -->
             <div class="form-group mb-4">
-              <label class="form-label" style="font-size: 0.86rem; font-weight: 800; color: var(--accent-gold); margin-bottom: 6px; display: block;">🎂 Edad Inicial (Años):</label>
-              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                <input type="number" id="inputManagerAge" class="input-text" value="${managerAge}" min="30" max="65" style="width: 120px; font-size: 1.1rem; text-align: center; padding: 10px; border-radius: 10px; background: #0b111e; border: 1px solid var(--border-color); color: #fff; font-weight: 900;" />
+              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">🎂 Edad de Preferencia (Años):</label>
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <input type="number" id="inputManagerAge" class="input-text" value="${managerAge}" min="30" max="65" style="width: 110px; font-size: 1rem; text-align: center; padding: 9px; border-radius: 10px; background: #080d16; border: 1px solid rgba(255,255,255,0.12); color: #fff; font-weight: 900;" />
                 <div style="display: flex; gap: 6px;">
-                  <button class="btn-secondary btn-quick-age" data-age="30" style="padding: 6px 12px; font-size: 0.76rem; border-radius: 6px;">30a</button>
-                  <button class="btn-secondary btn-quick-age" data-age="35" style="padding: 6px 12px; font-size: 0.76rem; border-radius: 6px;">35a</button>
-                  <button class="btn-secondary btn-quick-age" data-age="40" style="padding: 6px 12px; font-size: 0.76rem; border-radius: 6px;">40a</button>
-                  <button class="btn-secondary btn-quick-age" data-age="45" style="padding: 6px 12px; font-size: 0.76rem; border-radius: 6px;">45a</button>
+                  <button class="btn-secondary btn-quick-age" data-age="30" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; background: #131c2e; border: 1px solid rgba(255,255,255,0.08); color:#cbd5e1;">30a</button>
+                  <button class="btn-secondary btn-quick-age" data-age="35" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; background: #131c2e; border: 1px solid rgba(255,255,255,0.08); color:#cbd5e1;">35a</button>
+                  <button class="btn-secondary btn-quick-age" data-age="40" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; background: #131c2e; border: 1px solid rgba(255,255,255,0.08); color:#cbd5e1;">40a</button>
+                  <button class="btn-secondary btn-quick-age" data-age="45" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; background: #131c2e; border: 1px solid rgba(255,255,255,0.08); color:#cbd5e1;">45a</button>
+                  <button class="btn-secondary btn-quick-age" data-age="50" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; background: #131c2e; border: 1px solid rgba(255,255,255,0.08); color:#cbd5e1;">50a</button>
                 </div>
               </div>
             </div>
 
-            <!-- SELECTOR VISUAL DE PAÍS CON BANDERAS SVG -->
+            <!-- PAÍS DE ORIGEN (SIN PRESELECCIONAR) -->
             <div class="form-group mb-4">
-              <label class="form-label" style="font-size: 0.86rem; font-weight: 800; color: var(--accent-green); margin-bottom: 6px; display: block;">🌎 Selecciona tu País de Origen:</label>
+              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">🌎 Selección de País de Origen:</label>
               
-              <div id="selectedCountryCard" style="background: #0b111e; border: 2px solid var(--accent-green); padding: 14px 18px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                <div style="display: flex; align-items: center; gap: 14px;">
-                  ${renderCountryFlagSVG(managerCountry, 28)}
-                  <strong style="font-size: 1.1rem; color: #ffffff;" id="displayCountryName">${managerCountry}</strong>
+              <div id="selectedCountryCard" style="background: #080d16; border: 1px dashed ${managerCountry ? '#10b981' : 'rgba(255,255,255,0.2)'}; padding: 12px 16px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s ease;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  ${managerCountry ? renderCountryFlagSVG(managerCountry, 26) : '<span style="font-size: 1.4rem;">🌐</span>'}
+                  <strong style="font-size: 1rem; color: ${managerCountry ? '#ffffff' : '#94a3b8'};" id="displayCountryName">
+                    ${managerCountry || 'Haz clic para seleccionar tu país natal...'}
+                  </strong>
                 </div>
-                <span style="font-size: 0.8rem; background: var(--accent-green); color: #000; font-weight: 900; padding: 6px 14px; border-radius: 8px; letter-spacing: 0.5px;">CAMBIAR PAÍS 🔽</span>
+                <span style="font-size: 0.76rem; background: #10b981; color: #000; font-weight: 900; padding: 5px 12px; border-radius: 6px;">SELECCIONAR PAÍS 🔽</span>
               </div>
 
-              <!-- REJILLA VISUAL DESPLEGABLE DE PAÍSES -->
-              <div id="countryGridModal" class="hidden" style="margin-top: 12px; max-height: 240px; overflow-y: auto; background: #080d16; border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+              <!-- REJILLA DESPLEGABLE DE PAÍSES -->
+              <div id="countryGridModal" class="hidden" style="margin-top: 10px; max-height: 220px; overflow-y: auto; background: #080d16; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
                 ${countriesInDB.map(c => `
-                  <div class="country-option-item" data-country="${c}" style="display: flex; align-items: center; gap: 12px; background: ${c === managerCountry ? '#142036' : '#0f172a'}; border: 1px solid ${c === managerCountry ? 'var(--accent-green)' : 'var(--border-color)'}; padding: 10px 14px; border-radius: 10px; cursor: pointer; transition: all 0.15s ease;">
-                    ${renderCountryFlagSVG(c, 24)}
-                    <span style="font-size: 0.9rem; font-weight: 800; color: #fff;">${c}</span>
+                  <div class="country-option-item" data-country="${c}" style="display: flex; align-items: center; gap: 10px; background: ${c === managerCountry ? '#13232c' : '#0e1626'}; border: 1px solid ${c === managerCountry ? '#10b981' : 'rgba(255,255,255,0.06)'}; padding: 9px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">
+                    ${renderCountryFlagSVG(c, 22)}
+                    <span style="font-size: 0.86rem; font-weight: 700; color: #fff;">${c}</span>
                   </div>
                 `).join('')}
               </div>
             </div>
 
-            <div style="background: #090e18; padding: 14px 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 24px; font-size: 0.84rem; color: #94a3b8; display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 1.2rem;">🔰</span>
-              <span><strong>Recomendación de Carrera:</strong> Podrás aceptar ofertas recomendadas en <strong id="noteCountryText" style="color: var(--accent-green);">${managerCountry}</strong> o elegir tu club favorito de cualquier liga.</span>
+            <div id="countryWarningMsg" class="hidden mb-3" style="color: #ef4444; font-size: 0.8rem; font-weight: 800; background: rgba(239,68,68,0.1); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.2);">
+              ⚠️ Por favor selecciona tu país de origen para continuar.
             </div>
 
-            <button id="btnNextToStep2" class="btn-primary btn-large" style="width: 100%; font-size: 1.05rem; font-weight: 900; padding: 14px; border-radius: 12px; background: linear-gradient(135deg, var(--accent-green) 0%, #0096c7 100%); color: #000; box-shadow: 0 6px 20px rgba(0,200,133,0.3);">
+            <button id="btnNextToStep2" class="btn-primary btn-large" style="width: 100%; font-size: 1rem; font-weight: 900; padding: 13px; border-radius: 10px; background: #10b981; color: #000; border: none; cursor: pointer; transition: all 0.2s ease;">
               SIGUIENTE: FILOSOFÍA TÁCTICA ➔
             </button>
           </div>
         ` : ''}
 
-        <!-- PASO 2: FILOSOFÍA TÁCTICA REAL -->
+        <!-- PASO 2: SELECCIÓN DE FILOSOFÍA TÁCTICA (DISEÑO PROFESIONAL ARMONIOSO) -->
         ${currentStep === 2 ? `
-          <div class="glass-panel" style="width: 100%; max-width: 960px; padding: 32px; border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border-radius: 18px;">
+          <div class="glass-panel" style="width: 100%; max-width: 900px; padding: 30px; border: 1px solid rgba(255,255,255,0.08); background: rgba(13, 19, 32, 0.9); backdrop-filter: blur(16px); border-radius: 16px;">
             <div class="text-center mb-4">
-              <h3 style="color: var(--accent-gold); font-size: 1.35rem; font-weight: 900; margin-bottom: 4px;">🧩 SELECCIONA TU ESTILO TÁCTICO DE FÚTBOL</h3>
-              <p class="text-sub" style="font-size: 0.88rem; color: #94a3b8;">Define la identidad táctica que imprimirás a tu equipo en la cancha:</p>
+              <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 900; margin-bottom: 4px;">🧩 FILOSOFÍA TÁCTICA DEL ENTRENADOR</h3>
+              <p class="text-sub" style="font-size: 0.85rem; color: #94a3b8;">Selecciona la identidad futbolística que imprimirás a tu equipo:</p>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+            <!-- REJILLA ARMONIOSA DE 5 ARQUETIPOS -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">
               
               <!-- 1. TIKI TAKA -->
-              <div class="archetype-card-step glass-panel text-center ${selectedArchetype === 'TIKI_TAKA' ? 'selected' : ''}" 
+              <div class="archetype-card-step ${selectedArchetype === 'TIKI_TAKA' ? 'selected' : ''}" 
                    data-id="TIKI_TAKA" 
-                   style="padding: 20px 14px; cursor: pointer; border: 2px solid ${selectedArchetype === 'TIKI_TAKA' ? 'var(--accent-green)' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'TIKI_TAKA' ? '#141d2e' : '#0b111e'}; border-radius: 14px; transition: all 0.2s ease;">
-                <div style="font-size: 2.4rem; margin-bottom: 8px;">⚽</div>
-                <h4 style="font-size: 1rem; font-weight: 900; color: #ffffff; margin-bottom: 4px;">TIKI-TAKA & POSESIÓN</h4>
-                <span class="text-sub" style="font-size: 0.76rem; display: block; margin-bottom: 10px; color: #94a3b8;">Juego de Posición & Pase Corto</span>
-                <div style="background: rgba(0, 200, 133, 0.18); color: var(--accent-green); padding: 5px 8px; border-radius: 6px; font-weight: 900; font-size: 0.74rem; margin-bottom: 10px;">
-                  +8 PASES CORTOS | POSESIÓN
+                   style="padding: 18px 14px; cursor: pointer; border: 1px solid ${selectedArchetype === 'TIKI_TAKA' ? '#10b981' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'TIKI_TAKA' ? 'rgba(16, 185, 129, 0.08)' : '#0e1626'}; border-radius: 12px; transition: all 0.2s ease; position: relative;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                  <span style="font-size: 1.8rem;">⚽</span>
+                  ${selectedArchetype === 'TIKI_TAKA' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">✓ ELEGIDO</span>' : ''}
                 </div>
-                <p class="text-sub" style="font-size: 0.78rem; text-align: left; line-height: 1.4; color: #cbd5e1;">
-                  Construcción paciente desde atrás, triangulaciones de apoyo y dominio del balón.
+                <h4 style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin-bottom: 4px;">TIKI-TAKA & POSESIÓN</h4>
+                <span style="font-size: 0.74rem; display: block; margin-bottom: 8px; color: #94a3b8;">Juego de Posición & Pase Corto</span>
+                <div style="background: rgba(255,255,255,0.05); color: #cbd5e1; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 0.7rem; margin-bottom: 8px;">
+                  +8 Pases Cortos | Posesión
+                </div>
+                <p style="font-size: 0.76rem; color: #94a3b8; line-height: 1.4; margin: 0;">
+                  Construcción paciente desde atrás, triangulaciones de apoyo y control de la pelota.
                 </p>
               </div>
 
               <!-- 2. GEGENPRESSING -->
-              <div class="archetype-card-step glass-panel text-center ${selectedArchetype === 'GEGENPRESSING' ? 'selected' : ''}" 
+              <div class="archetype-card-step ${selectedArchetype === 'GEGENPRESSING' ? 'selected' : ''}" 
                    data-id="GEGENPRESSING" 
-                   style="padding: 20px 14px; cursor: pointer; border: 2px solid ${selectedArchetype === 'GEGENPRESSING' ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'GEGENPRESSING' ? '#141d2e' : '#0b111e'}; border-radius: 14px; transition: all 0.2s ease;">
-                <div style="font-size: 2.4rem; margin-bottom: 8px;">⚡</div>
-                <h4 style="font-size: 1rem; font-weight: 900; color: #ffffff; margin-bottom: 4px;">GEGENPRESSING & PRESIÓN</h4>
-                <span class="text-sub" style="font-size: 0.76rem; display: block; margin-bottom: 10px; color: #94a3b8;">Presión Tras Pérdida & Vértigo</span>
-                <div style="background: rgba(0, 150, 199, 0.18); color: var(--accent-cyan); padding: 5px 8px; border-radius: 6px; font-weight: 900; font-size: 0.74rem; margin-bottom: 10px;">
-                  +8 RECUPERACIÓN ALTA | VÉRTIGO
+                   style="padding: 18px 14px; cursor: pointer; border: 1px solid ${selectedArchetype === 'GEGENPRESSING' ? '#10b981' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'GEGENPRESSING' ? 'rgba(16, 185, 129, 0.08)' : '#0e1626'}; border-radius: 12px; transition: all 0.2s ease; position: relative;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                  <span style="font-size: 1.8rem;">⚡</span>
+                  ${selectedArchetype === 'GEGENPRESSING' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">✓ ELEGIDO</span>' : ''}
                 </div>
-                <p class="text-sub" style="font-size: 0.78rem; text-align: left; line-height: 1.4; color: #cbd5e1;">
-                  Asfixia inmediata al rival tras perder la pelota y zarpazo vertical al espacio.
+                <h4 style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin-bottom: 4px;">GEGENPRESSING & PRESIÓN</h4>
+                <span style="font-size: 0.74rem; display: block; margin-bottom: 8px; color: #94a3b8;">Presión Tras Pérdida & Vértigo</span>
+                <div style="background: rgba(255,255,255,0.05); color: #cbd5e1; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 0.7rem; margin-bottom: 8px;">
+                  +8 Recuperación Alta | Vértigo
+                </div>
+                <p style="font-size: 0.76rem; color: #94a3b8; line-height: 1.4; margin: 0;">
+                  Asfixia inmediata al rival tras perder el balón y ataque directo al espacio.
                 </p>
               </div>
 
               <!-- 3. CATENACCIO -->
-              <div class="archetype-card-step glass-panel text-center ${selectedArchetype === 'CATENACCIO' ? 'selected' : ''}" 
+              <div class="archetype-card-step ${selectedArchetype === 'CATENACCIO' ? 'selected' : ''}" 
                    data-id="CATENACCIO" 
-                   style="padding: 20px 14px; cursor: pointer; border: 2px solid ${selectedArchetype === 'CATENACCIO' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'CATENACCIO' ? '#141d2e' : '#0b111e'}; border-radius: 14px; transition: all 0.2s ease;">
-                <div style="font-size: 2.4rem; margin-bottom: 8px;">🚌</div>
-                <h4 style="font-size: 1rem; font-weight: 900; color: #ffffff; margin-bottom: 4px;">CATENACCIO & BLOQUE BAJO</h4>
-                <span class="text-sub" style="font-size: 0.76rem; display: block; margin-bottom: 10px; color: #94a3b8;">El Autobús & Balón Parado</span>
-                <div style="background: rgba(229, 169, 60, 0.18); color: var(--accent-gold); padding: 5px 8px; border-radius: 6px; font-weight: 900; font-size: 0.74rem; margin-bottom: 10px;">
-                  +8 SOLIDEZ MARCA | CERROJO
+                   style="padding: 18px 14px; cursor: pointer; border: 1px solid ${selectedArchetype === 'CATENACCIO' ? '#10b981' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'CATENACCIO' ? 'rgba(16, 185, 129, 0.08)' : '#0e1626'}; border-radius: 12px; transition: all 0.2s ease; position: relative;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                  <span style="font-size: 1.8rem;">🚌</span>
+                  ${selectedArchetype === 'CATENACCIO' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">✓ ELEGIDO</span>' : ''}
                 </div>
-                <p class="text-sub" style="font-size: 0.78rem; text-align: left; line-height: 1.4; color: #cbd5e1;">
-                  Cerrojo defensivo numérico en área propia, garra, contragolpe y córners.
+                <h4 style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin-bottom: 4px;">CATENACCIO & BLOQUE BAJO</h4>
+                <span style="font-size: 0.74rem; display: block; margin-bottom: 8px; color: #94a3b8;">El Autobús & Cerrojo Defensivo</span>
+                <div style="background: rgba(255,255,255,0.05); color: #cbd5e1; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 0.7rem; margin-bottom: 8px;">
+                  +8 Solidez Defensiva | Cerrojo
+                </div>
+                <p style="font-size: 0.76rem; color: #94a3b8; line-height: 1.4; margin: 0;">
+                  Organización defensiva impenetrable en área propia, garra y balón parado.
                 </p>
               </div>
 
             </div>
 
             <!-- SEGUNDA FILA -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px;">
               
-              <div class="archetype-card-step glass-panel text-center ${selectedArchetype === 'WING_PLAY' ? 'selected' : ''}" 
+              <div class="archetype-card-step ${selectedArchetype === 'WING_PLAY' ? 'selected' : ''}" 
                    data-id="WING_PLAY" 
-                   style="padding: 18px 16px; cursor: pointer; border: 2px solid ${selectedArchetype === 'WING_PLAY' ? '#a855f7' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'WING_PLAY' ? '#141d2e' : '#0b111e'}; border-radius: 14px; transition: all 0.2s ease; display: flex; align-items: center; gap: 16px; text-align: left;">
-                <div style="font-size: 2.4rem;">🌊</div>
-                <div>
-                  <h4 style="font-size: 1rem; font-weight: 900; color: #ffffff; margin-bottom: 2px;">JUEGO POR BANDAS & CENTROS</h4>
-                  <span class="text-sub" style="font-size: 0.76rem; color: #94a3b8;">Amplitud Total, Lateral Desbordante y Envíos al Área</span>
-                  <div style="background: rgba(168, 85, 247, 0.2); color: #c084fc; padding: 4px 8px; border-radius: 6px; font-weight: 900; font-size: 0.72rem; margin-top: 6px; display: inline-block;">
-                    +8 CENTROS & DESBORDE | REMATE AÉREO
+                   style="padding: 16px; cursor: pointer; border: 1px solid ${selectedArchetype === 'WING_PLAY' ? '#10b981' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'WING_PLAY' ? 'rgba(16, 185, 129, 0.08)' : '#0e1626'}; border-radius: 12px; transition: all 0.2s ease; display: flex; align-items: center; gap: 14px;">
+                <span style="font-size: 2rem;">🌊</span>
+                <div style="flex: 1;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4 style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin: 0;">JUEGO POR BANDAS & CENTROS</h4>
+                    ${selectedArchetype === 'WING_PLAY' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">✓ ELEGIDO</span>' : ''}
+                  </div>
+                  <span style="font-size: 0.74rem; color: #94a3b8; display: block; margin-top: 2px;">Amplitud Total, Desborde y Centros al Área</span>
+                  <div style="background: rgba(255,255,255,0.05); color: #cbd5e1; padding: 3px 6px; border-radius: 6px; font-weight: 700; font-size: 0.68rem; margin-top: 6px; display: inline-block;">
+                    +8 Centros & Desborde | Remate Aéreo
                   </div>
                 </div>
               </div>
 
-              <div class="archetype-card-step glass-panel text-center ${selectedArchetype === 'DIRECT_ATTACK' ? 'selected' : ''}" 
+              <div class="archetype-card-step ${selectedArchetype === 'DIRECT_ATTACK' ? 'selected' : ''}" 
                    data-id="DIRECT_ATTACK" 
-                   style="padding: 18px 16px; cursor: pointer; border: 2px solid ${selectedArchetype === 'DIRECT_ATTACK' ? '#ff0055' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'DIRECT_ATTACK' ? '#141d2e' : '#0b111e'}; border-radius: 14px; transition: all 0.2s ease; display: flex; align-items: center; gap: 16px; text-align: left;">
-                <div style="font-size: 2.4rem;">🎯</div>
-                <div>
-                  <h4 style="font-size: 1rem; font-weight: 900; color: #ffffff; margin-bottom: 2px;">CONTRAATAQUE DIRECTO</h4>
-                  <span class="text-sub" style="font-size: 0.76rem; color: #94a3b8;">Balón Largo a la Espalda y Zarpazos a Alta Velocidad</span>
-                  <div style="background: rgba(255, 0, 85, 0.2); color: #ff5588; padding: 4px 8px; border-radius: 6px; font-weight: 900; font-size: 0.72rem; margin-top: 6px; display: inline-block;">
-                    +8 BALÓN LARGO | VELOCIDAD
+                   style="padding: 16px; cursor: pointer; border: 1px solid ${selectedArchetype === 'DIRECT_ATTACK' ? '#10b981' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'DIRECT_ATTACK' ? 'rgba(16, 185, 129, 0.08)' : '#0e1626'}; border-radius: 12px; transition: all 0.2s ease; display: flex; align-items: center; gap: 14px;">
+                <span style="font-size: 2rem;">🎯</span>
+                <div style="flex: 1;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4 style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin: 0;">CONTRAATAQUE DIRECTO</h4>
+                    ${selectedArchetype === 'DIRECT_ATTACK' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">✓ ELEGIDO</span>' : ''}
+                  </div>
+                  <span style="font-size: 0.74rem; color: #94a3b8; display: block; margin-top: 2px;">Balón Largo a la Espalda y Zarpazos Verticales</span>
+                  <div style="background: rgba(255,255,255,0.05); color: #cbd5e1; padding: 3px 6px; border-radius: 6px; font-weight: 700; font-size: 0.68rem; margin-top: 6px; display: inline-block;">
+                    +8 Balón Largo | Velocidad
                   </div>
                 </div>
               </div>
 
             </div>
 
-            <div style="display: flex; gap: 16px;">
-              <button id="btnBackToStep1" class="btn-secondary" style="flex: 1; padding: 14px; font-weight: 800; border-radius: 12px;">
+            <div style="display: flex; gap: 14px;">
+              <button id="btnBackToStep1" class="btn-secondary" style="flex: 1; padding: 12px; font-weight: 800; border-radius: 10px; background: #131c2e; border: 1px solid rgba(255,255,255,0.08); color: #94a3b8;">
                 ⬅️ VOLVER AL PERFIL
               </button>
-              <button id="btnNextToStep3" class="btn-primary btn-large" style="flex: 2; font-size: 1.05rem; font-weight: 900; padding: 14px; border-radius: 12px; background: linear-gradient(135deg, var(--accent-green) 0%, #0096c7 100%); color: #000; box-shadow: 0 6px 20px rgba(0,200,133,0.3);">
-                🔍 VER CLUBES & OFERTAS ➔
+              <button id="btnNextToStep3" class="btn-primary btn-large" style="flex: 2; font-size: 1rem; font-weight: 900; padding: 12px; border-radius: 10px; background: #10b981; color: #000; border: none; cursor: pointer;">
+                🔍 VER CLUBES & SELECCIÓN ➔
               </button>
             </div>
           </div>
         ` : ''}
 
-        <!-- PASO 3: SELECCIÓN DE CLUB (OFERTAS RECOMENDADAS + BUSCADOR DE CLUB FAVORITO) -->
+        <!-- PASO 3: SELECCIÓN DE CLUB (REQUERIMIENTO 1: SIEMPRE LA ELECCIÓN FAVORITA POR DEFECTO + REQUERIMIENTO 4: BUSCADOR FLUIDO) -->
         ${currentStep === 3 ? `
-          <div style="width: 100%; max-width: 1140px;">
-            <!-- RESUMEN DEL DT EN CABECERA -->
-            <div class="glass-panel mb-3 text-center" style="padding: 16px 24px; border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.9); border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                ${renderCountryFlagSVG(managerCountry, 24)}
-                <span style="font-weight: 900; font-size: 1rem; color: #fff;">${managerName}</span>
-                <span class="badge" style="background: rgba(0,200,133,0.15); color: var(--accent-green); font-size: 0.76rem;">${managerAge}a · ${managerCountry}</span>
+          <div style="width: 100%; max-width: 1100px;">
+            
+            <!-- CABECERA RESUMEN DEL DT -->
+            <div class="glass-panel mb-3" style="padding: 14px 20px; border: 1px solid rgba(255,255,255,0.08); background: rgba(13, 19, 32, 0.9); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                ${managerCountry ? renderCountryFlagSVG(managerCountry, 22) : '🌐'}
+                <span style="font-weight: 900; font-size: 0.95rem; color: #fff;">${managerName || 'Director Técnico'}</span>
+                <span style="background: rgba(255,255,255,0.06); color: #cbd5e1; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: 700;">${managerAge}a ${managerCountry ? `· ${managerCountry}` : ''}</span>
               </div>
-              <div style="display: flex; align-items: center; gap: 14px;">
-                <span style="font-size: 0.84rem; color: #94a3b8;">FILOSOFÍA: <strong style="color: var(--accent-gold); font-weight: 900;">${MANAGER_ARCHETYPES[selectedArchetype]?.name || 'TIKI-TAKA'}</strong></span>
-                <button id="btnBackToStep2" class="btn-secondary" style="padding: 8px 16px; font-size: 0.8rem; font-weight: 800; border-radius: 8px;">
-                  ✏️ CAMBIAR
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 0.82rem; color: #94a3b8;">Estilo: <strong style="color: #10b981;">${MANAGER_ARCHETYPES[selectedArchetype]?.name || 'TIKI-TAKA'}</strong></span>
+                <button id="btnBackToStep2" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800; border-radius: 6px; background: #131c2e; border: 1px solid rgba(255,255,255,0.08); color:#cbd5e1;">
+                  ✏️ Cambiar
                 </button>
               </div>
             </div>
 
-            <!-- BOTONES SELECTORES DE PESTAÑA: OFERTAS NACIONALES VS CUALQUIER CLUB FAVORITO -->
-            <div class="glass-panel mb-4" style="padding: 8px; border: 1px solid rgba(255,255,255,0.1); background: #0b111e; border-radius: 14px; display: flex; gap: 10px;">
-              <button id="tabBtnRecommended" class="btn-tab-step ${step3Tab === 'RECOMMENDED' ? 'active' : ''}" style="flex: 1; padding: 12px 18px; border-radius: 10px; font-weight: 900; font-size: 0.92rem; border: 1px solid ${step3Tab === 'RECOMMENDED' ? 'var(--accent-green)' : 'transparent'}; background: ${step3Tab === 'RECOMMENDED' ? 'linear-gradient(135deg, rgba(0,200,133,0.2) 0%, rgba(0,150,199,0.2) 100%)' : 'transparent'}; color: ${step3Tab === 'RECOMMENDED' ? 'var(--accent-green)' : '#94a3b8'}; cursor: pointer; transition: all 0.2s ease;">
-                📩 3 OFERTAS RECOMENDADAS (${managerCountry.toUpperCase()})
-              </button>
-              <button id="tabBtnFavorite" class="btn-tab-step ${step3Tab === 'FAVORITE' ? 'active' : ''}" style="flex: 1; padding: 12px 18px; border-radius: 10px; font-weight: 900; font-size: 0.92rem; border: 1px solid ${step3Tab === 'FAVORITE' ? 'var(--accent-gold)' : 'transparent'}; background: ${step3Tab === 'FAVORITE' ? 'linear-gradient(135deg, rgba(245,158,11,0.2) 0%, rgba(229,169,60,0.1) 100%)' : 'transparent'}; color: ${step3Tab === 'FAVORITE' ? 'var(--accent-gold)' : '#94a3b8'}; cursor: pointer; transition: all 0.2s ease;">
+            <!-- SELECTOR DE PESTAÑA: FAVORITO ES LA OPCIÓN PRINCIPAL POR DEFECTO -->
+            <div class="glass-panel mb-3" style="padding: 6px; border: 1px solid rgba(255,255,255,0.08); background: #080d16; border-radius: 12px; display: flex; gap: 8px;">
+              <button id="tabBtnFavorite" class="btn-tab-step ${step3Tab === 'FAVORITE' ? 'active' : ''}" style="flex: 1; padding: 11px 16px; border-radius: 8px; font-weight: 900; font-size: 0.88rem; border: 1px solid ${step3Tab === 'FAVORITE' ? '#10b981' : 'transparent'}; background: ${step3Tab === 'FAVORITE' ? 'rgba(16, 185, 129, 0.15)' : 'transparent'}; color: ${step3Tab === 'FAVORITE' ? '#10b981' : '#94a3b8'}; cursor: pointer; transition: all 0.2s ease;">
                 ⭐ ELEGIR MI CLUB FAVORITO (LIBRE ELECCIÓN)
+              </button>
+              <button id="tabBtnRecommended" class="btn-tab-step ${step3Tab === 'RECOMMENDED' ? 'active' : ''}" style="flex: 1; padding: 11px 16px; border-radius: 8px; font-weight: 900; font-size: 0.88rem; border: 1px solid ${step3Tab === 'RECOMMENDED' ? '#10b981' : 'transparent'}; background: ${step3Tab === 'RECOMMENDED' ? 'rgba(16, 185, 129, 0.15)' : 'transparent'}; color: ${step3Tab === 'RECOMMENDED' ? '#10b981' : '#94a3b8'}; cursor: pointer; transition: all 0.2s ease;">
+                📩 3 OFERTAS RECOMENDADAS (${(managerCountry || 'PERÚ').toUpperCase()})
               </button>
             </div>
 
-            <!-- CONTENIDO DE LA PESTAÑA SELECCIONADA -->
+            <!-- CONTENEDOR PRINCIPAL DEL PASO 3 -->
             <div id="step3ContentContainer"></div>
           </div>
         ` : ''}
 
-        <!-- PASO 4: CONFIGURACIÓN DE EXPERIENCIA -->
+        <!-- PASO 4: CONFIGURACIÓN DE PARTIDA (AJUSTES ADAPTADOS CON ESTÉICA SOBRIA) -->
         ${currentStep === 4 ? `
-          <div class="glass-panel" style="width: 100%; max-width: 700px; padding: 32px; border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border-radius: 18px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+          <div class="glass-panel" style="width: 100%; max-width: 660px; padding: 30px; border: 1px solid rgba(255,255,255,0.08); background: rgba(13, 19, 32, 0.9); backdrop-filter: blur(16px); border-radius: 16px;">
             <div class="text-center mb-4">
-              <h3 style="color: var(--accent-cyan); font-size: 1.35rem; font-weight: 900; margin-bottom: 4px;">⚙️ AJUSTES Y DIFICULTAD DE LA PARTIDA</h3>
-              <p class="text-sub" style="font-size: 0.86rem; color: #94a3b8;">Personaliza el nivel de realismo y simulación para tus 25 temporadas:</p>
+              <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 900; margin-bottom: 4px;">⚙️ AJUSTES Y DIFICULTAD DE PARTIDA</h3>
+              <p class="text-sub" style="font-size: 0.85rem; color: #94a3b8;">Ajusta la frecuencia imprevista y sistemas dinámicos para tus 25 temporadas:</p>
             </div>
 
             <!-- Frecuencia de Eventos -->
-            <div class="form-group mb-4" style="background:#0b111e; padding:18px; border-radius:12px; border:1px solid rgba(255,255,255,0.08);">
-              <label class="form-label" style="font-size: 0.88rem; font-weight: 900; color: var(--accent-gold); margin-bottom: 6px; display: block;">🚨 Frecuencia de Eventos Inesperados & Crisis:</label>
-              <select id="selectEventFreqConfig" class="input-select" style="width: 100%; padding: 12px; border-radius: 10px; background: #141d2e; border: 1px solid var(--border-color); color: #fff; font-size: 0.9rem;">
-                <option value="off" ${eventFrequency === 'off' ? 'selected' : ''}>Desactivado (Experiencia Lineal sin imprevistos)</option>
+            <div class="form-group mb-3" style="background:#080d16; padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
+              <label class="form-label" style="font-size: 0.85rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">🚨 Eventos Inesperados & Crisis:</label>
+              <select id="selectEventFreqConfig" class="input-select" style="width: 100%; padding: 10px 12px; border-radius: 8px; background: #0e1626; border: 1px solid rgba(255,255,255,0.12); color: #fff; font-size: 0.88rem;">
+                <option value="off" ${eventFrequency === 'off' ? 'selected' : ''}>Desactivado (Sin imprevistos)</option>
                 <option value="baja" ${eventFrequency === 'baja' ? 'selected' : ''}>Baja (2 eventos por temporada)</option>
                 <option value="normal" ${eventFrequency === 'normal' ? 'selected' : ''}>Normal (4 eventos por temporada — Recomendado)</option>
                 <option value="alta" ${eventFrequency === 'alta' ? 'selected' : ''}>Alta (8 eventos por temporada — Máxima tensión)</option>
@@ -390,28 +413,28 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
             </div>
 
             <!-- Sistema de Regens PES -->
-            <div class="form-group mb-4" style="background:#0b111e; padding:18px; border-radius:12px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+            <div class="form-group mb-3" style="background:#080d16; padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <label class="form-label" style="font-size: 0.88rem; font-weight: 900; color: var(--accent-green); margin:0;">♻️ Sistema de Regens Nostálgico (PES):</label>
-                <p class="text-sub" style="font-size:0.78rem; color:#94a3b8; margin:4px 0 0 0;">Jugadores retirados reaparecen con 16 años en sus clubes de origen.</p>
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 800; color: #f8fafc; margin:0;">♻️ Sistema de Regens Nostálgico (PES):</label>
+                <p class="text-sub" style="font-size:0.76rem; color:#94a3b8; margin:2px 0 0 0;">Jugadores retirados reaparecen de 16 años en sus clubes de origen.</p>
               </div>
-              <input type="checkbox" id="checkEnableRegensConfig" ${enableRegens ? 'checked' : ''} style="width:22px; height:22px; cursor:pointer; accent-color: var(--accent-green);" />
+              <input type="checkbox" id="checkEnableRegensConfig" ${enableRegens ? 'checked' : ''} style="width:20px; height:20px; cursor:pointer; accent-color: #10b981;" />
             </div>
 
             <!-- Mercado de Entrenadores IA -->
-            <div class="form-group mb-4" style="background:#0b111e; padding:18px; border-radius:12px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+            <div class="form-group mb-4" style="background:#080d16; padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <label class="form-label" style="font-size: 0.88rem; font-weight: 900; color: var(--accent-cyan); margin:0;">🧑‍💼 Mercado Global de Entrenadores IA:</label>
-                <p class="text-sub" style="font-size:0.78rem; color:#94a3b8; margin:4px 0 0 0;">Despidos dinámicos y fichajes de DTs en clubes rivales durante la temporada.</p>
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 800; color: #f8fafc; margin:0;">🧑‍💼 Mercado Global de Entrenadores IA:</label>
+                <p class="text-sub" style="font-size:0.76rem; color:#94a3b8; margin:2px 0 0 0;">Despidos y contrataciones dinámicas de DTs en clubes rivales.</p>
               </div>
-              <input type="checkbox" id="checkEnableManagerMarketConfig" ${enableManagerMarket ? 'checked' : ''} style="width:22px; height:22px; cursor:pointer; accent-color: var(--accent-cyan);" />
+              <input type="checkbox" id="checkEnableManagerMarketConfig" ${enableManagerMarket ? 'checked' : ''} style="width:20px; height:20px; cursor:pointer; accent-color: #10b981;" />
             </div>
 
-            <div style="display: flex; gap: 16px;">
-              <button id="btnBackToStep3" class="btn-secondary" style="flex: 1; padding: 14px; font-weight: 800; border-radius: 12px;">
+            <div style="display: flex; gap: 14px;">
+              <button id="btnBackToStep3" class="btn-secondary" style="flex: 1; padding: 12px; font-weight: 800; border-radius: 10px; background: #131c2e; border: 1px solid rgba(255,255,255,0.08); color: #94a3b8;">
                 ⬅️ VOLVER A CLUBES
               </button>
-              <button id="btnConfirmStartGame" class="btn-primary btn-large" style="flex: 2; font-size: 1.05rem; font-weight: 900; padding: 14px; border-radius: 12px; background: linear-gradient(135deg, var(--accent-gold) 0%, #e5a93c 100%); color: #000; box-shadow: 0 6px 20px rgba(245,158,11,0.35);">
+              <button id="btnConfirmStartGame" class="btn-primary btn-large" style="flex: 2; font-size: 1rem; font-weight: 900; padding: 12px; border-radius: 10px; background: #10b981; color: #000; border: none; cursor: pointer;">
                 🚀 INICIAR MI CARRERA PROFESIONAL ➔
               </button>
             </div>
@@ -427,6 +450,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
       const ageInput = document.getElementById('inputManagerAge') as HTMLInputElement;
       const countryCard = document.getElementById('selectedCountryCard')!;
       const countryModal = document.getElementById('countryGridModal')!;
+      const countryWarning = document.getElementById('countryWarningMsg')!;
 
       nameInput.addEventListener('input', (e) => { managerName = (e.target as HTMLInputElement).value; });
       ageInput.addEventListener('input', (e) => { managerAge = parseInt((e.target as HTMLInputElement).value) || 35; });
@@ -450,22 +474,28 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
           sfx.playClick();
           managerCountry = (e.currentTarget as HTMLElement).dataset.country!;
           countryModal.classList.add('hidden');
+          if (countryWarning) countryWarning.classList.add('hidden');
 
           const displayCountry = document.getElementById('displayCountryName');
-          const noteCountry = document.getElementById('noteCountryText');
           if (displayCountry) displayCountry.innerText = managerCountry;
-          if (noteCountry) noteCountry.innerText = managerCountry;
 
           countryCard.querySelector('div')!.innerHTML = `
-            ${renderCountryFlagSVG(managerCountry, 28)}
-            <strong style="font-size: 1.1rem; color: #ffffff;">${managerCountry}</strong>
+            ${renderCountryFlagSVG(managerCountry, 26)}
+            <strong style="font-size: 1rem; color: #ffffff;">${managerCountry}</strong>
           `;
+          countryCard.style.borderColor = '#10b981';
+          countryCard.style.borderStyle = 'solid';
         });
       });
 
       document.getElementById('btnNextToStep2')!.addEventListener('click', () => {
         sfx.playClick();
-        managerName = nameInput.value || 'Director Técnico';
+        if (!managerCountry) {
+          if (countryWarning) countryWarning.classList.remove('hidden');
+          countryModal.classList.remove('hidden');
+          return;
+        }
+        managerName = nameInput.value.trim() || 'Director Técnico';
         currentStep = 2;
         renderStep();
       });
@@ -474,14 +504,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
         card.addEventListener('click', (e) => {
           sfx.playClick();
           selectedArchetype = (e.currentTarget as HTMLElement).dataset.id as ManagerArchetypeKey;
-          document.querySelectorAll<HTMLElement>('.archetype-card-step').forEach(c => {
-            c.classList.remove('selected');
-            c.style.borderColor = 'rgba(255,255,255,0.08)';
-            c.style.background = '#0b111e';
-          });
-          (e.currentTarget as HTMLElement).classList.add('selected');
-          (e.currentTarget as HTMLElement).style.borderColor = MANAGER_ARCHETYPES[selectedArchetype]?.badgeColor || 'var(--accent-green)';
-          (e.currentTarget as HTMLElement).style.background = '#141d2e';
+          renderStep();
         });
       });
 
@@ -537,7 +560,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
         if (marketCheck) enableManagerMarket = marketCheck.checked;
 
         sfx.playGoal();
-        db.newCareer(selectedTeamIdForStart!, managerName, managerCountry, managerAge, selectedArchetype, {
+        db.newCareer(selectedTeamIdForStart!, managerName || 'Director Técnico', managerCountry || 'Perú', managerAge, selectedArchetype, {
           eventFrequency,
           enableRegens,
           enableManagerMarket
@@ -549,6 +572,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
 
   /**
    * Renderiza el contenido del Paso 3 (Ofertas Recomendadas o Buscador de Club Favorito)
+   * REQUERIMIENTO 4: BUSCADOR FLUIDO SIN RE-RENDERIZAR EL INPUT EN CADA TECLA
    */
   const renderStep3Content = () => {
     const containerEl = document.getElementById('step3ContentContainer');
@@ -558,72 +582,69 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
       const offers = getMatchingTeams();
 
       containerEl.innerHTML = `
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
           ${offers.map(o => `
-            <div class="team-select-card glass-panel text-center" style="border: 1px solid rgba(255,255,255,0.1); padding: 24px; border-radius: 16px; background: rgba(18, 24, 38, 0.9); backdrop-filter: blur(12px); display: flex; flex-direction: column; justify-content: space-between; transition: all 0.25s ease;">
+            <div class="team-select-card glass-panel text-center" style="border: 1px solid rgba(255,255,255,0.08); padding: 20px; border-radius: 14px; background: #0e1626; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
               <div>
-                <span class="badge mb-2" style="background: ${o.badgeColor}; color: #000; font-weight: 900; font-size: 0.78rem; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px;">${o.projectType}</span>
+                <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; font-weight: 800; font-size: 0.74rem; padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 12px;">${o.projectType}</span>
                 
-                <div style="margin: 18px 0; display: flex; justify-content: center; align-items: center; min-height: 70px;">
-                  ${renderTeamBadgeSVG(o.team, 72)}
+                <div style="margin: 12px 0; display: flex; justify-content: center; align-items: center; min-height: 64px;">
+                  ${renderTeamBadgeSVG(o.team, 64)}
                 </div>
 
-                <h3 style="margin-top: 4px; font-size: 1.3rem; font-weight: 900; color: #ffffff;">${o.team.name}</h3>
-                <span class="text-sub" style="font-size: 0.84rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; justify-content: center; color: #94a3b8;">
-                  ${renderCountryFlagSVG(o.team.country, 18)} ${o.team.country} — ${o.team.leagueName}
+                <h3 style="margin-top: 4px; font-size: 1.15rem; font-weight: 900; color: #ffffff;">${o.team.name}</h3>
+                <span class="text-sub" style="font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; justify-content: center; color: #94a3b8;">
+                  ${renderCountryFlagSVG(o.team.country, 16)} ${o.team.country} — ${o.team.leagueName}
                 </span>
 
                 <!-- CARTA NARRATIVA DE LA JUNTA DIRECTIVA -->
-                <div style="background: #0b111e; border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin: 16px 0; text-align: left; font-size: 0.82rem; line-height: 1.45; color: #cbd5e1;">
+                <div style="background: #080d16; border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px; margin: 14px 0; text-align: left; font-size: 0.8rem; line-height: 1.4; color: #cbd5e1;">
                   📩 <strong>Carta de la Comisión Directiva:</strong><br>
                   <em style="color: #94a3b8;">"${o.letterMessage}"</em>
                 </div>
 
-                <div style="background: #080d16; padding: 12px 14px; border-radius: 10px; margin-bottom: 16px; text-align: left; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.04);">
-                  <p style="margin-bottom: 6px; color: #fff;">📊 <strong>Nivel Plantilla:</strong> <span style="color: var(--accent-cyan); font-weight: 800;">OVR ${o.team.overall}</span></p>
-                  <p style="margin-bottom: 0; color: #fff;">💰 <strong>Presupuesto Fichajes:</strong> <strong class="text-highlight" style="color: var(--accent-gold);">€${(o.team.budget / 1000000).toFixed(1)}M</strong></p>
+                <div style="background: #080d16; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; text-align: left; font-size: 0.82rem; border: 1px solid rgba(255,255,255,0.04);">
+                  <p style="margin-bottom: 4px; color: #fff;">📊 <strong>Nivel Plantilla:</strong> <span style="color: #38bdf8; font-weight: 800;">OVR ${o.team.overall}</span></p>
+                  <p style="margin-bottom: 0; color: #fff;">💰 <strong>Presupuesto Fichajes:</strong> <strong style="color: #f59e0b;">€${(o.team.budget / 1000000).toFixed(1)}M</strong></p>
                 </div>
               </div>
 
-              <button class="btn-primary btn-sign-club" data-id="${o.team.id}" style="width: 100%; padding: 14px; font-weight: 900; font-size: 0.98rem; background: linear-gradient(135deg, var(--accent-green) 0%, #0096c7 100%); color: #000; border-radius: 12px; border: none; box-shadow: 0 4px 15px rgba(0,200,133,0.3); cursor: pointer;">
+              <button class="btn-primary btn-sign-club" data-id="${o.team.id}" style="width: 100%; padding: 12px; font-weight: 900; font-size: 0.9rem; background: #10b981; color: #000; border-radius: 10px; border: none; cursor: pointer;">
                 ✍️ FIRMAR CON ${o.team.name.toUpperCase()} ➔
               </button>
             </div>
           `).join('')}
         </div>
       `;
+
+      // Event listener para botones de firma
+      document.querySelectorAll('.btn-sign-club').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          selectedTeamIdForStart = (e.currentTarget as HTMLElement).dataset.id!;
+          sfx.playClick();
+          currentStep = 4;
+          renderStep();
+        });
+      });
+
     } else {
       // PESTAÑA: ELECCIÓN DE CLUB FAVORITO (TODAS LAS LIGAS)
       const allEnrichedTeams = getAllEnrichedTeams();
       const leagues = db.leagues;
 
-      // Filtrar por liga seleccionada y por query de búsqueda
-      let filteredTeams = allEnrichedTeams;
-      if (favoriteFilterLeagueId !== 'ALL') {
-        filteredTeams = filteredTeams.filter(t => t.leagueId === favoriteFilterLeagueId);
-      }
-      if (favoriteSearchQuery.trim()) {
-        const q = favoriteSearchQuery.toLowerCase().trim();
-        filteredTeams = filteredTeams.filter(t => 
-          t.name.toLowerCase().includes(q) || 
-          t.country.toLowerCase().includes(q) || 
-          t.leagueName.toLowerCase().includes(q)
-        );
-      }
-
       containerEl.innerHTML = `
-        <div class="glass-panel" style="padding: 24px; border-radius: 16px; background: rgba(18, 24, 38, 0.9); border: 1px solid rgba(255,255,255,0.1);">
+        <div class="glass-panel" style="padding: 22px; border-radius: 14px; background: rgba(13, 19, 32, 0.9); border: 1px solid rgba(255,255,255,0.08);">
           
-          <!-- FILTROS Y BARRA DE BÚSQUEDA -->
-          <div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+          <!-- FILTROS Y BARRA DE BÚSQUEDA (SE RENDERIZAN UNA SOLA VEZ) -->
+          <div style="display: flex; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; align-items: center;">
             <div style="flex: 1; min-width: 240px;">
-              <label style="font-size: 0.8rem; font-weight: 800; color: var(--accent-gold); display: block; margin-bottom: 4px;">🔍 Buscar Club por Nombre:</label>
-              <input type="text" id="inputSearchFavorite" class="input-text" value="${favoriteSearchQuery}" placeholder="Ej: Alianza Lima, Universitario, Real Madrid, Barcelona, Boca..." style="width: 100%; padding: 10px 14px; border-radius: 10px; background: #0b111e; border: 1px solid var(--border-color); color: #fff; font-size: 0.9rem;" />
+              <label style="font-size: 0.8rem; font-weight: 800; color: #f8fafc; display: block; margin-bottom: 4px;">🔍 Buscar Club por Nombre:</label>
+              <input type="text" id="inputSearchFavorite" class="input-text" value="${favoriteSearchQuery}" placeholder="Escribe el nombre de tu club... (ej. Alianza Lima, Barcelona, Real Madrid, Boca...)" style="width: 100%; padding: 10px 14px; border-radius: 8px; background: #080d16; border: 1px solid rgba(255,255,255,0.12); color: #fff; font-size: 0.88rem;" />
             </div>
 
             <div style="flex: 1; min-width: 240px;">
-              <label style="font-size: 0.8rem; font-weight: 800; color: var(--accent-cyan); display: block; margin-bottom: 4px;">🏆 Filtrar por Liga / Competición:</label>
-              <select id="selectLeagueFavorite" class="input-select" style="width: 100%; padding: 10px 14px; border-radius: 10px; background: #0b111e; border: 1px solid var(--border-color); color: #fff; font-size: 0.9rem;">
+              <label style="font-size: 0.8rem; font-weight: 800; color: #f8fafc; display: block; margin-bottom: 4px;">🏆 Filtrar por Liga / Competición:</label>
+              <select id="selectLeagueFavorite" class="input-select" style="width: 100%; padding: 10px 14px; border-radius: 8px; background: #080d16; border: 1px solid rgba(255,255,255,0.12); color: #fff; font-size: 0.88rem;">
                 <option value="ALL" ${favoriteFilterLeagueId === 'ALL' ? 'selected' : ''}>🌐 TODAS LAS LIGAS (${allEnrichedTeams.length} Clubes)</option>
                 ${leagues.map(l => `
                   <option value="${l.id}" ${favoriteFilterLeagueId === l.id ? 'selected' : ''}>
@@ -634,73 +655,100 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
             </div>
           </div>
 
-          <div style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 16px;">
-            Mostrando <strong>${filteredTeams.length}</strong> club(es) disponible(s). Haz clic en <strong>"Elegir Club"</strong> para comenzar tu trayectoria:
-          </div>
+          <div id="favCounterText" style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 14px;"></div>
 
-          <!-- REJILLA DE CLUBES PARA SELECCIÓN LIBRE -->
-          <div style="max-height: 480px; overflow-y: auto; padding-right: 6px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;">
-            ${filteredTeams.length === 0 ? `
-              <div style="grid-column: span 3; padding: 40px; text-align: center; color: #94a3b8;">
-                ❌ No se encontraron clubes que coincidan con "${favoriteSearchQuery}". Intenta buscar otro nombre o cambiar de liga.
-              </div>
-            ` : filteredTeams.map(t => `
-              <div class="team-fav-card" style="background: #0b111e; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
-                <div>
-                  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-                    ${renderTeamBadgeSVG(t, 42)}
-                    <div style="flex: 1; min-width: 0;">
-                      <h4 style="margin: 0; font-size: 1.05rem; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.name}</h4>
-                      <span style="font-size: 0.76rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;">
-                        ${renderCountryFlagSVG(t.country, 14)} ${t.leagueName}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style="display: flex; justify-content: space-between; background: #070b13; padding: 8px 12px; border-radius: 8px; font-size: 0.78rem; margin-bottom: 12px;">
-                    <span>📊 Media: <strong style="color: var(--accent-cyan); font-weight: 800;">OVR ${t.overall}</strong></span>
-                    <span>💰 Presupuesto: <strong style="color: var(--accent-gold); font-weight: 800;">€${(t.budget / 1000000).toFixed(1)}M</strong></span>
-                  </div>
-                </div>
-
-                <button class="btn-primary btn-sign-club" data-id="${t.id}" style="width: 100%; padding: 10px; font-weight: 900; font-size: 0.85rem; background: linear-gradient(135deg, var(--accent-gold) 0%, #e5a93c 100%); color: #000; border-radius: 10px; border: none; cursor: pointer;">
-                  ✍️ ELEGIR ${t.short || t.name} ➔
-                </button>
-              </div>
-            `).join('')}
-          </div>
+          <!-- CONTENEDOR EXCLUSIVO PARA LA REJILLA DE CLUBES (PERMITE ESCRIBIR CONTINUAMENTE EN EL INPUT) -->
+          <div id="favTeamsGrid" style="max-height: 440px; overflow-y: auto; padding-right: 4px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;"></div>
 
         </div>
       `;
 
-      // Event listeners para la pestaña de club favorito
+      /**
+       * Actualiza únicamente la rejilla de tarjetas sin tocar ni destruir el elemento <input>
+       */
+      const updateFavGridOnly = () => {
+        const gridEl = document.getElementById('favTeamsGrid');
+        const counterEl = document.getElementById('favCounterText');
+        if (!gridEl) return;
+
+        let filteredTeams = allEnrichedTeams;
+        if (favoriteFilterLeagueId !== 'ALL') {
+          filteredTeams = filteredTeams.filter(t => t.leagueId === favoriteFilterLeagueId);
+        }
+        if (favoriteSearchQuery.trim()) {
+          const q = favoriteSearchQuery.toLowerCase().trim();
+          filteredTeams = filteredTeams.filter(t => 
+            t.name.toLowerCase().includes(q) || 
+            t.country.toLowerCase().includes(q) || 
+            t.leagueName.toLowerCase().includes(q)
+          );
+        }
+
+        if (counterEl) {
+          counterEl.innerHTML = `Mostrando <strong>${filteredTeams.length}</strong> club(es) disponible(s). Haz clic en <strong>"Elegir Club"</strong> para comenzar:`;
+        }
+
+        gridEl.innerHTML = filteredTeams.length === 0 ? `
+          <div style="grid-column: span 3; padding: 40px; text-align: center; color: #94a3b8;">
+            ❌ No se encontraron clubes que coincidan con "${favoriteSearchQuery}". Intenta con otro nombre o cambiando de liga.
+          </div>
+        ` : filteredTeams.map(t => `
+          <div class="team-fav-card" style="background: #080d16; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                ${renderTeamBadgeSVG(t, 40)}
+                <div style="flex: 1; min-width: 0;">
+                  <h4 style="margin: 0; font-size: 1rem; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.name}</h4>
+                  <span style="font-size: 0.74rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;">
+                    ${renderCountryFlagSVG(t.country, 14)} ${t.leagueName}
+                  </span>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; background: #0e1626; padding: 7px 10px; border-radius: 6px; font-size: 0.76rem; margin-bottom: 10px;">
+                <span>📊 Media: <strong style="color: #38bdf8; font-weight: 800;">OVR ${t.overall}</strong></span>
+                <span>💰 Presupuesto: <strong style="color: #f59e0b; font-weight: 800;">€${(t.budget / 1000000).toFixed(1)}M</strong></span>
+              </div>
+            </div>
+
+            <button class="btn-primary btn-sign-club" data-id="${t.id}" style="width: 100%; padding: 9px; font-weight: 900; font-size: 0.84rem; background: #10b981; color: #000; border-radius: 8px; border: none; cursor: pointer;">
+              ✍️ ELEGIR ${t.short || t.name} ➔
+            </button>
+          </div>
+        `).join('');
+
+        // Re-vincular clics en los botones de la rejilla actualizada
+        gridEl.querySelectorAll('.btn-sign-club').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            selectedTeamIdForStart = (e.currentTarget as HTMLElement).dataset.id!;
+            sfx.playClick();
+            currentStep = 4;
+            renderStep();
+          });
+        });
+      };
+
+      // Inicializar rejilla de clubes por primera vez
+      updateFavGridOnly();
+
+      // Event Listeners: el input escucha y actualiza SOLO la rejilla, sin re-crear el input
       const searchInput = document.getElementById('inputSearchFavorite') as HTMLInputElement | null;
       const leagueSelect = document.getElementById('selectLeagueFavorite') as HTMLSelectElement | null;
 
       if (searchInput) {
         searchInput.addEventListener('input', (e) => {
           favoriteSearchQuery = (e.target as HTMLInputElement).value;
-          renderStep3Content();
+          updateFavGridOnly();
         });
       }
 
       if (leagueSelect) {
         leagueSelect.addEventListener('change', (e) => {
           favoriteFilterLeagueId = (e.target as HTMLSelectElement).value;
-          renderStep3Content();
+          updateFavGridOnly();
         });
       }
     }
-
-    // Registrar evento clic para el botón de firmas
-    document.querySelectorAll('.btn-sign-club').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        selectedTeamIdForStart = (e.currentTarget as HTMLElement).dataset.id!;
-        sfx.playClick();
-        currentStep = 4;
-        renderStep();
-      });
-    });
   };
 
   renderStep();
