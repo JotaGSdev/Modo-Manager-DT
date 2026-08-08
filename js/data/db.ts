@@ -19,6 +19,7 @@
  */
 
 import { generateTeamPlayers, calculatePositionOvr, calculatePlayerMarketValue, calculatePlayerSalary, generateRegenPlayer, generateYouthProspect, loadRealPlayers, getRealPlayers, assignPersonalityRole, ensureSquadRoles } from './teamData.js';
+import type { SquadRolePromotion } from './teamData.js';
 import { TransferEngine } from '../engine/transfers.js';
 import { ContractEngine } from '../engine/contracts.js';
 import { ManagerMarketEngine } from '../engine/managerMarketEngine.js';
@@ -620,12 +621,63 @@ class DatabaseManager {
             roster.push(generateYouthProspect(tId, i));
           }
           // v4.0 — Si el Capitán/Mentor se retiró, promocionar al siguiente veterano apto
-          ensureSquadRoles(roster);
+          const promotion: SquadRolePromotion = ensureSquadRoles(roster);
 
           if (tId === userTeamId) {
+            // ── Evento de herencia de liderazgo (solo para el equipo del usuario) ──
+            if (promotion.newCaptain || promotion.newMentor) {
+              const reactions = [
+                'El vestuario aplaudió de pie cuando escuchó la noticia.',
+                'Los jugadores se reunieron en el túnel y le pusieron el brazalete entre todos.',
+                'El entrenador lo llamó aparte antes del entrenamiento para comunicárselo personalmente.',
+                'La plantilla lo rodeó en el vestuario y le dedicó un largo aplauso.',
+                'En las redes del club la noticia se volvió viral en minutos.',
+              ];
+              const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+
+              const captainLine = promotion.newCaptain
+                ? `👑 <strong>${promotion.newCaptain.name}</strong> (${promotion.newCaptain.pos}, ${promotion.newCaptain.overall} OVR) heredó el brazalete de Capitán.`
+                : '';
+              const mentorLine = promotion.newMentor
+                ? `🎓 <strong>${promotion.newMentor.name}</strong> (${promotion.newMentor.pos}, ${promotion.newMentor.overall} OVR) asumió el rol de Mentor del vestuario.`
+                : '';
+
+              this.gameState!.eventsLog.unshift({
+                date: `Temporada ${this.gameState!.season + 1}`,
+                text: [
+                  `🔄 CAMBIO DE LIDERAZGO — Temporada ${this.gameState!.season + 1}:`,
+                  captainLine,
+                  mentorLine,
+                  reaction,
+                ].filter(Boolean).join(' '),
+              });
+
+              // Noticia en The Feed (inline para evitar dependencia circular con eventsEngine)
+              if (!Array.isArray(this.gameState!.feedItems)) this.gameState!.feedItems = [];
+              const feedText = promotion.newCaptain
+                ? `👑 ${promotion.newCaptain.name} porta ahora el brazalete de Capitán. ${reaction}`
+                : `🎓 ${promotion.newMentor!.name} asume como nuevo Mentor del vestuario. ${reaction}`;
+              this.gameState!.feedItems.unshift({
+                id: `feed_cap_${Date.now()}`,
+                week: this.gameState!.week,
+                season: this.gameState!.season,
+                type: 'CAMBIO_DT' as const,
+                text: feedText,
+                icon: promotion.newCaptain ? '👑' : '🎓',
+                isRead: false,
+                linkedPlayerId: promotion.newCaptain?.id ?? promotion.newMentor?.id ?? null,
+              });
+              if (this.gameState!.feedItems.length > 50) this.gameState!.feedItems.pop();
+
+              // Reacción del vestuario: +5% moral a toda la plantilla
+              roster.forEach(p => {
+                p.morale = Math.min(100, (p.morale ?? 75) + 5);
+              });
+            }
+
             this.gameState!.eventsLog.unshift({
               date: `Temporada ${this.gameState!.season + 1}`,
-              text: `👋 JUBILACIONES: ${retiring.map(p => p.name).join(', ')} cuelgan los botines. ${newTeamLegends.length > 0 ? `Nacen ${newTeamLegends.length} regen(s) del vivero de leyendas.` : 'La cantera repone efectivos.'}`
+              text: `👋 JUBILACIONES: ${retiring.map(p => p.name).join(', ')} cuelgan los botines. ${newTeamLegends.length > 0 ? `Nacen ${newTeamLegends.length} regen(s) del vivero de leyendas.` : 'La cantera repone efectivos.'}`,
             });
           }
         }

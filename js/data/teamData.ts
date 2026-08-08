@@ -472,7 +472,12 @@ function buildProceduralPlayer(team: Team, pos: Position, index: number): Player
  *     candidato que ya es Capitán se respeta (un jugador no puede ser ambos).
  * Nunca duplica roles en un mismo jugador.
  */
-export function ensureSquadRoles(squad: Player[]): void {
+export interface SquadRolePromotion {
+  newCaptain: Player | null;
+  newMentor:  Player | null;
+}
+
+export function ensureSquadRoles(squad: Player[]): SquadRolePromotion {
   const captainEligible = (p: Player): boolean =>
     (p.age >= 25 && p.overall >= 80) || (p.age >= 30 && p.overall >= 74);
   const mentorEligible = (p: Player): boolean =>
@@ -483,19 +488,24 @@ export function ensureSquadRoles(squad: Player[]): void {
   const capPool = squad.filter(captainEligible).sort(byOvrAge);
   const menPool = squad.filter(mentorEligible).sort(byOvrAge);
   const hasCaptain = squad.some(p => p.personalityRole === 'captain');
-  const hasMentor = squad.some(p => p.personalityRole === 'mentor');
+  const hasMentor  = squad.some(p => p.personalityRole === 'mentor');
+
+  let newCaptain: Player | null = null;
+  let newMentor:  Player | null = null;
 
   if (!hasCaptain && capPool.length > 0) {
     const c = capPool.find(p => p.personalityRole !== 'mentor') ?? capPool[0];
-    if (c) c.personalityRole = 'captain';
+    if (c) { c.personalityRole = 'captain'; newCaptain = c; }
   }
   if (!hasMentor && menPool.length > 0) {
     // Preferir un candidato sin rol de capitán; solo demote al Capitán cuando
     // haya ≥2 candidatos, para que la plantilla conserve a su Capitán.
     const m = menPool.find(p => p.personalityRole !== 'captain')
       ?? (menPool.length >= 2 ? menPool[0] : null);
-    if (m) m.personalityRole = 'mentor';
+    if (m) { m.personalityRole = 'mentor'; newMentor = m; }
   }
+
+  return { newCaptain, newMentor };
 }
 
 /**
