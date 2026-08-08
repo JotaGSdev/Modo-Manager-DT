@@ -12,7 +12,8 @@ const COUNTRY_FLAG_CODES: Record<string, string> = {
   'Grecia': 'gr', 'Suiza': 'ch', 'Austria': 'at', 'Dinamarca': 'dk', 'Noruega': 'no',
   'Suecia': 'se', 'Polonia': 'pl', 'República Checa': 'cz', 'Croacia': 'hr', 'México': 'mx',
   'Estados Unidos': 'us', 'Arabia Saudita': 'sa', 'Japón': 'jp', 'Emiratos Árabes': 'ae',
-  'Australia': 'au', 'Marruecos': 'ma', 'Egipto': 'eg'
+  'Australia': 'au', 'Marruecos': 'ma', 'Egipto': 'eg',
+  'Canadá': 'ca', 'Costa Rica': 'cr', 'Honduras': 'hn', 'Guatemala': 'gt'
 };
 
 const TEAM_API_FOOTBALL_IDS: Record<string, number> = {
@@ -34,7 +35,8 @@ const COUNTRY_FLAGS_EMOJI: Record<string, string> = {
   'Grecia': '🇬🇷', 'Suiza': '🇨🇭', 'Austria': '🇦🇹', 'Dinamarca': '🇩🇰', 'Noruega': '🇳🇴',
   'Suecia': '🇸🇪', 'Polonia': '🇵🇱', 'República Checa': '🇨🇿', 'Croacia': '🇭🇷', 'México': '🇲🇽',
   'Estados Unidos': '🇺🇸', 'Arabia Saudita': '🇸🇦', 'Japón': '🇯🇵', 'Emiratos Árabes': '🇦🇪',
-  'Australia': '🇦🇺', 'Marruecos': '🇲🇦', 'Egipto': '🇪🇬'
+  'Australia': '🇦🇺', 'Marruecos': '🇲🇦', 'Egipto': '🇪🇬',
+  'Canadá': '🇨🇦', 'Costa Rica': '🇨🇷', 'Honduras': '🇭🇳', 'Guatemala': '🇬🇹'
 };
 
 export function getCountryFlag(countryName: string): string {

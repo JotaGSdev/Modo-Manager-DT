@@ -155,6 +155,42 @@ body {
   width: 100%;
 }
 
+/* Móvil / ventanas estrechas (≤640px): la sidebar lateral fija de 240px
+ * devora el ancho (deja ~120px de contenido a 360px) y todo lo que se
+ * renderiza detrás de los modales desborda. Se convierte en una barra
+ * superior horizontal con scroll propio, y el contenido pasa a ancho completo. */
+@media (max-width: 640px) {
+  .main-wrapper {
+    flex-direction: column;
+  }
+  .sidebar-nav {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    min-height: 0;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .sidebar-nav::-webkit-scrollbar {
+    height: 4px;
+  }
+  .nav-item {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .main-content {
+    padding: 12px;
+  }
+  .top-navbar {
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
 /* Form Inputs & Select Elements */
 .input-text, .input-select {
   background-color: #141d2e !important;

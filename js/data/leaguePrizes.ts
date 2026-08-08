@@ -97,3 +97,35 @@ export function getLeaguePrizeByRank(leagueId: string | undefined, rank: number)
 export function getNationalCupRoundPrize(leagueId: string | undefined, roundIndex: number): number {
   return Math.round(getLeagueChampionPrize(leagueId) * 0.32 * roundIndex);
 }
+
+/** Información de la copa continental por región (coincide con CompetitionsEngine). */
+export interface ContinentalCupInfo {
+  name: string;
+  /** Garantizado por jugar la Fase de Grupos (se paga una vez, gane o pierda). */
+  groupEntryPrize: number;
+  /** Por cada victoria en la Fase de Grupos. */
+  groupWinPrize: number;
+  /** Por cada victoria en Cuartos / Semifinal. */
+  knockoutWinPrize: number;
+  /** Por conquistar el título en la gran final. */
+  finalPrize: number;
+}
+
+/**
+ * Copa continental según la región del club, con el premio pagado POR ETAPAS
+ * (v3.12) como en la realidad: el gran pozo sudamericano solo por jugar la
+ * Fase de Grupos asegura ~$3M, cada victoria de grupo paga ~$340K y el
+ * campeón embolsa $25M (valores reales CONMEBOL 2026 convertidos a EUR ≈0.92;
+ * la UCL y la CONCACAF mantienen su jerarquía propia).
+ */
+export function getContinentalCupInfo(region?: string): ContinentalCupInfo {
+  if (region === 'Europa') {
+    return { name: 'UEFA Champions League', groupEntryPrize: 4_000_000, groupWinPrize: 3_500_000, knockoutWinPrize: 5_000_000, finalPrize: 35_000_000 };
+  }
+  if (region === 'Norteamérica') {
+    return { name: 'Copa de Campeones de la CONCACAF', groupEntryPrize: 2_000_000, groupWinPrize: 1_800_000, knockoutWinPrize: 2_500_000, finalPrize: 15_000_000 };
+  }
+  // Copa CONMEBOL Libertadores: $3M por jugar grupos + $340K por victoria +
+  // $25M por el título (la gran final). Los cuartos/semis pagan un bono menor.
+  return { name: 'Copa CONMEBOL Libertadores', groupEntryPrize: 2_800_000, groupWinPrize: 310_000, knockoutWinPrize: 1_200_000, finalPrize: 25_000_000 };
+}

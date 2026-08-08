@@ -670,7 +670,21 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
       }
     }
     MatchEngine.simulateAllRivalMatches(userTeam.id, rival.id);
-    CompetitionsEngine.processCupWeek(gameState.week);
+    // v3.12 — la copa continental paga POR ETAPAS (clasificar a grupos,
+    // victorias de grupo, knockout y título); el desglose se muestra en la
+    // cinemática de fin de partido y se anuncia en The Feed.
+    const contResult = CompetitionsEngine.processCupWeek(gameState.week);
+    let contPrizeText = '';
+    if (contResult && contResult.reward > 0) {
+      const b = contResult.breakdown;
+      const parts: string[] = [];
+      const fmt = (v: number): string => v >= 1_000_000 ? `€${(v / 1_000_000).toFixed(1)}M` : `€${(v / 1_000).toFixed(0)}K`;
+      if (b.entry > 0) parts.push(`${fmt(b.entry)} por clasificar a grupos`);
+      if (b.groupWin > 0) parts.push(`${fmt(b.groupWin)} por victoria de grupo`);
+      if (b.knockoutWin > 0) parts.push(`${fmt(b.knockoutWin)} por avanzar de ronda`);
+      if (b.finalPrize > 0) parts.push(`${fmt(b.finalPrize)} por el título`);
+      contPrizeText = `${contResult.cupName} · ${parts.join(' + ')}`;
+    }
     CompetitionsEngine.processNationalCupWeek(gameState.week);
     // Sistemas semanales: drift de Team Spirit, rotación del mercado de DTs y OVR del equipo
     db.weeklyHousekeeping();
@@ -681,14 +695,14 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     db.saveGame();
     if (isFinal && engine.homeScore === engine.awayScore) {
       PenaltyEngine.startPenaltyShootout(userTeam, rival, (userWon) => {
-        showMatchCinematicOverlay(userWon ? 1 : 0, userWon ? 0 : 1, true);
+        showMatchCinematicOverlay(userWon ? 1 : 0, userWon ? 0 : 1, true, contPrizeText);
       });
       return;
     }
-    showMatchCinematicOverlay(engine.homeScore, engine.awayScore, false);
+    showMatchCinematicOverlay(engine.homeScore, engine.awayScore, false, contPrizeText);
   };
 
-  const showMatchCinematicOverlay = (userGoals: number, rivalGoals: number, wasPenalties: boolean) => {
+  const showMatchCinematicOverlay = (userGoals: number, rivalGoals: number, wasPenalties: boolean, contPrize = '') => {
     const modalEl = document.getElementById('matchCinematicModal');
     const cardEl = document.getElementById('cinematicCard');
     const titleEl = document.getElementById('cinematicTitle');
@@ -702,6 +716,9 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     const userRank = (gameState.standings || []).findIndex(s => s.teamId === userTeam.id) + 1;
     const userPts = (gameState.standings || []).find(s => s.teamId === userTeam.id)?.points || 0;
     statsEl!.innerHTML = `Posici\u00f3n: <strong>#${userRank}</strong> &middot; <strong>${userPts} pts</strong> &middot; Jornada ${gameState.week - 1}/${gameState.maxWeeks}`;
+    if (contPrize) {
+      statsEl!.innerHTML += `<div style="margin-top:8px; font-size:0.74rem; color:var(--accent-gold); font-weight:800; background:#0f172a; border:1px solid var(--border-color); border-radius:6px; padding:6px 10px;">🌎 PREMIO CONTINENTAL — ${contPrize}</div>`;
+    }
 
     // ── Resumen táctico: decisiones tomadas en cada momento de tensión ──
     const summaryList = document.getElementById('tacticalSummaryList');

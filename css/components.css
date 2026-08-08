@@ -2,7 +2,7 @@
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
   gap: 24px;
 }
 
@@ -279,6 +279,11 @@
   border: 1px solid var(--border-color);
   padding: 24px;
   border-radius: 14px;
+  box-sizing: border-box;
+  /* Ajuste web: el contenido alto hace scroll DENTRO del modal, nunca cortado */
+  max-height: min(88vh, 920px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* Barra de Probabilidad */
@@ -402,6 +407,11 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
   position: relative;
   z-index: 10002;
+  box-sizing: border-box;
+  /* Ajuste web: scroll interno si el resumen de premios desborda el viewport */
+  max-height: 88vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* 🏆 Victoria Bounce Animation */
@@ -589,4 +599,75 @@
 .btn-dismiss:hover {
   background: var(--accent-red);
   color: #ffffff;
+}
+
+/* ── Ajustes responsive de ventanas emergentes (web / pantallas pequeñas) ── */
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+  .modal-card {
+    width: 100%;
+    padding: 16px;
+    max-height: 86vh;
+  }
+  .cinematic-card {
+    width: 96%;
+    padding: 24px 14px;
+  }
+  .score-num { font-size: 2.6rem; }
+  .score-colon { font-size: 2.2rem; }
+  .cinematic-score { font-size: 2.4rem; }
+  .win .cinematic-title, .loss .cinematic-title, .draw .cinematic-title { font-size: 1.5rem; }
+  .cinematic-subtitle { font-size: 0.88rem; }
+  .commentary-log { height: 200px; }
+}
+
+/* Ventanas bajas (portrait web, landscape corto): compactar la cinemática */
+@media (max-height: 640px) {
+  .cinematic-card { padding: 18px 16px; }
+  .cinematic-score { font-size: 2.2rem; margin: 8px 0; }
+  .win .cinematic-title, .loss .cinematic-title, .draw .cinematic-title { font-size: 1.4rem; }
+  .cinematic-subtitle { margin-bottom: 10px; }
+  .modal-card { max-height: 92vh; }
+}
+
+/* Resumen táctico de la cinemática: la etiqueta de la orden (flex:1 en
+ * inline) tiene min-width:auto por defecto y no puede encogerse, así que
+ * en tarjetas estrechas desborda la fila y la tarjeta (scrollW > clientW).
+ * Se permite el wrap de filas y el encogimiento de esa etiqueta. */
+#tacticalSummaryList > div {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+#tacticalSummaryList > div > span[style*="flex:1"] {
+  min-width: 0;
+}
+
+/* ── Móvil / ventanas estrechas (≤640px) ────────────────────────────────────
+ * newCareerUI renderiza en #app (no en #mainContent), así que la red de
+ * seguridad de #mainContent no cubre sus rejillas de 3 columnas (filosofía y
+ * ofertas) ni las de 2 columnas (países, segunda fila de arquetipos): se
+ * colapsan a 1 columna para que no desborden el viewport. */
+@media (max-width: 640px) {
+  #app > div[style*="min-height: 100vh"] div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+  #app > div[style*="min-height: 100vh"] div[style*="grid-template-columns"] > * {
+    min-width: 0;
+  }
+  /* Tarjeta de partido del dashboard: la fila VS (equipo – divisa – equipo)
+   * en flex desbordaba en pantallas estrechas y se veía detrás de los
+   * modales de fin de temporada; ahora se apila en columna. */
+  .match-vs-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .card-header {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
 }

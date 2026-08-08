@@ -1,0 +1,46 @@
+name: CI — Build y Regresión E2E
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: Build + e2e + universo completo
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias (npm ci)
+        run: npm ci
+
+      - name: Instalar Chromium de Playwright (+ deps del sistema)
+        run: npx playwright install --with-deps chromium
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Test E2E estándar (arranque, 9 vistas, inspector, partido, sim 3T)
+        run: npm run test:e2e
+
+      - name: Test E2E universo completo (--full, 12 temporadas, 496 plantillas)
+        run: npm run test:e2e:full
+
+      - name: Publicar reporte de regresión
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-regresion-e2e
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 30

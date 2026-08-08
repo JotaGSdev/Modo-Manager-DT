@@ -2,23 +2,30 @@
  * ============================================================================
  * ENTRENADOR LEYENDA - VISTA DE FINANZAS DEL CLUB (financesUI.ts)
  * ============================================================================
- * Pestaña dedicada al control económico y contable del club estilo FIFA / EA FC.
- * Muestra:
- * 1. KPIs Financieros: Presupuesto de fichajes, nómina semanal, ingresos y balance proyectado.
- * 2. Desglose detallado de Ingresos (Taquilla, Premios de Liga, Ventas de jugadores).
- * 3. Desglose detallado de Gastos (Salarios acumulados, Compras de jugadores).
- * 4. Tabla completa de la nómina salarial de la plantilla.
- * 5. Historial de finanzas y rendimiento por temporada del DT.
+ * Pestaña dedicada al control económico y contable del club estilo FIFA / EA FC,
+ * con DOS PANTALLAS conmutables desde la cabecera (v3.13):
+ *
+ *   💶 Panel Financiero — el control contable:
+ *     1. KPIs Financieros: presupuesto de fichajes, nómina semanal, ingresos y balance proyectado.
+ *     2. Desglose de Ingresos (Taquilla, Premios de Liga, Ventas) y Gastos (Salarios, Compras).
+ *     3. Tabla completa de la nómina salarial de la plantilla.
+ *     4. Historial de finanzas y rendimiento por temporada del DT.
+ *
+ *   🏆 Ingresos de Mi Liga — los premios según el país del club:
+ *     1. Tabla de premios de liga por posición (campeón, zona alta, resto).
+ *     2. Premios de la copa nacional por ronda.
+ *     3. El pozo de la copa continental por etapas (clasificar, victorias, título).
  * Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
  */
 
 import { db } from '../data/db.js';
-import { getLeaguePrizeByRank } from '../data/leaguePrizes.js';
+import { getLeagueChampionPrize, getLeaguePrizeByRank, getContinentalCupInfo, getNationalCupRoundPrize } from '../data/leaguePrizes.js';
+import { CompetitionsEngine } from '../engine/competitionsEngine.js';
 import { sfx } from '../../assets/audio/sfx.js';
 import type { NavigateFn } from '../types.js';
 
 /**
- * Renderiza el panel de Finanzas del Club en el contenedor especificado.
+ * Renderiza la vista de Finanzas del Club (panel contable ⇄ Ingresos de Mi Liga).
  * @param container - Elemento HTML contenedor principal
  * @param navigateTo - Función de navegación entre vistas
  */
@@ -57,32 +64,37 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
   // Estimación del premio por posición actual (v3.9: realista por liga —
   // antes era plano €10-40M para cualquier país).
   const userRank = (gameState.standings || []).findIndex(s => s.teamId === userTeam.id) + 1;
-  const estimatedPrize = getLeaguePrizeByRank(gameState.userLeagueId, userRank <= 0 ? 99 : userRank);
+  const leagueId = userTeam.leagueId || gameState.userLeagueId;
+  const estimatedPrize = getLeaguePrizeByRank(leagueId, userRank <= 0 ? 99 : userRank);
 
-  container.innerHTML = `
-    <div class="finances-layout">
-      <!-- Encabezado de Finanzas Dual (v2.0) -->
-      <div class="glass-panel mb-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-        <div>
-          <h2>💶 Panel de Finanzas & Contabilidad de ${userTeam.name}</h2>
-          <p class="text-sub">Control de ingresos, gastos salariales, presupuesto dual y auditorías contables</p>
-        </div>
-        
-        <div style="display:flex; gap:12px;">
-          <!-- CAJA 1: TRASPASOS -->
-          <div style="background: #141d2e; border: 1px solid var(--accent-green); padding: 10px 16px; border-radius: 8px; text-align: center;">
-            <span class="text-sub" style="font-size: 0.75rem; font-weight: 700;">💰 PRESUPUESTO TRASPASOS</span>
-            <h3 style="margin: 0; color: var(--accent-green);">€${(gameState.budget / 1000000).toFixed(2)}M</h3>
-          </div>
+  // ── Pantalla "Ingresos de Mi Liga" (v3.11 → v3.13): montos por posición +
+  //    copa nacional por ronda + pozo continental, según el país del club. ──
+  const userLeague = db.leagues.find(l => l.id === leagueId) || null;
+  const leagueName = userLeague?.name || 'Mi liga';
+  const leagueCountry = userLeague?.country || '';
+  const championPrize = getLeagueChampionPrize(leagueId);
+  const top4Prize = getLeaguePrizeByRank(leagueId, 2);
+  const restPrize = getLeaguePrizeByRank(leagueId, 5);
+  const contCup = getContinentalCupInfo(userTeam.region);
+  const nationalCupName = CompetitionsEngine.getNationalCupName(userTeam.country || '');
+  const fmtMoney = (v: number): string =>
+    v >= 1_000_000 ? `€${(v / 1_000_000).toFixed(1)}M` : `€${(v / 1_000).toFixed(0)}K`;
+  const rankRow = (rank: number, emoji: string, label: string, prize: number, pct: string): string =>
+    `<tr${userRank === rank ? ' style="background: rgba(245,158,11,0.10);"' : ''}>
+      <td>${emoji} ${label}</td>
+      <td><strong style="color: var(--accent-gold);">${fmtMoney(prize)}</strong></td>
+      <td style="text-align: right;">${pct}</td>
+    </tr>`;
 
-          <!-- CAJA 2: SALARIOS -->
-          <div style="background: #141d2e; border: 1px solid var(--accent-gold); padding: 10px 16px; border-radius: 8px; text-align: center;">
-            <span class="text-sub" style="font-size: 0.75rem; font-weight: 700;">📋 PRESUPUESTO SALARIAL</span>
-            <h3 style="margin: 0; color: var(--accent-gold);">€${((gameState.wageBudget || 0) / 1000).toFixed(0)}K /sem</h3>
-          </div>
-        </div>
-      </div>
+  // v3.13: conmutador de pantalla. El dataset del contenedor sobrevive al
+  // re-render, así que se recuerda la última pestaña visitada.
+  const mode: 'finanzas' | 'premios' = (container.dataset.finMode as 'finanzas' | 'premios') || 'finanzas';
+  const setMode = (m: 'finanzas' | 'premios') => {
+    container.dataset.finMode = m;
+    renderFinances(container, navigateTo);
+  };
 
+  const finanzasScreen = `
       <!-- ALERTA DE CONGELACIÓN DE FONDOS POR CRISIS / AUDITORÍA (v2.0) -->
       ${gameState.transferBudgetLocked ? `
         <div class="glass-panel mb-4" style="border: 2px solid var(--accent-red); background: rgba(239,68,68,0.1); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;">
@@ -276,11 +288,134 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
           </div>
         `}
       </div>
+  `;
+
+  // ── PANTALLA: INGRESOS DE MI LIGA (v3.13) ─────────────────────────────
+  const premiosScreen = `
+      <!-- PREMIOS DE LA LIGA POR POSICIÓN -->
+      <div class="glass-panel mb-4">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; margin-bottom: 4px;">
+          <h3 style="font-size: 1.05rem; color: var(--accent-gold); margin: 0;">🏆 Premios de la Liga — ${leagueName}</h3>
+          <span class="text-sub" style="font-size: 0.8rem;">${leagueCountry} · Temporada ${gameState.season}/${gameState.season + 1}</span>
+        </div>
+        <p class="text-sub" style="font-size: 0.8rem; margin-bottom: 12px;">Montos por posición final al cierre de temporada · tu fila actual está resaltada (#${userRank || '—'})</p>
+
+        <div class="table-responsive">
+          <table class="data-table" style="font-size: 0.88rem;">
+            <thead>
+              <tr>
+                <th>Posición</th>
+                <th>Premio</th>
+                <th style="text-align: right;">% del campeón</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rankRow(1, '🥇', 'Campeón (1º)', championPrize, '100%')}
+              ${rankRow(2, '🥈', 'Zona alta (2º-4º)', top4Prize, '50%')}
+              ${rankRow(5, '🎖️', 'Resto de la tabla (5º+)', restPrize, '20%')}
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sub" style="font-size: 0.75rem; margin-top: 10px;">
+          El premio de campeón se paga al cerrar la temporada; el 2º-4º recibe la mitad y el resto de la tabla un 20%. La brecha entre ligas es real: el Brasileirão reparte €9M por el título y la Liga 1 solo €600K.
+        </p>
+      </div>
+
+      <!-- COPA NACIONAL POR RONDA -->
+      <div class="glass-panel mb-4">
+        <h3 style="font-size: 1.05rem; color: var(--accent-gold); margin: 0 0 4px;">🥊 ${nationalCupName} — premios por ronda</h3>
+        <p class="text-sub" style="font-size: 0.8rem; margin-bottom: 12px;">Cada ronda superada paga su premio; en los países grandes la copa puede pagar más que la propia liga (la Copa do Brasil supera al Brasileirão).</p>
+
+        <div class="table-responsive">
+          <table class="data-table" style="font-size: 0.88rem;">
+            <thead>
+              <tr>
+                <th>Ronda</th>
+                <th>Premio</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${[1, 2, 3, 4].map(ri => {
+                const labels: Record<number, string> = { 1: 'Octavos de Final', 2: 'Cuartos de Final', 3: 'Semifinal', 4: 'GRAN FINAL 🏆' };
+                return `
+                  <tr>
+                    <td>${labels[ri]}</td>
+                    <td><strong style="color: var(--accent-gold);">${fmtMoney(getNationalCupRoundPrize(leagueId, ri))}</strong></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- POZO DE LA COPA CONTINENTAL -->
+      <div class="glass-panel">
+        <h3 style="font-size: 1.05rem; color: var(--accent-gold); margin: 0 0 4px;">🌐 ${contCup.name} — el pozo continental</h3>
+        <p class="text-sub" style="font-size: 0.8rem; margin-bottom: 12px;">Se paga por etapas: jugar la Fase de Grupos ya asegura dinero, cada victoria de grupo suma y el título embolsa el gran premio.</p>
+
+        <div class="table-responsive">
+          <table class="data-table" style="font-size: 0.88rem;">
+            <thead>
+              <tr>
+                <th>Etapa</th>
+                <th>Premio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>🎟️ Clasificar a la Fase de Grupos (garantizado)</td><td><strong style="color: var(--accent-green);">${fmtMoney(contCup.groupEntryPrize)}</strong></td></tr>
+              <tr><td>⚽ Victoria en Fase de Grupos (por partido)</td><td><strong style="color: var(--accent-green);">${fmtMoney(contCup.groupWinPrize)}</strong></td></tr>
+              <tr><td>🛡️ Avanzar en Cuartos / Semifinal (por victoria)</td><td><strong style="color: var(--accent-green);">${fmtMoney(contCup.knockoutWinPrize)}</strong></td></tr>
+              <tr><td>🥇 Conquistar el título en la gran final</td><td><strong style="color: var(--accent-gold);">${fmtMoney(contCup.finalPrize)}</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sub" style="font-size: 0.75rem; margin-top: 10px;">
+          Para la mayoría de clubes sudamericanos, ganar la liga local es solo el vehículo para acceder a este pozo: solo clasificar asegura €${fmtMoney(contCup.groupEntryPrize).slice(1)} y el campeón embolsa ${fmtMoney(contCup.finalPrize)}.
+        </p>
+      </div>
+  `;
+
+  container.innerHTML = `
+    <div class="finances-layout">
+      <!-- Encabezado de Finanzas Dual + Conmutador de Pantalla (v3.13) -->
+      <div class="glass-panel mb-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h2>💶 Panel de Finanzas & Contabilidad de ${userTeam.name}</h2>
+          <p class="text-sub">Control de ingresos, gastos salariales, presupuesto dual y auditorías contables</p>
+        </div>
+        
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <div style="display:flex; gap:8px;">
+            <button id="btnModeFinanzas" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800; ${mode === 'finanzas' ? 'background: var(--accent-cyan); color: #0b111e; border-color: var(--accent-cyan);' : ''}">💶 Panel Financiero</button>
+            <button id="btnModePremios" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800; ${mode === 'premios' ? 'background: var(--accent-gold); color: #0b111e; border-color: var(--accent-gold);' : ''}">🏆 Ingresos de Mi Liga</button>
+          </div>
+
+          <div style="display:flex; gap:12px;">
+            <!-- CAJA 1: TRASPASOS -->
+            <div style="background: #141d2e; border: 1px solid var(--accent-green); padding: 10px 16px; border-radius: 8px; text-align: center;">
+              <span class="text-sub" style="font-size: 0.75rem; font-weight: 700;">💰 PRESUPUESTO TRASPASOS</span>
+              <h3 style="margin: 0; color: var(--accent-green);">€${(gameState.budget / 1000000).toFixed(2)}M</h3>
+            </div>
+
+            <!-- CAJA 2: SALARIOS -->
+            <div style="background: #141d2e; border: 1px solid var(--accent-gold); padding: 10px 16px; border-radius: 8px; text-align: center;">
+              <span class="text-sub" style="font-size: 0.75rem; font-weight: 700;">📋 PRESUPUESTO SALARIAL</span>
+              <h3 style="margin: 0; color: var(--accent-gold);">€${((gameState.wageBudget || 0) / 1000).toFixed(0)}K /sem</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      ${mode === 'finanzas' ? finanzasScreen : premiosScreen}
 
     </div>
   `;
 
-  // Handlers
+  // Handlers (los botones de cada pantalla solo existen cuando está visible)
+  document.getElementById('btnModeFinanzas')?.addEventListener('click', () => setMode('finanzas'));
+  document.getElementById('btnModePremios')?.addEventListener('click', () => setMode('premios'));
+
   document.getElementById('btnUnfreezeBudget')?.addEventListener('click', () => {
     if (gameState.budget < 200000) {
       alert('Presupuesto insuficiente para liberar los fondos congelados (€200,000 requeridos).');

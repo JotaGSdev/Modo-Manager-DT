@@ -807,6 +807,9 @@ export interface ContinentalCupResult {
   userGoals: number;
   rivalGoals: number;
   reward: number;
+  /** Desglose por etapas pagadas en esta fecha (v3.12): clasificar a grupos,
+   *  victorias en fase de grupos, knockout y título. */
+  breakdown: { entry: number; groupWin: number; knockoutWin: number; finalPrize: number };
 }
 
 /** Resultado de procesar el fin de año contractual del DT (ContractEngine.processContractYearEnd) */

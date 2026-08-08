@@ -2,7 +2,7 @@
 // Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
-import { getNationalCupRoundPrize } from '../data/leaguePrizes.js';
+import { getNationalCupRoundPrize, getContinentalCupInfo } from '../data/leaguePrizes.js';
 
 import type { ContinentalCupResult, CupPhase, NationalCupResult } from '../types.js';
 
@@ -189,19 +189,8 @@ export class CompetitionsEngine {
     if (!userTeam) return null;
 
     const region = userTeam.region || 'Sudamérica';
-    let cupName = 'Copa CONMEBOL Libertadores';
-    let prizePerMatch = 2500000;
-    let finalPrize = 25000000;
-
-    if (region === 'Europa') {
-      cupName = 'UEFA Champions League';
-      prizePerMatch = 3500000;
-      finalPrize = 35000000;
-    } else if (region === 'Norteamérica') {
-      cupName = 'Copa de Campeones de la CONCACAF';
-      prizePerMatch = 1800000;
-      finalPrize = 15000000;
-    }
+    const cont = getContinentalCupInfo(region);
+    const cupName = cont.name;
 
     const roundIndex = cupWeeks.indexOf(weekNumber) + 1;
     let roundLabel = `Fase de Grupos - J${roundIndex}`;
@@ -229,7 +218,47 @@ export class CompetitionsEngine {
 
     const rivalName = `Rival Continental (OVR ${userTeam.overall + (Math.floor(Math.random() * 9) - 4)})`;
 
-    let reward = 0;
+    const isGroupStage = roundIndex <= 3;
+    const isKnockout = roundIndex === 4 || roundIndex === 5;
+    const isFinal = roundIndex === 6;
+
+    // v3.12 — PREMIO POR ETAPAS (real CONMEBOL): jugar la Fase de Grupos
+    // garantiza ~$3M (se paga en la J1, gane o pierda), cada victoria de grupo
+    // paga ~$340K, cuartos/semis un bono menor y el título embolsa $25M.
+    const breakdown = { entry: 0, groupWin: 0, knockoutWin: 0, finalPrize: 0 };
+    const fmtEuro = (v: number): string =>
+      v >= 1_000_000 ? `€${(v / 1_000_000).toFixed(1)}M` : `€${(v / 1_000).toFixed(0)}K`;
+
+    if (isGroupStage && roundIndex === 1) breakdown.entry = cont.groupEntryPrize; // garantizado
+    if (userGoals > rivalGoals && isGroupStage) breakdown.groupWin = cont.groupWinPrize;
+    if (userGoals > rivalGoals && isKnockout) breakdown.knockoutWin = cont.knockoutWinPrize;
+    if (userGoals > rivalGoals && isFinal) breakdown.finalPrize = cont.finalPrize;
+    const reward = breakdown.entry + breakdown.groupWin + breakdown.knockoutWin + breakdown.finalPrize;
+    gameState.budget += reward;
+
+    // ── Noticias en The Feed (v3.12): cada pago por etapa se anuncia ──────
+    if (reward > 0) {
+      const feedParts: string[] = [];
+      if (breakdown.entry > 0) feedParts.push(`${fmtEuro(breakdown.entry)} por jugar la Fase de Grupos`);
+      if (breakdown.groupWin > 0) feedParts.push(`${fmtEuro(breakdown.groupWin)} por la victoria de grupo`);
+      if (breakdown.knockoutWin > 0) feedParts.push(`${fmtEuro(breakdown.knockoutWin)} por avanzar de ronda`);
+      if (breakdown.finalPrize > 0) feedParts.push(`${fmtEuro(breakdown.finalPrize)} por el título`);
+      if (!Array.isArray(gameState.feedItems)) gameState.feedItems = [];
+      gameState.feedItems.unshift({
+        id: `cont_prize_${Date.now()}_${Math.floor(Math.random() * 100000)}`,
+        week: weekNumber,
+        season: gameState.season,
+        type: 'PREMIOS_CONTINENTAL',
+        text: userGoals > rivalGoals && isFinal
+          ? `🥇 ¡CAMPEÓN CONTINENTAL! ${userTeam.name} conquistó la ${cupName} (+${fmtEuro(reward)}) y embolsa ${fmtEuro(cont.finalPrize)} por el título.`
+          : `🌎 ${cupName} (${roundLabel}): ${userTeam.name} recibe ${feedParts.join(' + ')} (+${fmtEuro(reward)}).`,
+        icon: userGoals > rivalGoals && isFinal ? '🥇' : '🌎',
+        isRead: false,
+        linkedPlayerId: null
+      });
+      if (gameState.feedItems.length > 50) gameState.feedItems = gameState.feedItems.slice(0, 50);
+    }
+
     let matchText = '';
 
     const currentSlot: CupPhase = gameState.continentalCupProgress!.find(p => p.phaseIndex === roundIndex) || {
@@ -247,15 +276,10 @@ export class CompetitionsEngine {
     currentSlot.score = `${userGoals} - ${rivalGoals}`;
 
     if (userGoals > rivalGoals) {
-      reward = prizePerMatch;
-      if (roundIndex === 6) reward += finalPrize;
-      gameState.budget += reward;
-
-      currentSlot.status = (roundIndex === 6) ? 'CAMPEÓN' : 'CLASIFICADO';
-
-      matchText = `🏆 ${cupName} (${roundLabel}): ¡VICTORIA! ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName} (+€${(reward / 1000000).toFixed(1)}M)`;
-      if (roundIndex === 6) {
-        matchText = `🥇 ¡CAMPEÓN CONTINENTAL! ${userTeam.name} conquistó la ${cupName} (+€${(reward / 1000000).toFixed(1)}M)`;
+      currentSlot.status = isFinal ? 'CAMPEÓN' : 'CLASIFICADO';
+      matchText = `🏆 ${cupName} (${roundLabel}): ¡VICTORIA! ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName}${reward > 0 ? ` (+${fmtEuro(reward)})` : ''}`;
+      if (isFinal) {
+        matchText = `🥇 ¡CAMPEÓN CONTINENTAL! ${userTeam.name} conquistó la ${cupName} (+${fmtEuro(reward)})`;
         gameState.trophies = gameState.trophies || [];
         gameState.trophies.push({
           title: `${cupName} - Campeón`,
@@ -263,8 +287,9 @@ export class CompetitionsEngine {
         });
       }
     } else {
-      currentSlot.status = (roundIndex <= 3) ? 'DERROTA' : 'ELIMINADO';
-      matchText = `🏆 ${cupName} (${roundLabel}): ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName}`;
+      currentSlot.status = isGroupStage ? 'DERROTA' : 'ELIMINADO';
+      // Aun perdiendo la J1, clasificar a la Fase de Grupos ya aseguró premio.
+      matchText = `🏆 ${cupName} (${roundLabel}): ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName}${breakdown.entry > 0 ? ` (+${fmtEuro(breakdown.entry)} por jugar la Fase de Grupos)` : ''}`;
     }
 
     gameState.eventsLog.unshift({
@@ -273,6 +298,6 @@ export class CompetitionsEngine {
     });
 
     db.saveGame();
-    return { cupName, roundLabel, userGoals, rivalGoals, reward };
+    return { cupName, roundLabel, userGoals, rivalGoals, reward, breakdown };
   }
 }
