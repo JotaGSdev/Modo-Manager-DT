@@ -18,7 +18,7 @@
  * js/types.ts; las migraciones de saves antiguos quedan validadas por tipos.
  */
 
-import { generateTeamPlayers, calculatePositionOvr, calculatePlayerMarketValue, calculatePlayerSalary, generateRegenPlayer, generateYouthProspect, loadRealPlayers, getRealPlayers } from './teamData.js';
+import { generateTeamPlayers, calculatePositionOvr, calculatePlayerMarketValue, calculatePlayerSalary, generateRegenPlayer, generateYouthProspect, loadRealPlayers, getRealPlayers, assignPersonalityRole, ensureSquadRoles } from './teamData.js';
 import { TransferEngine } from '../engine/transfers.js';
 import { ContractEngine } from '../engine/contracts.js';
 import { ManagerMarketEngine } from '../engine/managerMarketEngine.js';
@@ -619,6 +619,8 @@ class DatabaseManager {
           for (let i = newTeamLegends.length; i < retiring.length; i++) {
             roster.push(generateYouthProspect(tId, i));
           }
+          // v4.0 — Si el Capitán/Mentor se retiró, promocionar al siguiente veterano apto
+          ensureSquadRoles(roster);
 
           if (tId === userTeamId) {
             this.gameState!.eventsLog.unshift({
@@ -1126,12 +1128,17 @@ class DatabaseManager {
           (this.players[tId] || []).forEach(p => {
             if (!Array.isArray(p.statsHistory)) p.statsHistory = [];
             if (!p.fcIqRole) p.fcIqRole = null;
-            if (!p.personalityRole) p.personalityRole = null;
+            // v4.0 — Rol de vestuario automático: los saves antiguos (que lo tenían
+            // null o lo dejaron sin asignar) reciben el rol según sus características,
+            // igual que los jugadores nuevos. Una vez asignado, persiste.
+            if (!p.personalityRole) p.personalityRole = assignPersonalityRole(p.age, p.overall, p.potential || p.overall);
             if (!p.tacticalAffinity) p.tacticalAffinity = { possession: 50, counterattack: 50, highPress: 50 };
             if (p.isRegen === undefined) p.isRegen = false;
             if (!p.regenOriginName) p.regenOriginName = null;
             if (p.ratingAvg === undefined) p.ratingAvg = 0;
           });
+          // v4.0 — Garantizar Capitán/Mentor por plantilla en saves existentes
+          ensureSquadRoles(this.players[tId] || []);
         }
 
         // ── Migración v3.2: Plantillas con JUGADORES REALES ───────────────────

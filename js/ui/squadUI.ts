@@ -6,9 +6,16 @@ import { openPlayerInspectorModal } from './playerInspectorUI.js';
 import { sfx } from '../../assets/audio/sfx.js';
 import { TeamSpiritEngine } from '../engine/teamSpirit.js';
 
-import type { PersonalityRole } from '../types.js';
-
 const POS_ORDER: Record<string, number> = { 'POR': 1, 'DFC': 2, 'LI': 3, 'LD': 4, 'MCD': 5, 'MC': 6, 'MCO': 7, 'EI': 8, 'ED': 9, 'DC': 10 };
+
+// v4.0 — El Rol Vestuario ya NO se asigna a mano: cada jugador nace con el suyo
+// (assignPersonalityRole en teamData). Aquí solo se muestra, como insignia.
+const PERSONALITY_ROLE_LABELS: Record<string, string> = {
+  captain: '👑 Capitán',
+  youngStar: '⭐ Joven Promesa',
+  rebel: '🔥 El Rebelde',
+  mentor: '🎓 El Mentor',
+};
 
 export function renderSquad(container: HTMLElement): void {
   const gameState = db.gameState!;
@@ -51,10 +58,11 @@ export function renderSquad(container: HTMLElement): void {
     }
 
     listEl.innerHTML = filtered.length === 0 ? `
-      <tr><td colspan="9" class="text-sub text-center py-4">No se encontraron futbolistas con los filtros seleccionados.</td></tr>
+      <tr><td colspan="10" class="text-sub text-center py-4">No se encontraron futbolistas con los filtros seleccionados.</td></tr>
     ` : filtered.map(p => {
       const roleText = p.individualInstruction || 'Estándar';
       const personalityRole = p.personalityRole || 'none';
+      const personalityLabel = personalityRole === 'none' ? '—' : (PERSONALITY_ROLE_LABELS[personalityRole] || personalityRole);
       const contractYears = p.contractYears !== undefined ? p.contractYears : 3;
       const maxWeeks = gameState.maxWeeks || 38;
       const currentWeek = gameState.week || 1;
@@ -71,15 +79,9 @@ export function renderSquad(container: HTMLElement): void {
           <td><span class="stat-ovr">${p.overall}</span></td>
           <td><span class="text-highlight">${p.potential || p.overall}</span></td>
 
-          <!-- Selector de Rol de Personalidad / Vestuario (v2.0) -->
+          <!-- Rol de Vestuario v4.0: automático según características (solo visual) -->
           <td>
-            <select class="select-personality-role" data-player-id="${p.id}" onclick="event.stopPropagation();" style="font-size:0.75rem; padding:3px 6px; border-radius:4px; background:#0f172a; color:#fff; border:1px solid var(--border-color);">
-              <option value="none" ${personalityRole === 'none' ? 'selected' : ''}>Ninguno</option>
-              <option value="captain" ${personalityRole === 'captain' ? 'selected' : ''}>👑 Capitán (-20% riesgo en crisis)</option>
-              <option value="youngStar" ${personalityRole === 'youngStar' ? 'selected' : ''}>⭐ Joven Promesa (+20% EXP c/Mentor)</option>
-              <option value="rebel" ${personalityRole === 'rebel' ? 'selected' : ''}>🔥 El Rebelde (+8 OVR si moral alta)</option>
-              <option value="mentor" ${personalityRole === 'mentor' ? 'selected' : ''}>🎓 El Mentor (Guía canteranos)</option>
-            </select>
+            <span class="role-badge" title="Rol de vestuario automático según edad/media/potencial" style="font-size:0.75rem; padding:3px 8px; border-radius:4px; background:${personalityRole === 'none' ? 'transparent' : '#1e293b'}; color:${personalityRole === 'none' ? 'var(--text-sub)' : 'var(--accent-gold)'}; border:1px solid ${personalityRole === 'none' ? 'transparent' : 'var(--border-color)'}; white-space:nowrap;">${personalityLabel}</span>
           </td>
 
           <td>€${(p.value / 1000000).toFixed(1)}M</td>
@@ -91,27 +93,6 @@ export function renderSquad(container: HTMLElement): void {
         </tr>
       `;
     }).join('');
-
-    // Change handlers para selector de roles de personalidad
-    document.querySelectorAll('.select-personality-role').forEach(sel => {
-      sel.addEventListener('change', (e) => {
-        e.stopPropagation();
-        const target = e.target as HTMLSelectElement;
-        const pid = target.dataset.playerId;
-        const pval = target.value;
-        const player = squad.find(p => p.id === pid);
-        if (player) {
-          // Si eligió capitán, remover capitán previo
-          if (pval === 'captain') {
-            squad.forEach(sp => { if (sp.personalityRole === 'captain') sp.personalityRole = 'none'; });
-          }
-          player.personalityRole = pval === 'none' ? null : (pval as PersonalityRole);
-          db.saveGame();
-          sfx.playClick();
-          renderSquad(container);
-        }
-      });
-    });
 
     // Eventos de botones de acción por jugador
     document.querySelectorAll('.btn-inspect-player').forEach(btn => {
@@ -176,7 +157,7 @@ export function renderSquad(container: HTMLElement): void {
                 <th>Edad</th>
                 <th>Media (OVR)</th>
                 <th>Potencial</th>
-                <th>Rol Vestuario (Personalidad)</th>
+                <th>Rol Vestuario (Automático)</th>
                 <th>Valor Mercado</th>
                 <th>Salario</th>
                 <th>Contrato</th>

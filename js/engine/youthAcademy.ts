@@ -2,7 +2,7 @@
 // Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
 import { db } from '../data/db.js';
-import { calculatePlayerMarketValue, calculatePlayerSalary } from '../data/teamData.js';
+import { assignPersonalityRole, calculatePlayerMarketValue, calculatePlayerSalary } from '../data/teamData.js';
 
 import type { Position, Region, YouthProspect } from '../types.js';
 
@@ -209,6 +209,10 @@ export class YouthAcademyEngine {
     youthPlayer.form = 80;
     youthPlayer.appearances = 0;
     youthPlayer.seasonGoals = 0;
+    // v4.0 — Rol de vestuario automático según las características del canterano
+    if (!youthPlayer.personalityRole) {
+      youthPlayer.personalityRole = assignPersonalityRole(youthPlayer.age, youthPlayer.overall, youthPlayer.potential || youthPlayer.overall);
+    }
     squad.push(youthPlayer);
 
     // Remover de la cantera

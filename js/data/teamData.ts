@@ -2,7 +2,27 @@
 // v2.0: Añade campos FC IQ, Team Spirit, historial estadístico y sistema de Regens.
 // Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
 
-import type { AIManager, ManagerArchetypeId, Player, Position, RetiredLegend, Team } from '../types.js';
+import type { AIManager, ManagerArchetypeId, PersonalityRole, Player, Position, RetiredLegend, Team } from '../types.js';
+
+/**
+ * v4.0 — Rol de Vestuario ALEATORIO según las características del jugador.
+ * El DT ya no asigna roles a mano (se eliminó el selector de squadUI); cada
+ * futbolista nace con el suyo según su perfil, con algo de azar para que
+ * ninguna plantilla quede uniforme:
+ *   - 👑 Capitán: veterano consolidado (≥30 y OVR alto) o peso pesado (25-29, OVR ≥ 80)
+ *   - 🎓 El Mentor: veterano (≥30, OVR medio-alto) que guía a los jóvenes
+ *   - ⭐ Joven Promesa: talento joven (≤22) con techo alto (potencial ≥ 80)
+ *   - 🔥 El Rebelde: wildcard que puede salir en cualquier perfil (~8%)
+ */
+export function assignPersonalityRole(age: number, overall: number, potential: number): PersonalityRole | null {
+  const r = Math.random();
+  if (r >= 0.92) return 'rebel'; // wildcard: aparece en cualquier perfil
+  if (age >= 30 && overall >= 82 && r < 0.5) return 'captain';
+  if (age >= 30 && overall >= 74 && r < 0.35) return 'mentor';
+  if (age <= 22 && potential >= 80 && r < 0.55) return 'youngStar';
+  if (age >= 25 && overall >= 80 && r < 0.3) return 'captain';
+  return null;
+}
 
 export function calculatePositionOvr(pos: Position, pac: number, sho: number, pas: number, dri: number, def: number, phy: number): number {
   let ovr = 70;
@@ -384,7 +404,7 @@ function buildRealPlayer(
     teamId: team.id,
     statsHistory: [],
     fcIqRole: null,
-    personalityRole: null,
+    personalityRole: assignPersonalityRole(age, ovr, pot),
     tacticalAffinity: {
       possession: 50 + Math.floor((Math.random() - 0.5) * 40),
       counterattack: 50 + Math.floor((Math.random() - 0.5) * 40),
@@ -430,7 +450,7 @@ function buildProceduralPlayer(team: Team, pos: Position, index: number): Player
     teamId: team.id,
     statsHistory: [],
     fcIqRole: null,
-    personalityRole: null,
+    personalityRole: assignPersonalityRole(age, ovr, pot),
     tacticalAffinity: {
       possession: 50 + Math.floor((Math.random() - 0.5) * 40),
       counterattack: 50 + Math.floor((Math.random() - 0.5) * 40),
@@ -442,13 +462,53 @@ function buildProceduralPlayer(team: Team, pos: Position, index: number): Player
 }
 
 /**
+ * v4.0 — Garantiza cobertura de roles de vestuario por plantilla.
+ * El azar de assignPersonalityRole puede dejar una plantilla sin Capitán o
+ * sin Mentor aunque tenga veteranos aptos. Este post-proceso garantiza:
+ *   - Capitán: si existe algún candidato apto, siempre lo hay (se prefiere a
+ *     un jugador sin rol; si todos los candidatos son Mentores, el mejor
+ *     asciende — la plantilla conserva al menos un Mentor).
+ *   - Mentor: si hay ≥2 candidatos aptos, siempre lo hay; con un único
+ *     candidato que ya es Capitán se respeta (un jugador no puede ser ambos).
+ * Nunca duplica roles en un mismo jugador.
+ */
+export function ensureSquadRoles(squad: Player[]): void {
+  const captainEligible = (p: Player): boolean =>
+    (p.age >= 25 && p.overall >= 80) || (p.age >= 30 && p.overall >= 74);
+  const mentorEligible = (p: Player): boolean =>
+    p.age >= 30 && p.overall >= 74;
+  const byOvrAge = (a: Player, b: Player): number =>
+    (b.overall - a.overall) || (b.age - a.age);
+
+  const capPool = squad.filter(captainEligible).sort(byOvrAge);
+  const menPool = squad.filter(mentorEligible).sort(byOvrAge);
+  const hasCaptain = squad.some(p => p.personalityRole === 'captain');
+  const hasMentor = squad.some(p => p.personalityRole === 'mentor');
+
+  if (!hasCaptain && capPool.length > 0) {
+    const c = capPool.find(p => p.personalityRole !== 'mentor') ?? capPool[0];
+    if (c) c.personalityRole = 'captain';
+  }
+  if (!hasMentor && menPool.length > 0) {
+    // Preferir un candidato sin rol de capitán; solo demote al Capitán cuando
+    // haya ≥2 candidatos, para que la plantilla conserve a su Capitán.
+    const m = menPool.find(p => p.personalityRole !== 'captain')
+      ?? (menPool.length >= 2 ? menPool[0] : null);
+    if (m) m.personalityRole = 'mentor';
+  }
+}
+
+/**
  * Genera la plantilla de un equipo (22 jugadores): usa la plantilla REAL
  * extraída de API-Football cuando existe (con estrellas artesanales), y
  * cae al generador procedural (estrellas + aleatorios) en el resto.
  */
 export function generateTeamPlayers(team: Team): Player[] {
   const realSquad = buildSquadFromRealPlayers(team);
-  if (realSquad) return realSquad;
+  if (realSquad) {
+    ensureSquadRoles(realSquad);
+    return realSquad;
+  }
 
   const players: Player[] = [];
 
@@ -482,7 +542,7 @@ export function generateTeamPlayers(team: Team): Player[] {
       teamId: team.id,
       statsHistory: [],
       fcIqRole: null,
-      personalityRole: null,
+      personalityRole: assignPersonalityRole(star.age, ovr, star.pot),
       tacticalAffinity: {
         possession: 50 + Math.floor((Math.random() - 0.5) * 40),
         counterattack: 50 + Math.floor((Math.random() - 0.5) * 40),
@@ -498,6 +558,7 @@ export function generateTeamPlayers(team: Team): Player[] {
     players.push(buildProceduralPlayer(team, POSITIONS_NEEDED[i % POSITIONS_NEEDED.length]!, i));
   }
 
+  ensureSquadRoles(players);
   return players;
 }
 
@@ -597,7 +658,7 @@ function generateFromSeed(teamId: string, seed: { pos: Position; baseOvr: number
     teamId,
     statsHistory: [],
     fcIqRole: null,
-    personalityRole: null,
+    personalityRole: assignPersonalityRole(age, ovr, seed.potential),
     tacticalAffinity: {
       possession: 50 + Math.floor((Math.random() - 0.5) * 40),
       counterattack: 50 + Math.floor((Math.random() - 0.5) * 40),
