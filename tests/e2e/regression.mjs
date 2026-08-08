@@ -445,8 +445,12 @@ async function run() {
     await page.waitForTimeout(200);
     await page.screenshot({ path: path.join(SHOT_DIR, 'match.png') });
     report.interactions.match.shot = 'match.png';
-    // Recargar para detener el temporizador del partido antes de la simulación
+    // Recargar para detener el temporizador del partido antes de la simulación.
+    // FIX: esperar también el layout principal (no solo el módulo db importable):
+    // app.init() carga el save de forma asíncrona y en discos lentos (CI/clon
+    // limpio) la simulación podía leer db.gameState null → TypeError.
     await page.reload({ waitUntil: 'load' });
+    await page.waitForFunction(() => document.body.innerText.includes('ENTRENADOR LEYENDA'), null, { timeout: 15000 });
     await waitForDb(page);
 
     // ── 7) SIMULACIÓN ESTACIONAL (3 temporadas, flujo real) ────────────────
