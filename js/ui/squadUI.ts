@@ -68,8 +68,15 @@ export function renderSquad(container: HTMLElement): void {
       const currentWeek = gameState.week || 1;
       const monthsLeft = Math.max(1, (contractYears * 12) - Math.floor((currentWeek / maxWeeks) * 12));
 
+      // Resaltar filas de Capitán y Mentor con borde izquierdo de color
+      const leaderBorderStyle = p.personalityRole === 'captain'
+        ? 'border-left: 3px solid var(--accent-gold); background: rgba(250,189,0,0.04);'
+        : p.personalityRole === 'mentor'
+        ? 'border-left: 3px solid #94a3b8; background: rgba(148,163,184,0.04);'
+        : '';
+
       return `
-        <tr class="player-squad-row" data-id="${p.id}" style="cursor: pointer;">
+        <tr class="player-squad-row" data-id="${p.id}" style="cursor: pointer; ${leaderBorderStyle}">
           <td><span class="pos-tag pos-${p.pos}">${p.pos}</span></td>
           <td>
             <strong>${p.name} ${xiIds.has(p.id) ? '<span class="xi-badge starter">XI</span>' : '<span class="xi-badge bench">SUP</span>'}</strong><br>
@@ -146,6 +153,86 @@ export function renderSquad(container: HTMLElement): void {
         <button class="btn-secondary btn-filter-pos" data-pos="EXPIRING" style="color: ${expiringCount > 0 ? 'var(--accent-red)' : 'var(--accent-gold)'}; font-weight: 800; border: 1px solid ${expiringCount > 0 ? 'var(--accent-red)' : 'var(--accent-gold)'};">⚠️ CONTRATOS POR VENCER (${expiringCount})</button>
       </div>
 
+      <!-- ════ BANNER DE LIDERAZGO DEL VESTUARIO ════ -->
+      ${(() => {
+        const captain = squad.find(p => p.personalityRole === 'captain');
+        const mentor  = squad.find(p => p.personalityRole === 'mentor');
+
+        const leaderCard = (
+          player: typeof captain,
+          icon: string,
+          label: string,
+          borderColor: string,
+          badgeBg: string
+        ) => {
+          if (!player) return `
+            <div style="flex:1; min-width:240px; background:rgba(255,255,255,0.03); border:1px dashed #334155;
+                         border-radius:14px; padding:18px; display:flex; align-items:center; gap:14px;
+                         opacity:0.5;">
+              <span style="font-size:2.2rem;">${icon}</span>
+              <div>
+                <div style="font-size:0.7rem; font-weight:700; color:#64748b; letter-spacing:1px;">${label}</div>
+                <div style="color:#64748b; font-size:0.85rem;">Sin designar</div>
+              </div>
+            </div>`;
+
+          const morale   = player.morale  ?? 75;
+          const moraleColor = morale >= 80 ? 'var(--accent-green)' : morale >= 60 ? 'var(--accent-gold)' : 'var(--accent-red)';
+          const contractYrs = player.contractYears ?? 3;
+
+          return `
+            <div style="flex:1; min-width:240px;
+                         background:linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(30,41,59,0.9) 100%);
+                         border:1.5px solid ${borderColor}; border-radius:14px; padding:18px 22px;
+                         display:flex; align-items:center; gap:16px;
+                         box-shadow: 0 0 18px ${borderColor}22;
+                         cursor:pointer;"
+                 data-leader-id="${player.id}">
+              <!-- Icono rol -->
+              <div style="font-size:2.6rem; line-height:1;">${icon}</div>
+
+              <!-- Info principal -->
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:0.65rem; font-weight:900; letter-spacing:1.5px;
+                             color:${borderColor}; margin-bottom:2px;">${label}</div>
+                <div style="font-size:1.05rem; font-weight:800; color:#f1f5f9;
+                             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  ${player.name}
+                </div>
+                <div style="display:flex; gap:8px; margin-top:5px; flex-wrap:wrap;">
+                  <span class="pos-tag pos-${player.pos}" style="font-size:0.65rem;">${player.pos}</span>
+                  <span class="stat-ovr" style="font-size:0.8rem; padding:2px 7px;">${player.overall}</span>
+                  <span style="font-size:0.72rem; color:#94a3b8; align-self:center;">${player.age} años</span>
+                </div>
+              </div>
+
+              <!-- Stats laterales -->
+              <div style="display:flex; flex-direction:column; gap:5px; text-align:right; min-width:80px;">
+                <div style="font-size:0.68rem; color:#94a3b8;">
+                  Moral
+                  <span style="color:${moraleColor}; font-weight:800; display:block; font-size:0.9rem;">${morale}%</span>
+                </div>
+                <div style="font-size:0.68rem; color:#94a3b8;">
+                  Contrato
+                  <span style="color:${contractYrs <= 1 ? 'var(--accent-red)' : '#f1f5f9'}; font-weight:700; display:block; font-size:0.85rem;">${contractYrs}a</span>
+                </div>
+              </div>
+
+              <!-- Badge esquina -->
+              <div style="position:absolute; top:10px; right:14px;
+                           background:${badgeBg}; color:#000; font-size:0.55rem;
+                           font-weight:900; padding:2px 7px; border-radius:4px;
+                           letter-spacing:0.8px;">${label}</div>
+            </div>`;
+        };
+
+        return `
+          <div style="position:relative; display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+            ${leaderCard(captain, '👑', 'CAPITÁN', 'var(--accent-gold)', 'var(--accent-gold)')}
+            ${leaderCard(mentor,  '🎓', 'MENTOR',  '#94a3b8',           '#94a3b8')}
+          </div>`;
+      })()}
+
       <!-- Tabla Organizada de la Plantilla -->
       <div class="glass-panel">
         <div class="table-responsive">
@@ -153,7 +240,7 @@ export function renderSquad(container: HTMLElement): void {
             <thead>
               <tr>
                 <th>POS</th>
-                <th>Futbolista & Rol Táctico</th>
+                <th>Futbolista &amp; Rol Táctico</th>
                 <th>Edad</th>
                 <th>Media (OVR)</th>
                 <th>Potencial</th>
@@ -172,6 +259,18 @@ export function renderSquad(container: HTMLElement): void {
   `;
 
   renderTable();
+
+  // Click en las tarjetas de Capitán / Mentor → abre inspector de jugador
+  document.querySelectorAll<HTMLElement>('[data-leader-id]').forEach(card => {
+    card.addEventListener('click', () => {
+      const pid = card.dataset.leaderId;
+      const player = squad.find(p => p.id === pid);
+      if (player) {
+        sfx.playClick();
+        openPlayerInspectorModal(player, () => renderSquad(container));
+      }
+    });
+  });
 
   // Eventos de Filtro por Posición
   document.querySelectorAll('.btn-filter-pos').forEach(btn => {
