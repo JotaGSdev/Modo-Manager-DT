@@ -6,6 +6,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  gists: write
+
 jobs:
   e2e:
     name: Build + e2e + universo completo
@@ -35,6 +41,94 @@ jobs:
 
       - name: Test E2E universo completo (--full, 12 temporadas, 496 plantillas)
         run: npm run test:e2e:full
+
+      - name: Comentar diferencias visuales (golden diffs) en PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const reportPath = 'test-results/report.json';
+            const screenshotsDir = 'test-results/screenshots';
+
+            if (!fs.existsSync(screenshotsDir)) {
+              console.log('No existe el directorio de capturas.');
+              return;
+            }
+
+            // Buscar imágenes de diferencias: golden-*-diff.png
+            const diffFiles = fs.readdirSync(screenshotsDir).filter(f => f.startsWith('golden-') && f.endsWith('-diff.png'));
+            if (diffFiles.length === 0) {
+              console.log('No hay imágenes de diferencias golden para comentar.');
+              return;
+            }
+
+            console.log(`Se encontraron ${diffFiles.length} imagen(es) de diferencias golden:`, diffFiles);
+
+            // Leer report.json si existe para extraer métricas exactas
+            let goldenResults = [];
+            if (fs.existsSync(reportPath)) {
+              try {
+                const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+                if (report.golden && report.golden.results) {
+                  goldenResults = report.golden.results;
+                }
+              } catch (e) {
+                console.error('Error leyendo report.json:', e);
+              }
+            }
+
+            // Subir imágenes diff a Gist para renderizar las imágenes inline en el comentario de GitHub
+            let gistRawUrls = {};
+            try {
+              const gistFiles = {};
+              for (const file of diffFiles) {
+                const filePath = path.join(screenshotsDir, file);
+                const content = fs.readFileSync(filePath, 'base64');
+                gistFiles[file] = { content };
+              }
+              const gist = await github.rest.gists.create({
+                description: `Golden Diffs - PR #${context.issue.number}`,
+                public: false,
+                files: gistFiles
+              });
+              for (const file of diffFiles) {
+                gistRawUrls[file] = `https://gist.githubusercontent.com/raw/${gist.data.id}/${file}`;
+              }
+            } catch (e) {
+              console.warn('No se pudo crear Gist para imágenes:', e.message);
+            }
+
+            // Construir comentario en Markdown
+            let body = `### ⚠️ Diferencias Visuales Detectadas en Golden Files\n\n`;
+            body += `Se detectaron **${diffFiles.length} cambio(s) de layout/diseño** en las capturas de regresión e2e:\n\n`;
+            body += `| Vista | Estado | Media Δ | % Píxeles | Imagen de Diferencias (Diff) |\n`;
+            body += `|---|---|---|---|---|\n`;
+
+            for (const file of diffFiles) {
+              const viewName = file.replace(/^golden-/, '').replace(/-diff\.png$/, '');
+              const metric = goldenResults.find(g => g.name === viewName) || {};
+              const status = metric.status || 'FAIL';
+              const mean = metric.meanDiff !== undefined ? `${metric.meanDiff}` : '—';
+              const ratio = metric.diffRatio !== undefined ? `${(metric.diffRatio * 100).toFixed(2)}%` : '—';
+              const imgUrl = gistRawUrls[file];
+              const imgMarkdown = imgUrl ? `![diff ${viewName}](${imgUrl})` : `\`${file}\``;
+
+              body += `| **${viewName}** | ${status === 'FAIL' ? '❌ FAIL' : '⚠️ WARN'} | ${mean} | ${ratio} | ${imgMarkdown} |\n`;
+            }
+
+            body += `\n> 💡 **¿El cambio de diseño fue intencional?**\n`;
+            body += `> Ejecuta localmente \`npm run test:e2e:golden\` para actualizar la línea base visual de los golden files y haz commit/push para aceptar el nuevo layout.`;
+
+            // Publicar comentario en el Pull Request
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
 
       - name: Publicar reporte de regresión
         if: always()
