@@ -705,11 +705,6 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
 
     addTimelineIcon(ev);
 
-    // Sincronizar simulación del campo 2D isométrico chibi
-    if (isoPitch) {
-      isoPitch.onMinuteTick(ev.minute, ev as MatchEvent, engine.homePossession, engine.homeScore, engine.awayScore);
-    }
-
     if (ev.type === 'halftime') {
       if (simSpeed === 0) {
         const isUserBehind = isUserHomeTeam() ? engine.awayScore > engine.homeScore : engine.homeScore > engine.awayScore;
@@ -758,6 +753,9 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
 
   const tick = () => {
     const ev = engine.tickMinute();
+    if (isoPitch) {
+      isoPitch.onMinuteTick(engine.minute, ev as MatchEvent | null, engine.homePossession, engine.homeScore, engine.awayScore);
+    }
     processEvent(ev);
     updateStats();
     if (engine.isFinished) { if (simTimer) clearInterval(simTimer); finishMatchSession(); }
