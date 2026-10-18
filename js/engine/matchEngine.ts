@@ -15,6 +15,10 @@
 
 import { ProbabilityEngine } from './probability.js';
 import { db } from '../data/db.js';
+import { getRivalryInfo } from '../data/rivalries.js';
+import { ManagerRPG } from './managerRPG.js';
+import { AchievementsEngine } from './achievementsEngine.js';
+import { PlayerFormEngine } from './playerForm.js';
 
 import type { MatchEvent, MatchResult, PlayStyle, TacticalOrder, Team, TensionOption } from '../types.js';
 
@@ -41,6 +45,12 @@ export class MatchEngine {
   pendingTensionMoment: MatchEvent | null;
   appliedTacticalOrder: TacticalOrder | null;
 
+  // v4.0: Rivalidades, Entretiempo y Seguimiento de Goles
+  isDerby: boolean;
+  derbyName: string;
+  hasHalftimeHappened: boolean;
+  goalsByPlayer: Record<string, number>;
+
   /** xG objetivo calculados en initMatch() (asignados antes de su uso) */
   targetHomeXG!: number;
   targetAwayXG!: number;
@@ -56,7 +66,26 @@ export class MatchEngine {
   constructor(homeTeam: Team, awayTeam: Team, homeRating: number, awayRating: number, userBonus = 0) {
     this.homeTeam = homeTeam;
     this.awayTeam = awayTeam;
-    this.homeRating = homeRating + userBonus;
+
+    // v4.0: Detección de Clásico / Derbi
+    const derby = getRivalryInfo(homeTeam.id, awayTeam.id);
+    this.isDerby = derby.isDerby;
+    this.derbyName = derby.name || '';
+    this.hasHalftimeHappened = false;
+    this.goalsByPlayer = {};
+
+    // v4.0: Talentos del DT
+    const isUserMatch = db.gameState?.userTeamId === homeTeam.id || db.gameState?.userTeamId === awayTeam.id;
+    let extraUserBonus = userBonus;
+
+    if (isUserMatch && this.isDerby && ManagerRPG.hasTalent('masterclass')) {
+      extraUserBonus += 2;
+    }
+    if (isUserMatch && ManagerRPG.hasTalent('tactical_analysis')) {
+      extraUserBonus += 1;
+    }
+
+    this.homeRating = homeRating + extraUserBonus;
     this.awayRating = awayRating;
 
     this.minute = 0;
@@ -99,11 +128,19 @@ export class MatchEngine {
     homePlayers.slice(0, 11).forEach(p => p.appearances = (p.appearances || 0) + 1);
     awayPlayers.slice(0, 11).forEach(p => p.appearances = (p.appearances || 0) + 1);
 
-    this.events.push({
-      minute: 0,
-      type: 'start',
-      text: `¡Pitazo inicial en el estadio ${this.homeTeam.stadium}! ${this.homeTeam.name} (${homeStyle}) vs ${this.awayTeam.name} (${awayStyle}).`
-    });
+    if (this.isDerby) {
+      this.events.push({
+        minute: 0,
+        type: 'start',
+        text: `[CLÁSICO] ¡PARTIDO DE MÁXIMA RIVALIDAD: ${this.derbyName.toUpperCase()}! ${this.homeTeam.name} (${homeStyle}) vs ${this.awayTeam.name} (${awayStyle}). ¡El estadio ruge de pasión!`
+      });
+    } else {
+      this.events.push({
+        minute: 0,
+        type: 'start',
+        text: `¡Pitazo inicial en el estadio ${this.homeTeam.stadium}! ${this.homeTeam.name} (${homeStyle}) vs ${this.awayTeam.name} (${awayStyle}).`
+      });
+    }
   }
 
   /**
@@ -118,6 +155,7 @@ export class MatchEngine {
     const scorer = pool[Math.floor(Math.random() * pool.length)];
 
     if (scorer) {
+      this.goalsByPlayer[scorer.id] = (this.goalsByPlayer[scorer.id] || 0) + 1;
       scorer.seasonGoals = (scorer.seasonGoals || 0) + 1;
 
       const gameState = db.gameState!;
@@ -148,6 +186,19 @@ export class MatchEngine {
 
     this.minute++;
 
+    // v4.0: Pausa estratégica de Entretiempo (Charla de Vestuario)
+    if (this.minute === 45 && !this.hasHalftimeHappened) {
+      this.hasHalftimeHappened = true;
+      const halftimeEvent: MatchEvent = {
+        minute: 45,
+        type: 'halftime',
+        title: 'DESCANSO — CHARLA DE ENTRETIEMPO',
+        text: `Fin de los primeros 45 minutos (${this.homeScore} - ${this.awayScore}). Es momento de dar la arenga en el vestuario.`
+      };
+      this.events.push(halftimeEvent);
+      return halftimeEvent;
+    }
+
     const homeShotProb = (this.targetHomeXG / 90) * 1.5;
     const awayShotProb = (this.targetAwayXG / 90) * 1.5;
 
@@ -165,7 +216,7 @@ export class MatchEngine {
           type: 'goal_home',
           scorerName: scorerName,
           team: this.homeTeam.name,
-          text: `⚽ ¡GOOOOOOL DE ${this.homeTeam.name.toUpperCase()}! Anota ${scorerName}. (${this.homeScore} - ${this.awayScore})`
+          text: `[GOL] ¡GOOOOOOL DE ${this.homeTeam.name.toUpperCase()}! Anota ${scorerName}. (${this.homeScore} - ${this.awayScore})`
         };
         this.events.push(event);
         return event;
@@ -173,7 +224,7 @@ export class MatchEngine {
         const event: MatchEvent = {
           minute: this.minute,
           type: 'shot_home',
-          text: `🔥 Ocasión peligrosa de ${this.homeTeam.name}. Disparo directo atajado por el arquero.`
+          text: `[PELIGRO] Ocasión peligrosa de ${this.homeTeam.name}. Disparo directo atajado por el arquero.`
         };
         this.events.push(event);
         return event;
@@ -194,7 +245,7 @@ export class MatchEngine {
           type: 'goal_away',
           scorerName: scorerName,
           team: this.awayTeam.name,
-          text: `⚽ ¡GOOOOOOL DE ${this.awayTeam.name.toUpperCase()}! Remate certero de ${scorerName}. (${this.homeScore} - ${this.awayScore})`
+          text: `[GOL] ¡GOOOOOOL DE ${this.awayTeam.name.toUpperCase()}! Remate certero de ${scorerName}. (${this.homeScore} - ${this.awayScore})`
         };
         this.events.push(event);
         return event;
@@ -202,7 +253,7 @@ export class MatchEngine {
         const event: MatchEvent = {
           minute: this.minute,
           type: 'shot_away',
-          text: `💥 Remate potente de ${this.awayTeam.name} que se estrella en el travesaño.`
+          text: `[POSTE] Remate potente de ${this.awayTeam.name} que se estrella en el travesaño.`
         };
         this.events.push(event);
         return event;
@@ -215,7 +266,7 @@ export class MatchEngine {
       const finalEvent: MatchEvent = {
         minute: 90,
         type: 'end',
-        text: `🏁 ¡FINAL DEL PARTIDO! Resultado final: ${this.homeTeam.name} ${this.homeScore} - ${this.awayScore} ${this.awayTeam.name}.`
+        text: `[FINAL] ¡FINAL DEL PARTIDO! Resultado final: ${this.homeTeam.name} ${this.homeScore} - ${this.awayScore} ${this.awayTeam.name}.`
       };
       this.events.push(finalEvent);
       return finalEvent;
@@ -255,19 +306,19 @@ export class MatchEngine {
       const options: TensionOption[] = [
         {
           id: 'PRESSING',
-          label: '⚡ Presión Asfixiante',
+          label: 'Presión Asfixiante',
           desc: '+15% Ocasiones de gol (Gasta resistencia)',
           effect: { homeShotBonus: 0.15, awayShotBonus: 0.05 }
         },
         {
           id: 'LOW_BLOCK',
-          label: '🚌 Cerrar Bloque Bajo',
+          label: 'Cerrar Bloque Bajo',
           desc: '-25% Riesgo de encajar (Cede posesión)',
           effect: { awayShotBonus: -0.25, homePossessionBonus: -8 }
         },
         {
           id: 'COUNTER',
-          label: '🎯 Contraataque Directo',
+          label: 'Contraataque Directo',
           desc: '+20% Efectividad de contragolpe si recuperas',
           effect: { homeShotBonus: 0.10, awayShotBonus: 0.00 }
         }
@@ -276,7 +327,7 @@ export class MatchEngine {
       const tensionEvent: MatchEvent = {
         minute: this.minute,
         type: 'tension_moment',
-        title: `⏱️ MOMENTO CLAVE (${this.minute}') — DECISIÓN DEL MÁNAGER`,
+        title: `[DECISIÓN DEL DT] MOMENTO CLAVE (${this.minute}')`,
         description: `${contextText} ¿Qué orden táctica das a tu plantilla? (Tienes 10 segundos)`,
         options
       };
@@ -293,24 +344,40 @@ export class MatchEngine {
    */
   applyTacticalDecision(optionId: TacticalOrder): void {
     this.appliedTacticalOrder = optionId;
+    const clutchMultiplier = ManagerRPG.hasTalent('clutch_master') ? 1.25 : 1.0;
+
     if (optionId === 'PRESSING') {
-      this.targetHomeXG += 0.45;
+      this.targetHomeXG += 0.45 * clutchMultiplier;
       this.targetAwayXG += 0.20;
     } else if (optionId === 'LOW_BLOCK') {
-      this.targetAwayXG = Math.max(0.1, this.targetAwayXG - 0.40);
+      this.targetAwayXG = Math.max(0.1, this.targetAwayXG - (0.40 * clutchMultiplier));
       this.homePossession = Math.max(30, this.homePossession - 8);
     } else if (optionId === 'COUNTER') {
-      this.targetHomeXG += 0.35;
+      this.targetHomeXG += 0.35 * clutchMultiplier;
     }
     this.pendingTensionMoment = null;
   }
 
   /**
+   * Aplica el impacto de la charla de vestuario durante el entretiempo
+   */
+  applyHalftimeTalk(choice: 'ATTACK' | 'DEFEND' | 'CONTROL'): void {
+    const talkBonus = ManagerRPG.hasTalent('legendary_talk') ? 1.5 : 1.0;
+    if (choice === 'ATTACK') {
+      this.targetHomeXG += 0.30 * talkBonus;
+      this.targetAwayXG += 0.10;
+    } else if (choice === 'DEFEND') {
+      this.targetAwayXG = Math.max(0.1, this.targetAwayXG - (0.25 * talkBonus));
+    } else if (choice === 'CONTROL') {
+      this.homePossession = Math.min(75, this.homePossession + (5 * talkBonus));
+      this.targetHomeXG += 0.15 * talkBonus;
+    }
+  }
+
+  /**
    * Orden táctica por contexto para la resolución automática de los momentos
-   * de tensión en simulación rápida (misma regla que matchUI.getAutoTacticalDefault
-   * para el modo AUTO en vivo — mantener ambas sincronizadas):
+   * de tensión en simulación rápida:
    * ganando → BLOQUE BAJO, perdiendo → PRESIÓN ALTA, empatado → CONTRAATAQUE.
-   * @returns Orden táctica según el marcador actual
    */
   private resolveContextTacticalOrder(): TacticalOrder {
     const isUserHome = db.gameState?.userTeamId === this.homeTeam.id;
@@ -322,20 +389,23 @@ export class MatchEngine {
 
   /**
    * Simula de forma instantánea todo el partido hasta el minuto 90.
-   * Los momentos de tensión se resuelven automáticamente por contexto de marcador
-   * (la decisión táctica SÍ tiene efecto en el resultado, igual que en el modo AUTO).
-   * @returns Resultado con marcador, xG, tiros y eventos
    */
   simulateFullMatch(): MatchResult {
     while (!this.isFinished) {
       const event = this.tickMinute();
       if (event && event.type === 'tension_moment') {
         this.applyTacticalDecision(this.resolveContextTacticalOrder());
+      } else if (event && event.type === 'halftime') {
+        const isUserBehind = db.gameState?.userTeamId === this.homeTeam.id
+          ? this.awayScore > this.homeScore
+          : this.homeScore > this.awayScore;
+        this.applyHalftimeTalk(isUserBehind ? 'ATTACK' : 'CONTROL');
       }
     }
 
     MatchEngine.awardInSeasonPlayerEXP(this.homeTeam.id, this.homeScore > this.awayScore);
     MatchEngine.awardInSeasonPlayerEXP(this.awayTeam.id, this.awayScore > this.homeScore);
+    MatchEngine.processPostMatchEffects(this.homeTeam.id, this.awayTeam.id, this.homeScore, this.awayScore, this.isDerby, this.goalsByPlayer);
 
     return {
       homeScore: this.homeScore,
@@ -357,10 +427,15 @@ export class MatchEngine {
     if (!squad || squad.length === 0) return;
 
     const baseExp = isWinner ? 18 : 10;
+    const hasAccelerator = ManagerRPG.hasTalent('youth_accelerator');
 
     squad.slice(0, 11).forEach(p => {
-      p.matchExp = (p.matchExp || 0) + baseExp;
-      if (p.seasonGoals && p.seasonGoals > 0) p.matchExp += 10;
+      let gain = baseExp;
+      if (p.seasonGoals && p.seasonGoals > 0) gain += 10;
+      if (hasAccelerator && p.age <= 22) gain = Math.round(gain * 1.5);
+      if (p.isWonderkid) gain = Math.round(gain * 1.2);
+
+      p.matchExp = (p.matchExp || 0) + gain;
 
       if (p.matchExp >= 100) {
         p.matchExp -= 100;
@@ -370,17 +445,97 @@ export class MatchEngine {
         else if (['MCO', 'MC', 'MI', 'MD'].includes(p.pos)) p.pas = Math.min(99, (p.pas || 70) + 2);
         else p.def = Math.min(99, (p.def || 70) + 2);
 
-        // Solo notificar las mejoras del equipo del usuario (evita spam del log
-        // con decenas de mejoras de jugadores IA cada semana).
         const gameState = db.gameState;
         if (gameState && gameState.eventsLog && teamId === gameState.userTeamId) {
           gameState.eventsLog.unshift({
             date: `Semana ${gameState.week || 1}`,
-            text: `⚡ MEJORA EN TIEMPO REAL: ¡${p.name} alcanzó 100 EXP por su rendimiento y subió a ${p.overall} OVR!`
+            text: `[EVOLUCIÓN] ¡${p.name} alcanzó 100 EXP por su rendimiento y subió a ${p.overall} OVR!`
           });
         }
       }
     });
+  }
+
+  /**
+   * Procesa los efectos post-partido: EXP de DT, Clásicos, rachas de jugadores y logros
+   */
+  static processPostMatchEffects(
+    homeTeamId: string,
+    awayTeamId: string,
+    homeScore: number,
+    awayScore: number,
+    isDerby: boolean,
+    goalsByPlayer: Record<string, number>
+  ): void {
+    const gameState = db.gameState;
+    if (!gameState) return;
+
+    const userTeamId = gameState.userTeamId;
+    const isUserHome = userTeamId === homeTeamId;
+    const isUserAway = userTeamId === awayTeamId;
+    if (!isUserHome && !isUserAway) return;
+
+    const userScore = isUserHome ? homeScore : awayScore;
+    const rivalScore = isUserHome ? awayScore : homeScore;
+    const userWon = userScore > rivalScore;
+    const isDraw = userScore === rivalScore;
+    const cleanSheet = rivalScore === 0;
+
+    // Actualizar estados de forma y rachas de jugadores
+    PlayerFormEngine.processPostMatchForm(userTeamId, goalsByPlayer, userWon, cleanSheet);
+
+    // Conceder EXP al DT y verificar retos
+    let xpGain = 0;
+    if (userWon) {
+      xpGain = 120;
+      AchievementsEngine.checkAndUnlock('first_win', 1);
+
+      if (cleanSheet) {
+        gameState.cleanSheetStreak = (gameState.cleanSheetStreak || 0) + 1;
+        AchievementsEngine.checkAndUnlock('clean_sheet_3', gameState.cleanSheetStreak);
+        xpGain += 30;
+      } else {
+        gameState.cleanSheetStreak = 0;
+      }
+
+      if (isDerby) {
+        xpGain += 250;
+        gameState.classicWins = (gameState.classicWins || 0) + 1;
+        AchievementsEngine.checkAndUnlock('derby_winner', 1);
+        if (gameState.contract) {
+          gameState.contract.boardConfidence = Math.min(100, gameState.contract.boardConfidence + 8);
+          gameState.contract.fanSatisfaction = Math.min(100, (gameState.contract.fanSatisfaction || 50) + 10);
+        }
+      }
+
+      if ((gameState.currentStreak || 0) >= 5) {
+        AchievementsEngine.checkAndUnlock('streak_5', gameState.currentStreak || 0);
+      }
+      if ((gameState.currentStreak || 0) >= 10) {
+        AchievementsEngine.checkAndUnlock('streak_10', gameState.currentStreak || 0);
+      }
+    } else if (isDraw) {
+      xpGain = 45;
+      gameState.cleanSheetStreak = cleanSheet ? (gameState.cleanSheetStreak || 0) + 1 : 0;
+    } else {
+      gameState.cleanSheetStreak = 0;
+      if (isDerby && gameState.contract) {
+        gameState.contract.boardConfidence = Math.max(10, gameState.contract.boardConfidence - 6);
+      }
+    }
+
+    if (xpGain > 0) {
+      ManagerRPG.awardXP(xpGain, userWon ? 'Victoria Oficial' : 'Empate');
+    }
+
+    // Verificar nivel del DT para logros
+    const rpgState = ManagerRPG.initIfMissing();
+    AchievementsEngine.checkAndUnlock('dt_level_5', rpgState.level);
+    AchievementsEngine.checkAndUnlock('dt_level_15', rpgState.level);
+
+    if (gameState.budget >= 30000000) {
+      AchievementsEngine.checkAndUnlock('millionaire', Math.floor(gameState.budget / 1000000));
+    }
   }
 
   /**
@@ -396,7 +551,6 @@ export class MatchEngine {
     const otherTeams = standings.filter(s => s.teamId !== userTeamId && s.teamId !== rivalId);
 
     for (let i = 0; i < otherTeams.length - 1; i += 2) {
-      // i siempre avanza de 2 en 2 hasta length-2: ambos índices son válidos
       const t1Standing = otherTeams[i]!;
       const t2Standing = otherTeams[i + 1]!;
 
@@ -405,7 +559,6 @@ export class MatchEngine {
 
       const probs = ProbabilityEngine.calculateMatchProbabilities(t1.overall, t2.overall, 0, 0, 'Tiki-Taka', 'Contraataque');
 
-      // Goles impulsados por la expectativa táctica (xG) y variación realista
       let g1 = Math.max(0, Math.round(probs.homeXG + (Math.random() * 1.6 - 0.8)));
       let g2 = Math.max(0, Math.round(probs.awayXG + (Math.random() * 1.6 - 0.8)));
 
@@ -423,10 +576,6 @@ export class MatchEngine {
         t2Standing.drawn++; t2Standing.points += 1;
       }
 
-      // ── Balance IA: los planteles rivales también juegan ────────────────
-      // Acreditar apariciones y EXP a los titulares de ambos equipos para que
-      // su evolución de temporada no dependa solo del envejecimiento (antes los
-      // equipos IA eran estáticos y el DT jugador dominaba sin competencia).
       const t1Squad = db.getTeamPlayers(t1Standing.teamId);
       const t2Squad = db.getTeamPlayers(t2Standing.teamId);
       t1Squad.slice(0, 11).forEach(p => p.appearances = (p.appearances || 0) + 1);
@@ -436,3 +585,4 @@ export class MatchEngine {
     }
   }
 }
+

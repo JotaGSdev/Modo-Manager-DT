@@ -234,6 +234,12 @@ export interface Player {
   squadRole?: SquadRole;
   /** Instrucción individual táctica (playerInspectorUI.js) — creado en runtime */
   individualInstruction?: string;
+  /** Racha de rendimiento: 'hot' (en llamas), 'cold' (sequía), 'normal' */
+  formStreak?: 'hot' | 'cold' | 'normal';
+  /** Partidos en racha consecutiva */
+  formMatches?: number;
+  /** Considerado Joya Mundial / Wonderkid */
+  isWonderkid?: boolean;
   /** Campos presentes solo en juveniles de la cantera */
   country?: string;
   region?: string;
@@ -425,6 +431,42 @@ export interface ManagerTactics {
   archetype: ManagerArchetype;
   exp: number;
   skillLevels: SkillLevels; // 1-10
+}
+
+/** Estado del sistema RPG de desarrollo del DT (v4.0) */
+export interface ManagerRPGState {
+  level: number;
+  xp: number;
+  talentPoints: number;
+  unlockedTalents: Record<string, boolean>;
+}
+
+/** Definición de un Talento del DT en el árbol de habilidades */
+export interface TalentDefinition {
+  id: string;
+  name: string;
+  branch: 'tactics' | 'locker' | 'scouting' | 'business';
+  tier: 1 | 2 | 3;
+  cost: number;
+  icon: string;
+  desc: string;
+  effectSummary: string;
+  requiredLevel: number;
+  prerequisiteId?: string;
+}
+
+/** Logro o desafío desbloqueable de la carrera */
+export interface Achievement {
+  id: string;
+  title: string;
+  desc: string;
+  icon: string;
+  category: 'trophies' | 'matches' | 'management' | 'special';
+  xpReward: number;
+  unlocked: boolean;
+  date?: string;
+  progress?: number;
+  maxProgress?: number;
 }
 
 /** Bonos acumulados por eventos/decisiones que afectan el próximo partido */
@@ -628,6 +670,16 @@ export interface GameState {
   cupPhaseReached: string;
   lastSeasonEvolutionReport?: EvolutionReportEntry[];
 
+  // ── Sistema RPG de DT & Logros (v4.0) ──────────────────────────────────
+  /** Nivel, XP y puntos de talento del DT */
+  managerRpg?: ManagerRPGState;
+  /** Logros y desafíos de carrera desbloqueados */
+  achievements?: Record<string, { unlocked: boolean; date?: string; progress?: number }>;
+  /** Enfoque de entrenamiento semanal seleccionado en el Dashboard */
+  weeklyTraining?: string;
+  /** Racha de vallas invictas consecutivas */
+  cleanSheetStreak?: number;
+
   // ── Contratos del DT ───────────────────────────────────────────────────
   /** Contrato con el club (inicializado por ContractEngine) */
   contract?: ManagerContract;
@@ -691,7 +743,8 @@ export type MatchEventType =
   | 'shot_home'
   | 'shot_away'
   | 'end'
-  | 'tension_moment';
+  | 'tension_moment'
+  | 'halftime';
 
 /** Opción de decisión en un Momento de Tensión */
 export interface TensionOption {

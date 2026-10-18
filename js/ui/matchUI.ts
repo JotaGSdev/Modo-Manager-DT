@@ -7,6 +7,9 @@ import { CompetitionsEngine } from '../engine/competitionsEngine.js';
 import { renderTeamBadgeSVG } from './badgeHelper.js';
 import { sfx } from '../../assets/audio/sfx.js';
 import { PenaltyEngine } from '../engine/penaltyEngine.js';
+import { ManagerRPG } from '../engine/managerRPG.js';
+import { AchievementsEngine } from '../engine/achievementsEngine.js';
+import { IsometricPitch } from './isometricPitch.js';
 
 import type { MatchEvent, NavigateFn, TacticalOrder, Team, TensionOption } from '../types.js';
 
@@ -73,7 +76,7 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
   const userTeam = db.teams[gameState.userTeamId]!;
   const engine = new MatchEngine(userTeam, rival, userTeam.overall, rival.overall, gameState.matchBonus?.moraleBonus || 0);
 
-  let simSpeed = 90;
+  let simSpeed = 1000;
   let simTimer: number | null = null;
 
   // FIX: idempotencia de la sesión de partido. resolveChoice puede ejecutarse 2 veces
@@ -85,9 +88,9 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
 
   /** Etiquetas de las órdenes tácticas (compartidas por el modal interactivo y el modo AUTO) */
   const TACTICAL_ORDER_LABELS: Record<TacticalOrder, string> = {
-    PRESSING: '⚡ PRESIÓN ALTA',
-    LOW_BLOCK: '🚌 BLOQUE BAJO',
-    COUNTER: '🎯 CONTRAATAQUE'
+    PRESSING: '[PRES] PRESIÓN ALTA',
+    LOW_BLOCK: '[DEF] BLOQUE BAJO',
+    COUNTER: '[CONTRA] CONTRAATAQUE'
   };
 
   /** Decisión táctica registrada en un momento de tensión (para el resumen del final) */
@@ -130,6 +133,11 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
 
   container.innerHTML = `
     <div class="glass-panel" style="padding:0; overflow:hidden; margin-bottom:14px;">
+      ${engine.isDerby ? `
+        <div style="background:linear-gradient(90deg,#f59e0b,#ef4444); color:#000; font-weight:900; font-size:0.82rem; text-align:center; padding:7px 12px; letter-spacing:1px; border-bottom:1px solid rgba(0,0,0,0.2); box-shadow:0 0 14px rgba(239,68,68,0.5);">
+          [DERBY] ${engine.derbyName.toUpperCase()} — EL CLÁSICO DE LA CIUDAD
+        </div>
+      ` : ''}
       <div style="background:linear-gradient(135deg,#0a0e1a 0%,#101827 100%); padding:16px 24px;">
         <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:16px;">
           <div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
@@ -152,9 +160,9 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
               <span id="awayScoreDisplay" style="font-size:3.5rem; font-weight:900; color:#fff; line-height:1; min-width:48px; text-align:center;">0</span>
             </div>
             <div style="display:flex; gap:6px; justify-content:center; margin-top:10px;">
-              <button class="speed-btn active" data-speed="90" style="padding:3px 9px; font-size:0.7rem; border-radius:4px; border:1px solid var(--border-color); background:#0f172a; color:#fff; cursor:pointer;">1x</button>
-              <button class="speed-btn" data-speed="45" style="padding:3px 9px; font-size:0.7rem; border-radius:4px; border:1px solid var(--border-color); background:#0f172a; color:#fff; cursor:pointer;">2x</button>
-              <button class="speed-btn" data-speed="20" style="padding:3px 9px; font-size:0.7rem; border-radius:4px; border:1px solid var(--border-color); background:#0f172a; color:#fff; cursor:pointer;">4x</button>
+              <button class="speed-btn active" data-speed="1000" style="padding:3px 9px; font-size:0.7rem; border-radius:4px; border:1px solid var(--accent-cyan); background:rgba(0,150,199,0.25); color:var(--accent-cyan); cursor:pointer;">1x (90s)</button>
+              <button class="speed-btn" data-speed="500" style="padding:3px 9px; font-size:0.7rem; border-radius:4px; border:1px solid var(--border-color); background:#0f172a; color:#fff; cursor:pointer;">2x (45s)</button>
+              <button class="speed-btn" data-speed="250" style="padding:3px 9px; font-size:0.7rem; border-radius:4px; border:1px solid var(--border-color); background:#0f172a; color:#fff; cursor:pointer;">4x (22s)</button>
               <button class="speed-btn" data-speed="0" style="padding:3px 9px; font-size:0.7rem; border-radius:4px; border:1px solid var(--accent-gold); background:rgba(245,158,11,0.15); color:var(--accent-gold); cursor:pointer;">AUTO</button>
             </div>
           </div>
@@ -188,7 +196,7 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
           <div style="text-align:left;"><span id="awayXG" style="font-weight:800; color:var(--accent-gold);">0.00</span></div>
         </div>
 
-        <!-- ── v2.0: LÍNEA DE TIEMPO VISUAL DEL PARTIDO ── -->
+        <!-- LÍNEA DE TIEMPO VISUAL DEL PARTIDO -->
         <div style="margin-top:12px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.08);">
           <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:var(--text-sub); margin-bottom:4px;">
             <span>0'</span><span>15'</span><span>30'</span><span>45' HT</span><span>60'</span><span>75'</span><span>90' FT</span>
@@ -201,35 +209,46 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
       </div>
     </div>
 
-    <!-- ── v2.0: SELECTOR DE VISTA DE PARTIDO (BITÁCORA vs RADAR 2D) ── -->
+    <!-- ── VISTA PRINCIPAL: CAMPO 2D ISOMÉTRICO (FUTBOLISTAS MINIATURA CHIBI) ── -->
+    <div id="isoPitchContainer" class="glass-panel" style="padding:10px; margin-bottom:14px; text-align:center; position:relative; overflow:hidden;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:0 4px;">
+        <span style="font-size:0.8rem; font-weight:800; color:var(--accent-green); letter-spacing:0.5px;">[SIMULACIÓN EN VIVO] CAMPO 2D ISOMÉTRICO &middot; 90s</span>
+        <div id="activeTacticalOrderBadge" class="text-sub" style="font-size:0.75rem; font-weight:700; color:var(--accent-gold);"></div>
+      </div>
+      <div style="width:100%; max-width:900px; margin:0 auto; position:relative; overflow:hidden; border-radius:8px;">
+        <canvas id="isoPitchCanvas" width="900" height="520" style="width:100%; max-width:900px; aspect-ratio:900/520; height:auto; display:block; margin:0 auto; background:#0f291e; border-radius:8px; border:2px solid var(--border-color); box-shadow:0 8px 24px rgba(0,0,0,0.5);"></canvas>
+      </div>
+    </div>
+
+    <!-- ── SELECTOR DE DETALLES ADICIONALES (BITÁCORA vs RADAR 2D) ── -->
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
       <div style="display:flex; gap:8px;">
-        <button id="tabLogView" class="btn-secondary active" style="padding:6px 14px; font-size:0.8rem;">📜 Bitácora Narrativa</button>
-        <button id="tabRadarView" class="btn-secondary" style="padding:6px 14px; font-size:0.8rem;">📡 Radar 2D en Vivo</button>
+        <button id="tabLogView" class="btn-secondary active" style="padding:6px 14px; font-size:0.8rem;">[RELATO] Bitácora Narrativa</button>
+        <button id="tabRadarView" class="btn-secondary" style="padding:6px 14px; font-size:0.8rem;">[RADAR] Radar 2D Táctico</button>
       </div>
-      <div id="activeTacticalOrderBadge" class="text-sub" style="font-size:0.75rem; font-weight:700; color:var(--accent-gold);"></div>
+      <span class="text-sub" style="font-size:0.75rem;">Velocidad base 1x: 1s real = 1m juego (90s)</span>
     </div>
 
     <!-- VISTA BITÁCORA -->
     <div id="logViewContainer" class="glass-panel" style="padding:14px 16px;">
-      <h4 style="font-size:0.88rem; margin-bottom:10px; color:var(--text-sub);">🏙️ NARRACIÓN EN VIVO</h4>
-      <div id="commentaryLog" style="max-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;"></div>
+      <h4 style="font-size:0.88rem; margin-bottom:10px; color:var(--text-sub);">NARRACIÓN EN VIVO</h4>
+      <div id="commentaryLog" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;"></div>
     </div>
 
     <!-- VISTA RADAR 2D (CANVAS) -->
     <div id="radarViewContainer" class="glass-panel hidden" style="padding:14px 16px; text-align:center;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span style="font-size:0.8rem; font-weight:800; color:var(--accent-cyan);">📡 RADAR TÁCTICO 2D EN TIEMPO REAL</span>
+        <span style="font-size:0.8rem; font-weight:800; color:var(--accent-cyan);">RADAR TÁCTICO 2D EN TIEMPO REAL</span>
         <span style="font-size:0.7rem; color:var(--text-sub);">Focos de presión y movimiento de líneas</span>
       </div>
-      <canvas id="matchRadarCanvas" width="600" height="340" style="width:100%; max-width:600px; background:#0b192c; border-radius:8px; border:2px solid var(--border-color);"></canvas>
+      <canvas id="matchRadarCanvas" width="600" height="340" style="width:100%; max-width:600px; aspect-ratio:600/340; height:auto; background:#0b192c; border-radius:8px; border:2px solid var(--border-color);"></canvas>
     </div>
 
-    <!-- ── v2.0: MODAL MOMENTO DE TENSIÓN (10s TIMER) ── -->
+    <!-- ── MODAL MOMENTO DE TENSIÓN (10s TIMER) ── -->
     <div id="tensionMomentModal" class="modal-overlay hidden" style="z-index:2000;">
       <div class="modal-card glass-panel" style="max-width:540px; border:2px solid var(--accent-gold); text-align:center;">
         <div style="font-size:0.75rem; font-weight:900; color:var(--accent-gold); letter-spacing:1px; margin-bottom:6px;">
-          ⏱️ MÁXIMA TENSIÓN — DECISIÓN DEL DT
+          [MOMENTO CLAVE] MÁXIMA TENSIÓN — DECISIÓN DEL DT
         </div>
         <h3 id="tensionTitle" style="color:#fff; font-size:1.2rem; margin-bottom:8px;">Momentos Decisivos</h3>
         <p id="tensionDesc" class="text-sub" style="font-size:0.85rem; margin-bottom:14px;"></p>
@@ -243,18 +262,51 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
       </div>
     </div>
 
+    <!-- ── MODAL CHARLA DE ENTRETIEMPO (45') ── -->
+    <div id="halftimeTalkModal" class="modal-overlay hidden" style="z-index:2000;">
+      <div class="modal-card glass-panel" style="max-width:540px; border:2px solid var(--accent-cyan); text-align:center;">
+        <div style="font-size:0.75rem; font-weight:900; color:var(--accent-cyan); letter-spacing:1px; margin-bottom:6px;">
+          [DESCANSO] CHARLA DE ENTRETIEMPO (45')
+        </div>
+        <h3 style="color:#fff; font-size:1.3rem; margin-bottom:6px;">Arenga en el Vestuario</h3>
+        <div id="halftimeCurrentScore" style="font-size:1.6rem; font-weight:900; color:var(--accent-gold); margin-bottom:10px;"></div>
+        <p class="text-sub" style="font-size:0.85rem; margin-bottom:16px;">
+          ¿Qué orden táctica das a tus futbolistas para encarar la segunda mitad?
+        </p>
+
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <button class="btn-secondary btn-halftime-opt" data-choice="ATTACK" style="text-align:left; padding:12px 14px; font-size:0.85rem; border:1px solid rgba(239,68,68,0.5);">
+            <strong>[OFENSIVA] "¡A salir a morder! Dejen el alma en cada pelota"</strong>
+            <div class="text-sub" style="font-size:0.72rem; margin-top:3px; color:var(--accent-red);">+Ataque y xG en la segunda mitad (Ofensiva total)</div>
+          </button>
+
+          <button class="btn-secondary btn-halftime-opt" data-choice="DEFEND" style="text-align:left; padding:12px 14px; font-size:0.85rem; border:1px solid rgba(59,130,246,0.5);">
+            <strong>[DEFENSA] "Cabeza fría y orden defensivo. No regalemos nada"</strong>
+            <div class="text-sub" style="font-size:0.72rem; margin-top:3px; color:var(--accent-cyan);">+Solidez en área propia, reduce peligro rival</div>
+          </button>
+
+          <button class="btn-secondary btn-halftime-opt" data-choice="CONTROL" style="text-align:left; padding:12px 14px; font-size:0.85rem; border:1px solid rgba(16,185,129,0.5);">
+            <strong>[CONTROL] "Paciencia y toque limpio. El gol va a llegar"</strong>
+            <div class="text-sub" style="font-size:0.72rem; margin-top:3px; color:var(--accent-green);">+Control de posesión y pausa en mitad de cancha</div>
+          </button>
+        </div>
+
+        <div id="halftimeReaction" class="hidden mt-3" style="font-size:0.82rem; color:var(--accent-gold); font-weight:800; background:#0f172a; padding:8px 12px; border-radius:6px;"></div>
+      </div>
+    </div>
+
     <div id="matchCinematicModal" class="cinematic-overlay hidden">
       <canvas id="cinematicCanvas"></canvas>
       <div id="cinematicCard" class="cinematic-card">
-        <h2 id="cinematicTitle" class="cinematic-title">\u00a1PARTIDO FINALIZADO!</h2>
+        <h2 id="cinematicTitle" class="cinematic-title">¡PARTIDO FINALIZADO!</h2>
         <p id="cinematicSubtitle" class="cinematic-subtitle">Rendimiento deportivo en la jornada</p>
         <div id="cinematicScore" class="cinematic-score">0 - 0</div>
         <div id="cinematicStats" style="font-size:0.82rem; color:var(--text-sub); margin:10px 0;"></div>
         <div id="cinematicTacticalSummary" style="margin-top:8px; border-top:1px dashed rgba(255,255,255,0.12); padding-top:10px; text-align:left;">
-          <div style="font-size:0.68rem; font-weight:900; color:var(--accent-gold); letter-spacing:1px; margin-bottom:8px;">⚙️ GESTIÓN TÁCTICA EN MOMENTOS CLAVE</div>
+          <div style="font-size:0.68rem; font-weight:900; color:var(--accent-gold); letter-spacing:1px; margin-bottom:8px;">GESTIÓN TÁCTICA EN MOMENTOS CLAVE</div>
           <div id="tacticalSummaryList" style="display:flex; flex-direction:column; gap:6px;"></div>
         </div>
-        <button id="btnFinishMatch" class="btn-primary btn-large" style="width:100%; margin-top:14px;">CONTINUAR AL DASHBOARD &#x26BD;</button>
+        <button id="btnFinishMatch" class="btn-primary btn-large" style="width:100%; margin-top:14px;">CONTINUAR AL DASHBOARD</button>
       </div>
     </div>
   `;
@@ -275,6 +327,14 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
 
   let homeShotsOnTarget = 0, awayShotsOnTarget = 0;
 
+  // Inicialización de la Cancha Isométrica 2D con Miniaturas Chibi
+  const isoCanvas = document.getElementById('isoPitchCanvas') as HTMLCanvasElement | null;
+  let isoPitch: IsometricPitch | null = null;
+  if (isoCanvas) {
+    const userFormation = gameState.tactics?.formation || '4-3-3';
+    isoPitch = new IsometricPitch(isoCanvas, userTeam, rival, userFormation, '4-3-3');
+  }
+
   const addLog = (event: LooseMatchEvent) => {
     if (!event || !logEl) return;
     const item = document.createElement('div');
@@ -289,7 +349,7 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     const el = document.getElementById('goalFlash');
     const txt = document.getElementById('goalFlashText');
     if (!el || !txt) return;
-    txt.innerHTML = `&#x26BD; GOOOOOL<br><span style="font-size:1.5rem; color:#fff;">${scorerName}</span><br><span style="font-size:1rem; color:var(--text-sub);">${teamName}</span>`;
+    txt.innerHTML = `<span style="color:var(--accent-gold); font-size:1.8rem; font-weight:900;">¡GOOOOOL!</span><br><span style="font-size:1.5rem; color:#fff;">${scorerName}</span><br><span style="font-size:1rem; color:var(--text-sub);">${teamName}</span>`;
     el.classList.remove('hidden');
     el.style.display = 'flex';
     setTimeout(() => { el.classList.add('hidden'); el.style.display = 'none'; }, 1800);
@@ -423,16 +483,22 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     const eventsEl = document.getElementById('matchTimelineEvents');
     if (!eventsEl) return;
     const pct = Math.min(100, (ev.minute / 90) * 100);
-    let icon = '';
-    if (ev.type === 'goal_home' || ev.type === 'goal_away') icon = '⚽';
-    else if (ev.type === 'yellow_card') icon = '🟨';
-    else if (ev.type === 'red_card') icon = '🟥';
-    else if (ev.type === 'tension_moment') icon = '⏱️';
+    let color = '';
+    let label = '';
+    if (ev.type === 'goal_home' || ev.type === 'goal_away') {
+      color = 'var(--accent-green)'; label = 'GOL';
+    } else if (ev.type === 'yellow_card') {
+      color = '#f59e0b'; label = 'AMARILLA';
+    } else if (ev.type === 'red_card') {
+      color = '#ef4444'; label = 'ROJA';
+    } else if (ev.type === 'tension_moment') {
+      color = 'var(--accent-gold)'; label = 'TENSIÓN';
+    }
 
-    if (icon) {
+    if (color) {
       const mark = document.createElement('div');
-      mark.style.cssText = `position:absolute; left:${pct}%; top:-2px; transform:translateX(-50%); font-size:0.65rem; z-index:2;`;
-      mark.innerText = icon;
+      mark.style.cssText = `position:absolute; left:${pct}%; top:1px; transform:translateX(-50%); width:8px; height:8px; border-radius:50%; background:${color}; border:1px solid #000; z-index:2;`;
+      mark.title = `Min ${ev.minute}': ${label}`;
       eventsEl.appendChild(mark);
     }
   };
@@ -484,7 +550,7 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
   const applyAutoDefaultDecision = (minute: number) => {
     const decision = getAutoTacticalDefault();
     applyTacticalOrder(decision, 'automatic');
-    addLog({ minute, type: 'commentary', text: `🤖 DECISIÓN AUTOMÁTICA: ${TACTICAL_ORDER_LABELS[decision]} aplicado ante el momento clave del minuto ${minute}'.` });
+    addLog({ minute, type: 'commentary', text: `[AUTO] DECISIÓN AUTOMÁTICA: ${TACTICAL_ORDER_LABELS[decision]} aplicado ante el momento clave del minuto ${minute}'.` });
   };
 
   /**
@@ -511,6 +577,7 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
       tensionCountdownInterval = null;
     }
     if (simTimer) clearInterval(simTimer);
+    sfx.playTension && sfx.playTension();
 
     const modal = document.getElementById('tensionMomentModal');
     const titleEl = document.getElementById('tensionTitle');
@@ -581,6 +648,54 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     tensionCountdownInterval = countdownId;
   };
 
+  const triggerHalftimeUI = () => {
+    if (simTimer) {
+      clearInterval(simTimer);
+      simTimer = null;
+    }
+    sfx.playWhistle && sfx.playWhistle();
+
+    const modal = document.getElementById('halftimeTalkModal');
+    const scoreDisplay = document.getElementById('halftimeCurrentScore');
+    const reactionEl = document.getElementById('halftimeReaction');
+    if (!modal || !scoreDisplay) return;
+
+    scoreDisplay.innerText = `${userTeam.name} ${engine.homeScore} - ${engine.awayScore} ${rival.name}`;
+    modal.classList.remove('hidden');
+
+    const buttons = modal.querySelectorAll<HTMLButtonElement>('.btn-halftime-opt');
+    buttons.forEach(btn => {
+      btn.onclick = () => {
+        sfx.playClick && sfx.playClick();
+        const choice = btn.dataset.choice as 'ATTACK' | 'DEFEND' | 'CONTROL';
+        engine.applyHalftimeTalk(choice);
+
+        const reactions: Record<'ATTACK' | 'DEFEND' | 'CONTROL', string> = {
+          ATTACK: '[OFENSIVA] El capitán arenga al grupo: "¡A dejarse la piel en cada jugada!". El vestuario hierve de garra.',
+          DEFEND: '[DEFENSA] Los defensas asienten con máxima atención: "Cero distracciones en el área propia".',
+          CONTROL: '[CONTROL] Los volantes toman el mando: "A mover el balón con criterio y paciencia".'
+        };
+
+        if (reactionEl) {
+          reactionEl.innerText = reactions[choice];
+          reactionEl.classList.remove('hidden');
+        }
+
+        buttons.forEach(b => (b.disabled = true));
+
+        setTimeout(() => {
+          modal.classList.add('hidden');
+          buttons.forEach(b => (b.disabled = false));
+          if (reactionEl) reactionEl.classList.add('hidden');
+          sfx.playWhistle && sfx.playWhistle();
+          if (simSpeed > 0 && !engine.isFinished) {
+            simTimer = window.setInterval(tick, simSpeed);
+          }
+        }, 1100);
+      };
+    });
+  };
+
   const processEvent = (ev: LooseMatchEvent | null) => {
     if (!ev) return;
 
@@ -589,6 +704,21 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     if (progressEl) progressEl.style.width = `${Math.min(100, (ev.minute / 90) * 100)}%`;
 
     addTimelineIcon(ev);
+
+    // Sincronizar simulación del campo 2D isométrico chibi
+    if (isoPitch) {
+      isoPitch.onMinuteTick(ev.minute, ev as MatchEvent, engine.homePossession, engine.homeScore, engine.awayScore);
+    }
+
+    if (ev.type === 'halftime') {
+      if (simSpeed === 0) {
+        const isUserBehind = isUserHomeTeam() ? engine.awayScore > engine.homeScore : engine.homeScore > engine.awayScore;
+        engine.applyHalftimeTalk(isUserBehind ? 'ATTACK' : 'CONTROL');
+      } else {
+        triggerHalftimeUI();
+      }
+      return;
+    }
 
     if (ev.type === 'tension_moment') {
       // AUTO: aplicar la decisión táctica por defecto directamente, sin abrir el modal,
@@ -605,12 +735,12 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
       sfx.playGoal && sfx.playGoal();
       homeShotsOnTarget++;
       showGoalFlash(ev.scorerName || '', userTeam.name);
-      if (homeGoalsList) homeGoalsList.innerHTML += `<span>⚽ ${ev.minute}' ${ev.scorerName || ''} </span>`;
+      if (homeGoalsList) homeGoalsList.innerHTML += `<span>[GOL] ${ev.minute}' ${ev.scorerName || ''} </span>`;
     } else if (ev.type === 'goal_away') {
       sfx.playGoal && sfx.playGoal();
       awayShotsOnTarget++;
       showGoalFlash(ev.scorerName || '', rival.name);
-      if (awayGoalsList) awayGoalsList.innerHTML += `<span>⚽ ${ev.minute}' ${ev.scorerName || ''} </span>`;
+      if (awayGoalsList) awayGoalsList.innerHTML += `<span>[GOL] ${ev.minute}' ${ev.scorerName || ''} </span>`;
     } else if (ev.type === 'shot_on_target_home') { homeShotsOnTarget++; }
     else if (ev.type === 'shot_on_target_away') { awayShotsOnTarget++; }
 
@@ -636,10 +766,21 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
   simTimer = window.setInterval(tick, simSpeed);
 
   const finishMatchSession = () => {
+    // Detener la animación de la cancha isométrica
+    if (isoPitch) {
+      isoPitch.destroy();
+      isoPitch = null;
+    }
+
     // FIX: la sesión solo se procesa una vez por partido (ver matchSessionCompleted).
     if (matchSessionCompleted) return;
     matchSessionCompleted = true;
-    const totalTicketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
+
+    // v4.0: Recaudación con bonus de Clásico y talento Financiero
+    let totalTicketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
+    if (engine.isDerby) totalTicketRevenue = Math.round(totalTicketRevenue * 1.5);
+    if (ManagerRPG.hasTalent('financial_guru')) totalTicketRevenue = Math.round(totalTicketRevenue * 1.15);
+
     gameState.budget += Math.round(totalTicketRevenue * 0.25);
     if (gameState.finances) {
       gameState.finances.ticketRevenue = (gameState.finances.ticketRevenue || 0) + totalTicketRevenue;
@@ -670,9 +811,13 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
       }
     }
     MatchEngine.simulateAllRivalMatches(userTeam.id, rival.id);
-    // v3.12 — la copa continental paga POR ETAPAS (clasificar a grupos,
-    // victorias de grupo, knockout y título); el desglose se muestra en la
-    // cinemática de fin de partido y se anuncia en The Feed.
+
+    // v4.0: EXP de jugadores y Efectos Post-Partido (Manager RPG, Clásicos, Rachas)
+    MatchEngine.awardInSeasonPlayerEXP(userTeam.id, engine.homeScore > engine.awayScore);
+    MatchEngine.awardInSeasonPlayerEXP(rival.id, engine.awayScore > engine.homeScore);
+    MatchEngine.processPostMatchEffects(userTeam.id, rival.id, engine.homeScore, engine.awayScore, engine.isDerby, engine.goalsByPlayer);
+
+    // v3.12 — la copa continental paga POR ETAPAS
     const contResult = CompetitionsEngine.processCupWeek(gameState.week);
     let contPrizeText = '';
     if (contResult && contResult.reward > 0) {
@@ -717,7 +862,49 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     const userPts = (gameState.standings || []).find(s => s.teamId === userTeam.id)?.points || 0;
     statsEl!.innerHTML = `Posici\u00f3n: <strong>#${userRank}</strong> &middot; <strong>${userPts} pts</strong> &middot; Jornada ${gameState.week - 1}/${gameState.maxWeeks}`;
     if (contPrize) {
-      statsEl!.innerHTML += `<div style="margin-top:8px; font-size:0.74rem; color:var(--accent-gold); font-weight:800; background:#0f172a; border:1px solid var(--border-color); border-radius:6px; padding:6px 10px;">🌎 PREMIO CONTINENTAL — ${contPrize}</div>`;
+      statsEl!.innerHTML += `<div style="margin-top:8px; font-size:0.74rem; color:var(--accent-gold); font-weight:800; background:#0f172a; border:1px solid var(--border-color); border-radius:6px; padding:6px 10px;">[CONTINENTAL] PREMIO CONTINENTAL — ${contPrize}</div>`;
+    }
+
+    // ── v4.0: Progresión de DT y EXP obtenida ──
+    const rpg = ManagerRPG.initIfMissing();
+    const xpGain = userGoals > rivalGoals ? (engine.isDerby ? 370 : 120) : (userGoals === rivalGoals ? 45 : 0);
+    const xpNeeded = ManagerRPG.getXpRequired(rpg.level);
+    const xpPercent = Math.min(100, Math.round((rpg.xp / xpNeeded) * 100));
+
+    statsEl!.innerHTML += `
+      <div style="margin-top:10px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:10px 14px; text-align:left;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span style="font-size:0.78rem; font-weight:900; color:var(--accent-gold);">PROGRESIÓN DE DT: NIVEL ${rpg.level}</span>
+          <span style="font-size:0.74rem; color:var(--accent-cyan); font-weight:800;">+${xpGain} EXP</span>
+        </div>
+        <div style="height:6px; background:#1e293b; border-radius:3px; overflow:hidden; margin:4px 0;">
+          <div style="height:100%; width:${xpPercent}%; background:linear-gradient(90deg,var(--accent-cyan),var(--accent-gold));"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:var(--text-sub);">
+          <span>${rpg.xp} / ${xpNeeded} EXP para Nivel ${rpg.level + 1}</span>
+          <span>${rpg.talentPoints} Puntos de Talento disponibles</span>
+        </div>
+      </div>
+    `;
+
+    if (engine.isDerby && userGoals > rivalGoals) {
+      statsEl!.innerHTML += `
+        <div style="margin-top:8px; background:linear-gradient(90deg,#f59e0b,#ef4444); color:#000; font-weight:900; font-size:0.76rem; border-radius:6px; padding:6px 10px; text-align:center;">
+          ¡VICTORIA HISTÓRICA EN EL CLÁSICO! (+8% Confianza Directiva)
+        </div>
+      `;
+    }
+
+    // ── Notificación de retos / logros desbloqueados en este partido ──
+    const allAchievements = AchievementsEngine.getAllAchievements();
+    const recentAchievements = allAchievements.filter(a => a.unlocked && a.date === new Date().toLocaleDateString('es-ES'));
+    if (recentAchievements.length > 0) {
+      statsEl!.innerHTML += `
+        <div style="margin-top:8px; background:rgba(0,200,133,0.15); border:1px solid var(--accent-green); border-radius:6px; padding:6px 10px; text-align:left;">
+          <div style="font-size:0.7rem; font-weight:900; color:var(--accent-green);">[LOGRO] ¡DESAFÍO COMPLETADO EN ESTE ENCUENTRO!</div>
+          ${recentAchievements.map(a => `<div style="font-size:0.75rem; color:#fff; margin-top:2px;">[LOGRO] <strong>${a.title}</strong>: ${a.desc}</div>`).join('')}
+        </div>
+      `;
     }
 
     // ── Resumen táctico: decisiones tomadas en cada momento de tensión ──
@@ -735,7 +922,7 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
           const sourceLabel = d.source === 'manual' ? 'DECISIÓN DT' : 'AUTOMÁTICA';
           const sourceColor = d.source === 'manual' ? 'var(--accent-cyan)' : 'var(--text-sub)';
           return `<div style="display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:6px; background:#0f172a; border-left:3px solid ${ctxColor};">
-            <span style="font-size:0.72rem; color:var(--text-sub); font-weight:800; min-width:44px;">⏱️ ${d.minute}'</span>
+            <span style="font-size:0.72rem; color:var(--text-sub); font-weight:800; min-width:44px;">Min ${d.minute}'</span>
             <span style="display:flex; align-items:baseline; gap:5px; min-width:86px;"><span style="font-size:0.72rem; font-weight:900; color:#fff;">${userGoals} - ${rivalGoals}</span><span style="font-size:0.56rem; font-weight:900; color:${ctxColor}; letter-spacing:0.5px;">${ctx}</span></span>
             <span style="font-size:0.72rem; font-weight:900; color:var(--accent-gold); flex:1;">${TACTICAL_ORDER_LABELS[d.order] || d.order}</span>
             <span style="font-size:0.6rem; font-weight:900; letter-spacing:0.5px; color:${sourceColor}; min-width:80px; text-align:right;">${sourceLabel}</span>
@@ -747,20 +934,27 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     let outcomeClass = 'draw';
     if (userGoals > rivalGoals) {
       outcomeClass = 'win';
-      titleEl!.innerText = wasPenalties ? '\u{1F3C6} \u00a1CAMPEONES EN PENALES!' : '\u{1F3C6} \u00a1VICTORIA TRIUNFAL!';
-      subEl!.innerText = `\u00a1Espectacular rendimiento de ${userTeam.name}!`;
+      titleEl!.innerText = wasPenalties ? '¡CAMPEONES EN PENALES!' : '¡VICTORIA TRIUNFAL!';
+      subEl!.innerText = `¡Espectacular rendimiento de ${userTeam.name}!`;
       sfx.playGoal && sfx.playGoal();
     } else if (userGoals < rivalGoals) {
       outcomeClass = 'loss';
-      titleEl!.innerText = '\u{1F494} DERROTA DOLOROSA';
-      subEl!.innerText = `Ca\u00edda ante ${rival.name}. El equipo debe reponerse.`;
+      titleEl!.innerText = 'DERROTA DOLOROSA';
+      subEl!.innerText = `Caída ante ${rival.name}. El equipo debe reponerse.`;
     } else {
-      titleEl!.innerText = '\u2696\uFE0F EMPATE LUCHADO';
+      titleEl!.innerText = 'EMPATE LUCHADO';
       subEl!.innerText = `Reparto de puntos en una intensa batalla.`;
     }
     cardEl!.className = `cinematic-card ${outcomeClass}`;
     modalEl.classList.remove('hidden');
     setTimeout(() => launchOutcomeParticles(canvasEl, outcomeClass), 100);
-    btnFinish!.addEventListener('click', () => { sfx.playClick && sfx.playClick(); navigateTo('dashboard'); });
+    btnFinish!.addEventListener('click', () => {
+      if (isoPitch) {
+        isoPitch.destroy();
+        isoPitch = null;
+      }
+      sfx.playClick && sfx.playClick();
+      navigateTo('dashboard');
+    });
   };
 }

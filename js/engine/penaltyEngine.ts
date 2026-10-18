@@ -9,7 +9,7 @@
  * 3. Cálculo de probabilidad de gol por penal según disparo del ejecutor (sho) vs overall del portero rival:
  *    Probabilidad = (sho * 0.65) + random(0..25) - (gkOvr * 0.15).
  * 4. Muerte súbita en caso de empate tras los 5 penales iniciales.
- * 5. Indicadores visuales de penal anotado 🟢 o fallado/atajado 🔴.
+ * 5. Indicadores visuales de penal anotado o fallado/atajado.
  *
  * Migrado a TypeScript (Fase 1): tipos conectados a js/types.ts, lógica intacta.
  */
@@ -62,7 +62,7 @@ export class PenaltyEngine {
         <div class="modal-card glass-panel text-center" style="max-width: 620px; border: 2px solid var(--accent-gold); padding: 28px;">
           
           <div style="background: rgba(229, 169, 60, 0.15); border: 1px solid var(--accent-gold); padding: 8px 16px; border-radius: 8px; display: inline-block; margin-bottom: 14px;">
-            <h3 style="color: var(--accent-gold); margin: 0; font-size: 1.1rem;">🏆 DEFINICIÓN POR PENALES (GRAN FINAL)</h3>
+            <h3 style="color: var(--accent-gold); margin: 0; font-size: 1.1rem;">DEFINICIÓN POR PENALES (GRAN FINAL)</h3>
           </div>
 
           <h2 style="font-size: 2.2rem; font-weight: 900; margin: 8px 0; color: #ffffff;">
@@ -93,7 +93,7 @@ export class PenaltyEngine {
             <div style="background: #0f172a; border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; margin: 18px 0; text-align: left;">
               <span class="text-sub" style="font-size: 0.8rem; font-weight: 700;">TURNO DE PENAL #${currentRound + 1}:</span>
               <h4 style="font-size: 1.1rem; color: #ffffff; margin-top: 2px;">
-                👟 Ejecutor: <strong>${currentShooter.name}</strong> (${currentShooter.pos}, Tiro: ${currentShooter.sho || currentShooter.overall})
+                Ejecutor: <strong>${currentShooter.name}</strong> (${currentShooter.pos}, Tiro: ${currentShooter.sho || currentShooter.overall})
               </h4>
               <span class="text-sub" style="font-size: 0.78rem;">Frente al arquero rival: <strong>${rivalGK.name}</strong> (OVR ${rivalGK.overall})</span>
             </div>
@@ -102,13 +102,13 @@ export class PenaltyEngine {
 
             <div class="modal-actions" style="display: flex; justify-content: center; margin-top: 16px;">
               <button id="btnTakePenalty" class="btn-primary btn-large" style="width: 100%; font-size: 1.1rem; font-weight: 900; background: var(--accent-gold); color: #000;">
-                ⚽ ¡EJECUTAR PENAL!
+                ¡EJECUTAR PENAL!
               </button>
             </div>
           ` : `
             <div style="margin: 20px 0;">
               <h3 style="color: ${userScore > rivalScore ? 'var(--accent-green)' : 'var(--accent-red)'}; font-size: 1.6rem; font-weight: 900;">
-                ${userScore > rivalScore ? '🎉 ¡CAMPEONES DE LA FINAL EN PENALES!' : '💔 DERROTA EN LA TANDA DE PENALES'}
+                ${userScore > rivalScore ? '¡CAMPEONES DE LA FINAL EN PENALES!' : 'DERROTA EN LA TANDA DE PENALES'}
               </h3>
             </div>
 
@@ -151,11 +151,11 @@ export class PenaltyEngine {
                 userScore++;
                 userResults.push(true);
                 sfx.playGoal();
-                feedback.innerText = `⚽ ¡GOLAZO! ${currentShooter.name} engañó al portero rival.`;
+                feedback.innerText = `[GOL] ¡GOLAZO! ${currentShooter.name} engañó al portero rival.`;
               } else {
                 userResults.push(false);
                 sfx.playWhistle();
-                feedback.innerText = `🧲 ¡ATAJADO / FALLADO! El disparo de ${currentShooter.name} fue atajado.`;
+                feedback.innerText = `[FALLADO] ¡DISPARO ATAJADO! El disparo de ${currentShooter.name} fue atajado.`;
               }
               feedback.classList.remove('hidden');
 

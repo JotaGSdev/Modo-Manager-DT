@@ -26,6 +26,7 @@ import { renderScoutingView } from './ui/scoutingUI.js';
 import { ContractEngine } from './engine/contracts.js';
 import { sfx } from '../assets/audio/sfx.js';
 import { renderCountryFlagSVG } from './ui/badgeHelper.js';
+import { ManagerRPG } from './engine/managerRPG.js';
 import type { Team } from './types.js';
 
 class App {
@@ -71,7 +72,6 @@ class App {
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(2,6,23,.85);display:flex;align-items:center;justify-content:center;z-index:9999;';
     overlay.innerHTML = `
       <div class="glass-panel" style="max-width:440px;width:90%;padding:24px;text-align:center;">
-        <div style="font-size:2.4rem;">🚑</div>
         <h2 style="color:var(--accent-red);margin:8px 0;">¡Partida dañada!</h2>
         <p class="text-sub" style="font-size:0.9rem;line-height:1.5;">
           El guardado principal está <strong>corrupto o truncado</strong> y no puede leerse
@@ -81,8 +81,8 @@ class App {
             : 'No se encontró ningún autoguardado válido.'}
         </p>
         <div class="mt-4" style="display:flex;gap:12px;justify-content:center;">
-          ${hasBackup ? '<button id="btnRecoverSave" class="btn-primary" style="flex:1;">⬅️ Recuperar autoguardado</button>' : ''}
-          <button id="btnNewCareerAfterCorrupt" class="btn-secondary" style="flex:1;">🔄 Nueva carrera</button>
+          ${hasBackup ? '<button id="btnRecoverSave" class="btn-primary" style="flex:1;">Recuperar autoguardado</button>' : ''}
+          <button id="btnNewCareerAfterCorrupt" class="btn-secondary" style="flex:1;">Nueva carrera</button>
         </div>
       </div>
     `;
@@ -117,34 +117,40 @@ class App {
     const userTeam = db.teams[gameState.userTeamId] || { id: gameState.userTeamId, name: 'Mi Club', short: 'FC', overall: 70, colors: ['#00aaff', '#00ffaa'], stadium: 'Estadio Principal', budget: 0, reputation: 50 };
     const contract = ContractEngine.evaluatePerformance() || ContractEngine.startClubContract(gameState.userTeamId, 3);
     const seasonLabel = `${gameState.season}/${gameState.season + 1}`;
+    const rpg = ManagerRPG.initIfMissing();
 
     appEl.innerHTML = `
       <!-- Navbar Superior estilo EA FC con KPIs en Tiempo Real -->
       <nav class="top-navbar">
-        <div class="brand-logo">⚽ ENTRENADOR LEYENDA</div>
+        <div class="brand-logo">ENTRENADOR LEYENDA</div>
 
         <div class="manager-status-bar" id="topStatusBar">
           <div class="status-pill">DT: <strong id="topManagerDisplay">${gameState.managerName}</strong></div>
+          <div class="status-pill" id="topDtLevelPill" style="cursor: pointer;" title="Nivel y Puntos de Talento del DT (Haz clic para ver Árbol de Talentos)">Nivel DT: <strong style="color: var(--accent-gold);" id="topDtLevelDisplay">Nv. ${rpg.level}</strong> <span id="topDtPtsDisplay" style="font-size:0.75rem; color:var(--accent-cyan); font-weight:800;">(${rpg.talentPoints} pts)</span></div>
           <div class="status-pill">Club: <strong id="topClubDisplay">${userTeam.name}</strong></div>
           <div class="status-pill">Presupuesto: <strong class="text-highlight" id="topBudgetDisplay">€${(gameState.budget / 1000000).toFixed(1)}M</strong></div>
           <div class="status-pill">Confianza Directiva: <strong class="text-highlight" id="topConfidenceDisplay">${contract.boardConfidence}%</strong></div>
           <div class="status-pill">Temporada: <strong id="topSeasonDisplay">${seasonLabel}</strong></div>
         </div>
+
+        <button id="btnSoundToggle" class="btn-sound-toggle" title="Activar/Silenciar Efectos de Sonido" style="margin-left: 10px; background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border-color); color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 700;">
+          ${sfx.isMuted() ? 'SONIDO: OFF' : 'SONIDO: ON'}
+        </button>
       </nav>
 
       <div class="main-wrapper">
         <!-- Sidebar de Navegación Lateral -->
         <aside class="sidebar-nav">
-          <a class="nav-item active" data-view="dashboard">🏠 Dashboard</a>
-          <a class="nav-item" data-view="contract" id="navItemContract">📜 Mi Contrato (${contract.yearsRemaining}a)</a>
-          <a class="nav-item" data-view="squad">📋 Plantilla Hub</a>
-          <a class="nav-item" data-view="tactics">🧩 Tácticas & Alineación</a>
-          <a class="nav-item" data-view="transfers">📝 Mercado Fichajes</a>
-          <a class="nav-item" data-view="scouting">🔭 Centro de Análisis</a>
-          <a class="nav-item" data-view="youth">🌱 Cantera</a>
-          <a class="nav-item" data-view="finances">💶 Finanzas</a>
-          <a class="nav-item" data-view="trophies">🏆 Palmarés</a>
-          <a class="nav-item mt-4" id="btnResetCareer" style="color: var(--accent-red);">🔄 Nueva Carrera</a>
+          <a class="nav-item active" data-view="dashboard">Dashboard</a>
+          <a class="nav-item" data-view="contract" id="navItemContract">Mi Contrato (${contract.yearsRemaining}a)</a>
+          <a class="nav-item" data-view="squad">Plantilla Hub</a>
+          <a class="nav-item" data-view="tactics">Tácticas & Alineación</a>
+          <a class="nav-item" data-view="transfers">Mercado Fichajes</a>
+          <a class="nav-item" data-view="scouting">Centro de Análisis</a>
+          <a class="nav-item" data-view="youth">Cantera</a>
+          <a class="nav-item" data-view="finances">Finanzas</a>
+          <a class="nav-item" data-view="trophies">Palmarés</a>
+          <a class="nav-item mt-4" id="btnResetCareer" style="color: var(--accent-red);">Nueva Carrera</a>
         </aside>
 
         <!-- Contenedor Dinámico para Renderizar Vistas -->
@@ -157,7 +163,7 @@ class App {
          target="_blank" 
          rel="noopener noreferrer" 
          class="support-tip-btn hidden">
-        ☕ 💰 Apoyar el proyecto
+        Apoyar el proyecto
       </a>
     `;
 
@@ -176,6 +182,24 @@ class App {
         this.navigateTo(target.dataset.view!);
       });
     });
+
+    // Clic en la píldora de Nivel DT para abrir Árbol de Talentos directamente
+    document.getElementById('topDtLevelPill')?.addEventListener('click', () => {
+      sfx.playClick();
+      document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+      document.querySelector('.nav-item[data-view="tactics"]')?.classList.add('active');
+      this.navigateTo('tactics');
+    });
+
+    // Toggle de Sonido SFX
+    const soundBtn = document.getElementById('btnSoundToggle');
+    if (soundBtn) {
+      soundBtn.addEventListener('click', () => {
+        const muted = sfx.toggleMute();
+        soundBtn.innerHTML = muted ? 'SONIDO: OFF' : 'SONIDO: ON';
+        if (!muted) sfx.playClick();
+      });
+    }
 
     // Event listener para Reiniciar Carrera
     document.getElementById('btnResetCareer')!.addEventListener('click', () => {
@@ -197,13 +221,19 @@ class App {
     const gameState = db.gameState;
 
     const contract = ContractEngine.evaluatePerformance();
+    const rpg = ManagerRPG.initIfMissing();
 
     const mDisplay = document.getElementById('topManagerDisplay');
+    const dtLevelDisplay = document.getElementById('topDtLevelDisplay');
+    const dtPtsDisplay = document.getElementById('topDtPtsDisplay');
     const cDisplay = document.getElementById('topClubDisplay');
     const bDisplay = document.getElementById('topBudgetDisplay');
     const confDisplay = document.getElementById('topConfidenceDisplay');
     const sDisplay = document.getElementById('topSeasonDisplay');
     const navContract = document.getElementById('navItemContract');
+
+    if (dtLevelDisplay) dtLevelDisplay.innerText = `Nv. ${rpg.level}`;
+    if (dtPtsDisplay) dtPtsDisplay.innerText = `(${rpg.talentPoints} pts)`;
 
     if (mDisplay) {
       const country = gameState.managerCountry || '';
@@ -226,7 +256,7 @@ class App {
     }
 
     if (navContract && contract) {
-      navContract.innerText = `📜 Mi Contrato (${contract.yearsRemaining}a)`;
+      navContract.innerText = `Mi Contrato (${contract.yearsRemaining}a)`;
     }
   }
 
@@ -284,11 +314,11 @@ class App {
       console.error(`Error al renderizar vista '${viewName}':`, err);
       this.mainContainer.innerHTML = `
         <div class="glass-panel text-center py-5">
-          <h2>⚠️ Restauración de Datos de Carrera</h2>
+          <h2>Restauración de Datos de Carrera</h2>
           <p class="text-sub mt-2">La partida actual ha sido sanitizada y protegida automáticamente.</p>
           <div class="mt-4" style="display: flex; gap: 14px; justify-content: center;">
-            <button id="btnRecoverDashboard" class="btn-primary">🏠 Cargar Dashboard</button>
-            <button id="btnResetDataModal" class="btn-secondary">🔄 Nueva Carrera</button>
+            <button id="btnRecoverDashboard" class="btn-primary">Cargar Dashboard</button>
+            <button id="btnResetDataModal" class="btn-secondary">Nueva Carrera</button>
           </div>
         </div>
       `;
