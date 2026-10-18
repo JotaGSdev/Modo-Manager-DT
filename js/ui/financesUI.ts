@@ -5,13 +5,13 @@
  * Pestaña dedicada al control económico y contable del club estilo FIFA / EA FC,
  * con DOS PANTALLAS conmutables desde la cabecera (v3.13):
  *
- *   💶 Panel Financiero — el control contable:
+ *   [1] Panel Financiero — el control contable:
  *     1. KPIs Financieros: presupuesto de fichajes, nómina semanal, ingresos y balance proyectado.
  *     2. Desglose de Ingresos (Taquilla, Premios de Liga, Ventas) y Gastos (Salarios, Compras).
  *     3. Tabla completa de la nómina salarial de la plantilla.
  *     4. Historial de finanzas y rendimiento por temporada del DT.
  *
- *   🏆 Ingresos de Mi Liga — los premios según el país del club:
+ *   [2] Ingresos de Mi Liga — los premios según el país del club:
  *     1. Tabla de premios de liga por posición (campeón, zona alta, resto).
  *     2. Premios de la copa nacional por ronda.
  *     3. El pozo de la copa continental por etapas (clasificar, victorias, título).
@@ -79,9 +79,9 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
   const nationalCupName = CompetitionsEngine.getNationalCupName(userTeam.country || '');
   const fmtMoney = (v: number): string =>
     v >= 1_000_000 ? `€${(v / 1_000_000).toFixed(1)}M` : `€${(v / 1_000).toFixed(0)}K`;
-  const rankRow = (rank: number, emoji: string, label: string, prize: number, pct: string): string =>
+  const rankRow = (rank: number, tag: string, label: string, prize: number, pct: string): string =>
     `<tr${userRank === rank ? ' style="background: rgba(245,158,11,0.10);"' : ''}>
-      <td>${emoji} ${label}</td>
+      <td><span class="badge" style="background:#1e293b; color:var(--accent-gold); font-weight:800; margin-right:6px;">${tag}</span> ${label}</td>
       <td><strong style="color: var(--accent-gold);">${fmtMoney(prize)}</strong></td>
       <td style="text-align: right;">${pct}</td>
     </tr>`;
@@ -99,13 +99,13 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
       ${gameState.transferBudgetLocked ? `
         <div class="glass-panel mb-4" style="border: 2px solid var(--accent-red); background: rgba(239,68,68,0.1); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <h4 style="color: var(--accent-red); margin: 0; font-size: 1rem;">🕵️ CRISIS FINANCIERA ACTIVA — FONDOS CONGELADOS POR AUDITORÍA</h4>
+            <h4 style="color: var(--accent-red); margin: 0; font-size: 1rem;">[AUDITORÍA] CRISIS FINANCIERA ACTIVA — FONDOS CONGELADOS</h4>
             <p class="text-sub" style="font-size: 0.82rem; margin-top: 4px;">
               El 30% (€${((gameState.lockedBudgetAmount || 0) / 1000000).toFixed(2)}M) de tu presupuesto de traspasos está congelado por la junta directiva.
             </p>
           </div>
           <button id="btnUnfreezeBudget" class="btn-primary" style="background: var(--accent-gold); color: #000; font-weight: 900;">
-            🔓 LIBERAR FONDOS (€200K)
+            LIBERAR FONDOS (€200K)
           </button>
         </div>
       ` : ''}
@@ -113,10 +113,10 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
       <!-- ACCIÓN DE REDISTRIBUCIÓN PRESUPUESTARIA CON LA DIRECTIVA -->
       <div class="glass-panel mb-4 text-center" style="display:flex; justify-content:space-between; align-items:center;">
         <span class="text-sub" style="font-size:0.85rem; font-weight:700;">
-          📊 Solicitud de Conversión / Redistribución Presupuestaria
+          Solicitud de Conversión / Redistribución Presupuestaria
         </span>
         <button id="btnRedistributeBudget" class="btn-secondary" style="font-size:0.82rem; padding:8px 16px;">
-          🔄 Solicitar mover liquidez a la Directiva
+          Solicitar mover liquidez a la Directiva
         </button>
       </div>
 
@@ -156,21 +156,21 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
         
         <!-- COLUMNA INGRESOS -->
         <div class="glass-panel">
-          <h3 style="color: var(--accent-green); margin-bottom: 14px; font-size: 1.05rem;">📈 Desglose de Ingresos del Club</h3>
+          <h3 style="color: var(--accent-green); margin-bottom: 14px; font-size: 1.05rem;">Desglose de Ingresos del Club</h3>
           
           <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.88rem;">
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-              <span>🎟️ Recaudación por Taquilla (Estadio):</span>
+              <span>Recaudación por Taquilla (Estadio):</span>
               <strong style="color: var(--accent-green);">+€${((finances.ticketRevenue || 0) / 1000000).toFixed(2)}M</strong>
             </div>
 
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-              <span>💰 Ventas de Futbolistas:</span>
+              <span>Ventas de Futbolistas:</span>
               <strong style="color: var(--accent-green);">+€${((finances.playerSales || 0) / 1000000).toFixed(2)}M</strong>
             </div>
 
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-              <span>🏆 Premio Proyectado por Posición (#${userRank || '-'}):</span>
+              <span>Premio Proyectado por Posición (#${userRank || '-'}):</span>
               <strong style="color: var(--accent-gold);">+€${estimatedPrize >= 1000000 ? (estimatedPrize / 1000000).toFixed(1) + 'M' : (estimatedPrize / 1000).toFixed(0) + 'K'}</strong>
             </div>
 
@@ -183,21 +183,21 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
 
         <!-- COLUMNA GASTOS -->
         <div class="glass-panel">
-          <h3 style="color: var(--accent-red); margin-bottom: 14px; font-size: 1.05rem;">📉 Desglose de Gastos del Club</h3>
+          <h3 style="color: var(--accent-red); margin-bottom: 14px; font-size: 1.05rem;">Desglose de Gastos del Club</h3>
           
           <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.88rem;">
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-              <span>👥 Nómina Salarial Acumulada:</span>
+              <span>Nómina Salarial Acumulada:</span>
               <strong style="color: var(--accent-red);">-€${((finances.weeklyWageTotal || 0) / 1000000).toFixed(2)}M</strong>
             </div>
 
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-              <span>📝 Inversión en Fichajes (Compras):</span>
+              <span>Inversión en Fichajes (Compras):</span>
               <strong style="color: var(--accent-red);">-€${((finances.playerPurchases || 0) / 1000000).toFixed(2)}M</strong>
             </div>
 
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-              <span>⏳ Nómina Salarial Restante (${remainingWeeks} sem):</span>
+              <span>Nómina Salarial Restante (${remainingWeeks} sem):</span>
               <strong style="color: var(--accent-gold);">-€${(projectedWageExpenses / 1000000).toFixed(2)}M</strong>
             </div>
 
@@ -212,7 +212,7 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
 
       <!-- DETALLE DE NÓMINA DE LA PLANTILLA -->
       <div class="glass-panel mb-4">
-        <h3 style="margin-bottom: 12px; font-size: 1rem; color: #ffffff;">📋 Detalle de Contratos y Salarios Semanales de la Plantilla</h3>
+        <h3 style="margin-bottom: 12px; font-size: 1rem; color: #ffffff;">Detalle de Contratos y Salarios Semanales de la Plantilla</h3>
         
         <div class="table-responsive">
           <table class="data-table" style="font-size: 0.84rem;">
@@ -253,7 +253,7 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
 
       <!-- HISTORIAL DE CARRERA DE FINANZAS POR TEMPORADA -->
       <div class="glass-panel">
-        <h3 style="margin-bottom: 12px; font-size: 1rem; color: var(--accent-gold);">📜 Historial de Presupuestos e Hitos por Temporada (25 Años)</h3>
+        <h3 style="margin-bottom: 12px; font-size: 1rem; color: var(--accent-gold);">Historial de Presupuestos e Hitos por Temporada (25 Años)</h3>
         
         ${(gameState.careerHistory || []).length === 0 ? `
           <p class="text-sub text-center py-3">El historial se actualizará automáticamente al finalizar tu primera temporada como DT.</p>
@@ -275,12 +275,12 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
                 ${gameState.careerHistory.map(h => `
                   <tr>
                     <td><strong>${h.season}/${h.season + 1}</strong></td>
-                    <td>🏰 ${h.club}</td>
+                    <td>${h.club}</td>
                     <td>#${h.leagueRank} lugar</td>
                     <td>€${((h.budgetStart || 10000000) / 1000000).toFixed(1)}M</td>
                     <td style="color: var(--accent-green); font-weight: 800;">€${((h.budgetEnd || 10000000) / 1000000).toFixed(1)}M</td>
-                    <td>🌟 ${h.mvpPlayer}</td>
-                    <td>${h.isTitleWon ? '🏆 CAMPEÓN' : '—'}</td>
+                    <td>${h.mvpPlayer}</td>
+                    <td>${h.isTitleWon ? 'CAMPEÓN' : '—'}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -295,7 +295,7 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
       <!-- PREMIOS DE LA LIGA POR POSICIÓN -->
       <div class="glass-panel mb-4">
         <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; margin-bottom: 4px;">
-          <h3 style="font-size: 1.05rem; color: var(--accent-gold); margin: 0;">🏆 Premios de la Liga — ${leagueName}</h3>
+          <h3 style="font-size: 1.05rem; color: var(--accent-gold); margin: 0;">Premios de la Liga — ${leagueName}</h3>
           <span class="text-sub" style="font-size: 0.8rem;">${leagueCountry} · Temporada ${gameState.season}/${gameState.season + 1}</span>
         </div>
         <p class="text-sub" style="font-size: 0.8rem; margin-bottom: 12px;">Montos por posición final al cierre de temporada · tu fila actual está resaltada (#${userRank || '—'})</p>
@@ -310,9 +310,9 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
               </tr>
             </thead>
             <tbody>
-              ${rankRow(1, '🥇', 'Campeón (1º)', championPrize, '100%')}
-              ${rankRow(2, '🥈', 'Zona alta (2º-4º)', top4Prize, '50%')}
-              ${rankRow(5, '🎖️', 'Resto de la tabla (5º+)', restPrize, '20%')}
+              ${rankRow(1, '1º', 'Campeón (1º)', championPrize, '100%')}
+              ${rankRow(2, '2º-4º', 'Zona alta (2º-4º)', top4Prize, '50%')}
+              ${rankRow(5, '5º+', 'Resto de la tabla (5º+)', restPrize, '20%')}
             </tbody>
           </table>
         </div>
@@ -323,7 +323,7 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
 
       <!-- COPA NACIONAL POR RONDA -->
       <div class="glass-panel mb-4">
-        <h3 style="font-size: 1.05rem; color: var(--accent-gold); margin: 0 0 4px;">🥊 ${nationalCupName} — premios por ronda</h3>
+        <h3 style="font-size: 1.05rem; color: var(--accent-gold); margin: 0 0 4px;">${nationalCupName} — premios por ronda</h3>
         <p class="text-sub" style="font-size: 0.8rem; margin-bottom: 12px;">Cada ronda superada paga su premio; en los países grandes la copa puede pagar más que la propia liga (la Copa do Brasil supera al Brasileirão).</p>
 
         <div class="table-responsive">
@@ -336,7 +336,7 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
             </thead>
             <tbody>
               ${[1, 2, 3, 4].map(ri => {
-                const labels: Record<number, string> = { 1: 'Octavos de Final', 2: 'Cuartos de Final', 3: 'Semifinal', 4: 'GRAN FINAL 🏆' };
+                const labels: Record<number, string> = { 1: 'Octavos de Final', 2: 'Cuartos de Final', 3: 'Semifinal', 4: 'GRAN FINAL' };
                 return `
                   <tr>
                     <td>${labels[ri]}</td>
@@ -351,7 +351,7 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
 
       <!-- POZO DE LA COPA CONTINENTAL -->
       <div class="glass-panel">
-        <h3 style="font-size: 1.05rem; color: var(--accent-gold); margin: 0 0 4px;">🌐 ${contCup.name} — el pozo continental</h3>
+        <h3 style="font-size: 1.05rem; color: var(--accent-gold); margin: 0 0 4px;">${contCup.name} — el pozo continental</h3>
         <p class="text-sub" style="font-size: 0.8rem; margin-bottom: 12px;">Se paga por etapas: jugar la Fase de Grupos ya asegura dinero, cada victoria de grupo suma y el título embolsa el gran premio.</p>
 
         <div class="table-responsive">
@@ -363,10 +363,10 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
               </tr>
             </thead>
             <tbody>
-              <tr><td>🎟️ Clasificar a la Fase de Grupos (garantizado)</td><td><strong style="color: var(--accent-green);">${fmtMoney(contCup.groupEntryPrize)}</strong></td></tr>
-              <tr><td>⚽ Victoria en Fase de Grupos (por partido)</td><td><strong style="color: var(--accent-green);">${fmtMoney(contCup.groupWinPrize)}</strong></td></tr>
-              <tr><td>🛡️ Avanzar en Cuartos / Semifinal (por victoria)</td><td><strong style="color: var(--accent-green);">${fmtMoney(contCup.knockoutWinPrize)}</strong></td></tr>
-              <tr><td>🥇 Conquistar el título en la gran final</td><td><strong style="color: var(--accent-gold);">${fmtMoney(contCup.finalPrize)}</strong></td></tr>
+              <tr><td>Clasificar a la Fase de Grupos (garantizado)</td><td><strong style="color: var(--accent-green);">${fmtMoney(contCup.groupEntryPrize)}</strong></td></tr>
+              <tr><td>Victoria en Fase de Grupos (por partido)</td><td><strong style="color: var(--accent-green);">${fmtMoney(contCup.groupWinPrize)}</strong></td></tr>
+              <tr><td>Avanzar en Cuartos / Semifinal (por victoria)</td><td><strong style="color: var(--accent-green);">${fmtMoney(contCup.knockoutWinPrize)}</strong></td></tr>
+              <tr><td>Conquistar el título en la gran final</td><td><strong style="color: var(--accent-gold);">${fmtMoney(contCup.finalPrize)}</strong></td></tr>
             </tbody>
           </table>
         </div>
@@ -381,26 +381,26 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
       <!-- Encabezado de Finanzas Dual + Conmutador de Pantalla (v3.13) -->
       <div class="glass-panel mb-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
-          <h2>💶 Panel de Finanzas & Contabilidad de ${userTeam.name}</h2>
+          <h2>Panel de Finanzas & Contabilidad de ${userTeam.name}</h2>
           <p class="text-sub">Control de ingresos, gastos salariales, presupuesto dual y auditorías contables</p>
         </div>
         
         <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
           <div style="display:flex; gap:8px;">
-            <button id="btnModeFinanzas" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800; ${mode === 'finanzas' ? 'background: var(--accent-cyan); color: #0b111e; border-color: var(--accent-cyan);' : ''}">💶 Panel Financiero</button>
-            <button id="btnModePremios" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800; ${mode === 'premios' ? 'background: var(--accent-gold); color: #0b111e; border-color: var(--accent-gold);' : ''}">🏆 Ingresos de Mi Liga</button>
+            <button id="btnModeFinanzas" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800; ${mode === 'finanzas' ? 'background: var(--accent-cyan); color: #0b111e; border-color: var(--accent-cyan);' : ''}">Panel Financiero</button>
+            <button id="btnModePremios" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800; ${mode === 'premios' ? 'background: var(--accent-gold); color: #0b111e; border-color: var(--accent-gold);' : ''}">Ingresos de Mi Liga</button>
           </div>
 
           <div style="display:flex; gap:12px;">
             <!-- CAJA 1: TRASPASOS -->
             <div style="background: #141d2e; border: 1px solid var(--accent-green); padding: 10px 16px; border-radius: 8px; text-align: center;">
-              <span class="text-sub" style="font-size: 0.75rem; font-weight: 700;">💰 PRESUPUESTO TRASPASOS</span>
+              <span class="text-sub" style="font-size: 0.75rem; font-weight: 700;">PRESUPUESTO TRASPASOS</span>
               <h3 style="margin: 0; color: var(--accent-green);">€${(gameState.budget / 1000000).toFixed(2)}M</h3>
             </div>
 
             <!-- CAJA 2: SALARIOS -->
             <div style="background: #141d2e; border: 1px solid var(--accent-gold); padding: 10px 16px; border-radius: 8px; text-align: center;">
-              <span class="text-sub" style="font-size: 0.75rem; font-weight: 700;">📋 PRESUPUESTO SALARIAL</span>
+              <span class="text-sub" style="font-size: 0.75rem; font-weight: 700;">PRESUPUESTO SALARIAL</span>
               <h3 style="margin: 0; color: var(--accent-gold);">€${((gameState.wageBudget || 0) / 1000).toFixed(0)}K /sem</h3>
             </div>
           </div>

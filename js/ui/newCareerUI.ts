@@ -119,19 +119,19 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
     return [
       {
         team: club1,
-        projectType: '🌱 DESAFÍO LOCAL HUMILDE',
+        projectType: 'DESAFÍO LOCAL HUMILDE',
         badgeColor: '#10b981',
         letterMessage: `La comisión de ${club1.name} en ${targetCountry} apuesta por darte tu primera oportunidad como DT profesional para plasmar tu estilo de ${archetypeData.name}.`
       },
       {
         team: club2,
-        projectType: '⚽ PROYECTO DE DESARROLLO NACIONAL',
+        projectType: 'PROYECTO DE DESARROLLO NACIONAL',
         badgeColor: '#38bdf8',
         letterMessage: `La directiva de ${club2.name} te invita a asumir tu primer contrato de 3 años para potenciar la plantilla con tu modelo táctico de ${archetypeData.name}.`
       },
       {
         team: club3,
-        projectType: '🏟️ PROYECTO BASE DE SU PAÍS',
+        projectType: 'PROYECTO BASE DE SU PAÍS',
         badgeColor: '#f59e0b',
         letterMessage: `En ${club3.name} confían en tus ideas de ${archetypeData.name} para consolidar el equipo en la liga nacional durante tus primeros 3 años de experiencia.`
       }
@@ -148,10 +148,10 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
         <!-- ENCABEZADO DE NAVEGACIÓN DE CARRERA -->
         <div class="text-center mb-4" style="max-width: 780px;">
           <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 16px; border-radius: 20px; color: #10b981; font-weight: 800; font-size: 0.78rem; margin-bottom: 12px; letter-spacing: 0.5px;">
-            ⚽ MODO MANAGER DT (TEMPORADA 1 DE 25 — 2026/2027)
+            MODO MANAGER DT (TEMPORADA 1 DE 25 — 2026/2027)
           </div>
           <h1 style="font-size: 2.1rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 6px; color: #ffffff;">
-            ${currentStep === 1 ? '🎙️ PASO 1: PERFIL DEL DIRECTOR TÉCNICO' : (currentStep === 2 ? '🧩 PASO 2: FILOSOFÍA TÁCTICA DEL ENTRENADOR' : (currentStep === 3 ? '💼 PASO 3: SELECCIÓN DE TU CLUB DE FÚTBOL' : '⚙️ PASO 4: CONFIGURACIÓN DE PARTIDA'))}
+            ${currentStep === 1 ? 'PASO 1: PERFIL DEL DIRECTOR TÉCNICO' : (currentStep === 2 ? 'PASO 2: FILOSOFÍA TÁCTICA DEL ENTRENADOR' : (currentStep === 3 ? 'PASO 3: SELECCIÓN DE TU CLUB DE FÚTBOL' : 'PASO 4: CONFIGURACIÓN DE PARTIDA'))}
           </h1>
           <p class="text-sub" style="font-size: 0.9rem; color: #94a3b8; margin: 0;">
             ${currentStep === 1 ? 'Ingresa tus datos personales de DT y selecciona tu país de origen:' : (currentStep === 2 ? 'Define tu modelo táctico de juego. Marcará el estilo de tu equipo en los partidos:' : (currentStep === 3 ? 'Selecciona tu club favorito para dirigir o revisa ofertas recomendadas:' : 'Ajusta la dificultad y el nivel de simulación para tus 25 temporadas:'))}
@@ -161,16 +161,16 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
         <!-- INDICADOR DE PROGRESO INTERACTIVO DE 4 PASOS -->
         <div style="display: flex; gap: 8px; margin-bottom: 26px; width: 100%; max-width: 640px; justify-content: center;">
           <div class="step-pill ${currentStep >= 1 ? 'active' : ''}" style="flex: 1; padding: 7px; border-radius: 8px; background: ${currentStep >= 1 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.5)'}; border: 1px solid ${currentStep >= 1 ? '#10b981' : 'rgba(255,255,255,0.08)'}; text-align: center; font-size: 0.75rem; font-weight: 800; color: ${currentStep >= 1 ? '#10b981' : '#64748b'}; transition: all 0.25s ease;">
-            1. 👤 PERFIL
+            1. PERFIL
           </div>
           <div class="step-pill ${currentStep >= 2 ? 'active' : ''}" style="flex: 1; padding: 7px; border-radius: 8px; background: ${currentStep >= 2 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.5)'}; border: 1px solid ${currentStep >= 2 ? '#10b981' : 'rgba(255,255,255,0.08)'}; text-align: center; font-size: 0.75rem; font-weight: 800; color: ${currentStep >= 2 ? '#10b981' : '#64748b'}; transition: all 0.25s ease;">
-            2. 🧩 TÁCTICA
+            2. TÁCTICA
           </div>
           <div class="step-pill ${currentStep >= 3 ? 'active' : ''}" style="flex: 1; padding: 7px; border-radius: 8px; background: ${currentStep >= 3 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.5)'}; border: 1px solid ${currentStep >= 3 ? '#10b981' : 'rgba(255,255,255,0.08)'}; text-align: center; font-size: 0.75rem; font-weight: 800; color: ${currentStep >= 3 ? '#10b981' : '#64748b'}; transition: all 0.25s ease;">
-            3. 🏟️ CLUB
+            3. CLUB
           </div>
           <div class="step-pill ${currentStep >= 4 ? 'active' : ''}" style="flex: 1; padding: 7px; border-radius: 8px; background: ${currentStep >= 4 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.5)'}; border: 1px solid ${currentStep >= 4 ? '#10b981' : 'rgba(255,255,255,0.08)'}; text-align: center; font-size: 0.75rem; font-weight: 800; color: ${currentStep >= 4 ? '#10b981' : '#64748b'}; transition: all 0.25s ease;">
-            4. ⚙️ AJUSTES
+            4. AJUSTES
           </div>
         </div>
 
@@ -179,8 +179,8 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
           <div class="glass-panel" style="width: 100%; max-width: 660px; padding: 30px; border: 1px solid rgba(255,255,255,0.08); background: rgba(13, 19, 32, 0.9); backdrop-filter: blur(16px); border-radius: 16px;">
             
             <div style="display: flex; align-items: center; gap: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 16px; margin-bottom: 22px;">
-              <div style="background: rgba(16, 185, 129, 0.15); width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 1px solid rgba(16, 185, 129, 0.3);">
-                👔
+              <div style="background: rgba(16, 185, 129, 0.15); width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 900; color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
+                DT
               </div>
               <div>
                 <h3 style="margin: 0; font-size: 1.15rem; font-weight: 900; color: #ffffff;">Registro de Entrenador Principal</h3>
@@ -190,13 +190,13 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
 
             <!-- CAMPO NOMBRE (INICIALMENTE VACÍO) -->
             <div class="form-group mb-4">
-              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">👤 Nombre Completo del DT:</label>
+              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">Nombre Completo del DT:</label>
               <input type="text" id="inputManagerName" class="input-text" value="${managerName}" style="width: 100%; font-size: 0.95rem; padding: 11px 14px; border-radius: 10px; background: #080d16; border: 1px solid rgba(255,255,255,0.12); color: #fff;" placeholder="Escribe tu nombre de entrenador..." />
             </div>
 
             <!-- CAMPO EDAD LIBRE A ELECCIÓN -->
             <div class="form-group mb-4">
-              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">🎂 Edad de Preferencia (Años):</label>
+              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">Edad de Preferencia (Años):</label>
               <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <input type="number" id="inputManagerAge" class="input-text" value="${managerAge}" min="30" max="65" style="width: 110px; font-size: 1rem; text-align: center; padding: 9px; border-radius: 10px; background: #080d16; border: 1px solid rgba(255,255,255,0.12); color: #fff; font-weight: 900;" />
                 <div style="display: flex; gap: 6px;">
@@ -211,16 +211,16 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
 
             <!-- PAÍS DE ORIGEN (SIN PRESELECCIONAR) -->
             <div class="form-group mb-4">
-              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">🌎 Selección de País de Origen:</label>
+              <label class="form-label" style="font-size: 0.84rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">Selección de País de Origen:</label>
               
               <div id="selectedCountryCard" style="background: #080d16; border: 1px dashed ${managerCountry ? '#10b981' : 'rgba(255,255,255,0.2)'}; padding: 12px 16px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s ease;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                  ${managerCountry ? renderCountryFlagSVG(managerCountry, 26) : '<span style="font-size: 1.4rem;">🌐</span>'}
+                  ${managerCountry ? renderCountryFlagSVG(managerCountry, 26) : '<span style="font-size: 0.85rem; font-weight: 800; color: #94a3b8;">[SELECCIONA PAÍS]</span>'}
                   <strong style="font-size: 1rem; color: ${managerCountry ? '#ffffff' : '#94a3b8'};" id="displayCountryName">
                     ${managerCountry || 'Haz clic para seleccionar tu país natal...'}
                   </strong>
                 </div>
-                <span style="font-size: 0.76rem; background: #10b981; color: #000; font-weight: 900; padding: 5px 12px; border-radius: 6px;">SELECCIONAR PAÍS 🔽</span>
+                <span style="font-size: 0.76rem; background: #10b981; color: #000; font-weight: 900; padding: 5px 12px; border-radius: 6px;">SELECCIONAR PAÍS</span>
               </div>
 
               <!-- REJILLA DESPLEGABLE DE PAÍSES -->
@@ -235,11 +235,11 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
             </div>
 
             <div id="countryWarningMsg" class="hidden mb-3" style="color: #ef4444; font-size: 0.8rem; font-weight: 800; background: rgba(239,68,68,0.1); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.2);">
-              ⚠️ Por favor selecciona tu país de origen para continuar.
+              Por favor selecciona tu país de origen para continuar.
             </div>
 
             <button id="btnNextToStep2" class="btn-primary btn-large" style="width: 100%; font-size: 1rem; font-weight: 900; padding: 13px; border-radius: 10px; background: #10b981; color: #000; border: none; cursor: pointer; transition: all 0.2s ease;">
-              SIGUIENTE: FILOSOFÍA TÁCTICA ➔
+              SIGUIENTE: FILOSOFÍA TÁCTICA &rarr;
             </button>
           </div>
         ` : ''}
@@ -248,7 +248,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
         ${currentStep === 2 ? `
           <div class="glass-panel" style="width: 100%; max-width: 900px; padding: 30px; border: 1px solid rgba(255,255,255,0.08); background: rgba(13, 19, 32, 0.9); backdrop-filter: blur(16px); border-radius: 16px;">
             <div class="text-center mb-4">
-              <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 900; margin-bottom: 4px;">🧩 FILOSOFÍA TÁCTICA DEL ENTRENADOR</h3>
+              <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 900; margin-bottom: 4px;">FILOSOFÍA TÁCTICA DEL ENTRENADOR</h3>
               <p class="text-sub" style="font-size: 0.85rem; color: #94a3b8;">Selecciona la identidad futbolística que imprimirás a tu equipo:</p>
             </div>
 
@@ -260,8 +260,8 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
                    data-id="TIKI_TAKA" 
                    style="padding: 18px 14px; cursor: pointer; border: 1px solid ${selectedArchetype === 'TIKI_TAKA' ? '#10b981' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'TIKI_TAKA' ? 'rgba(16, 185, 129, 0.08)' : '#0e1626'}; border-radius: 12px; transition: all 0.2s ease; position: relative;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-                  <span style="font-size: 1.8rem;">⚽</span>
-                  ${selectedArchetype === 'TIKI_TAKA' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">✓ ELEGIDO</span>' : ''}
+                  <span class="badge" style="background:#1e293b; color:#38bdf8; font-weight:900; font-size:0.75rem; padding:3px 8px; border-radius:4px;">[POSESIÓN]</span>
+                  ${selectedArchetype === 'TIKI_TAKA' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">ELEGIDO</span>' : ''}
                 </div>
                 <h4 style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin-bottom: 4px;">TIKI-TAKA & POSESIÓN</h4>
                 <span style="font-size: 0.74rem; display: block; margin-bottom: 8px; color: #94a3b8;">Juego de Posición & Pase Corto</span>
@@ -278,8 +278,8 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
                    data-id="GEGENPRESSING" 
                    style="padding: 18px 14px; cursor: pointer; border: 1px solid ${selectedArchetype === 'GEGENPRESSING' ? '#10b981' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'GEGENPRESSING' ? 'rgba(16, 185, 129, 0.08)' : '#0e1626'}; border-radius: 12px; transition: all 0.2s ease; position: relative;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-                  <span style="font-size: 1.8rem;">⚡</span>
-                  ${selectedArchetype === 'GEGENPRESSING' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">✓ ELEGIDO</span>' : ''}
+                  <span class="badge" style="background:#1e293b; color:#f59e0b; font-weight:900; font-size:0.75rem; padding:3px 8px; border-radius:4px;">[PRESIÓN]</span>
+                  ${selectedArchetype === 'GEGENPRESSING' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">ELEGIDO</span>' : ''}
                 </div>
                 <h4 style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin-bottom: 4px;">GEGENPRESSING & PRESIÓN</h4>
                 <span style="font-size: 0.74rem; display: block; margin-bottom: 8px; color: #94a3b8;">Presión Tras Pérdida & Vértigo</span>
@@ -296,8 +296,8 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
                    data-id="CATENACCIO" 
                    style="padding: 18px 14px; cursor: pointer; border: 1px solid ${selectedArchetype === 'CATENACCIO' ? '#10b981' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'CATENACCIO' ? 'rgba(16, 185, 129, 0.08)' : '#0e1626'}; border-radius: 12px; transition: all 0.2s ease; position: relative;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-                  <span style="font-size: 1.8rem;">🚌</span>
-                  ${selectedArchetype === 'CATENACCIO' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">✓ ELEGIDO</span>' : ''}
+                  <span class="badge" style="background:#1e293b; color:#10b981; font-weight:900; font-size:0.75rem; padding:3px 8px; border-radius:4px;">[DEFENSA]</span>
+                  ${selectedArchetype === 'CATENACCIO' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">ELEGIDO</span>' : ''}
                 </div>
                 <h4 style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin-bottom: 4px;">CATENACCIO & BLOQUE BAJO</h4>
                 <span style="font-size: 0.74rem; display: block; margin-bottom: 8px; color: #94a3b8;">El Autobús & Cerrojo Defensivo</span>
@@ -317,11 +317,11 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
               <div class="archetype-card-step ${selectedArchetype === 'WING_PLAY' ? 'selected' : ''}" 
                    data-id="WING_PLAY" 
                    style="padding: 16px; cursor: pointer; border: 1px solid ${selectedArchetype === 'WING_PLAY' ? '#10b981' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'WING_PLAY' ? 'rgba(16, 185, 129, 0.08)' : '#0e1626'}; border-radius: 12px; transition: all 0.2s ease; display: flex; align-items: center; gap: 14px;">
-                <span style="font-size: 2rem;">🌊</span>
+                <span class="badge" style="background:#1e293b; color:#38bdf8; font-weight:900; font-size:0.75rem; padding:4px 8px; border-radius:4px;">[BANDAS]</span>
                 <div style="flex: 1;">
                   <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h4 style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin: 0;">JUEGO POR BANDAS & CENTROS</h4>
-                    ${selectedArchetype === 'WING_PLAY' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">✓ ELEGIDO</span>' : ''}
+                    ${selectedArchetype === 'WING_PLAY' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">ELEGIDO</span>' : ''}
                   </div>
                   <span style="font-size: 0.74rem; color: #94a3b8; display: block; margin-top: 2px;">Amplitud Total, Desborde y Centros al Área</span>
                   <div style="background: rgba(255,255,255,0.05); color: #cbd5e1; padding: 3px 6px; border-radius: 6px; font-weight: 700; font-size: 0.68rem; margin-top: 6px; display: inline-block;">
@@ -333,11 +333,11 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
               <div class="archetype-card-step ${selectedArchetype === 'DIRECT_ATTACK' ? 'selected' : ''}" 
                    data-id="DIRECT_ATTACK" 
                    style="padding: 16px; cursor: pointer; border: 1px solid ${selectedArchetype === 'DIRECT_ATTACK' ? '#10b981' : 'rgba(255,255,255,0.08)'}; background: ${selectedArchetype === 'DIRECT_ATTACK' ? 'rgba(16, 185, 129, 0.08)' : '#0e1626'}; border-radius: 12px; transition: all 0.2s ease; display: flex; align-items: center; gap: 14px;">
-                <span style="font-size: 2rem;">🎯</span>
+                <span class="badge" style="background:#1e293b; color:#ef4444; font-weight:900; font-size:0.75rem; padding:4px 8px; border-radius:4px;">[CONTRA]</span>
                 <div style="flex: 1;">
                   <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h4 style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin: 0;">CONTRAATAQUE DIRECTO</h4>
-                    ${selectedArchetype === 'DIRECT_ATTACK' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">✓ ELEGIDO</span>' : ''}
+                    ${selectedArchetype === 'DIRECT_ATTACK' ? '<span style="font-size: 0.68rem; background: #10b981; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px;">ELEGIDO</span>' : ''}
                   </div>
                   <span style="font-size: 0.74rem; color: #94a3b8; display: block; margin-top: 2px;">Balón Largo a la Espalda y Zarpazos Verticales</span>
                   <div style="background: rgba(255,255,255,0.05); color: #cbd5e1; padding: 3px 6px; border-radius: 6px; font-weight: 700; font-size: 0.68rem; margin-top: 6px; display: inline-block;">
@@ -350,10 +350,10 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
 
             <div style="display: flex; gap: 14px;">
               <button id="btnBackToStep1" class="btn-secondary" style="flex: 1; padding: 12px; font-weight: 800; border-radius: 10px; background: #131c2e; border: 1px solid rgba(255,255,255,0.08); color: #94a3b8;">
-                ⬅️ VOLVER AL PERFIL
+                &lt; VOLVER AL PERFIL
               </button>
               <button id="btnNextToStep3" class="btn-primary btn-large" style="flex: 2; font-size: 1rem; font-weight: 900; padding: 12px; border-radius: 10px; background: #10b981; color: #000; border: none; cursor: pointer;">
-                🔍 VER CLUBES & SELECCIÓN ➔
+                VER CLUBES & SELECCIÓN &rarr;
               </button>
             </div>
           </div>
@@ -366,14 +366,14 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
             <!-- CABECERA RESUMEN DEL DT -->
             <div class="glass-panel mb-3" style="padding: 14px 20px; border: 1px solid rgba(255,255,255,0.08); background: rgba(13, 19, 32, 0.9); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 10px;">
-                ${managerCountry ? renderCountryFlagSVG(managerCountry, 22) : '🌐'}
+                ${managerCountry ? renderCountryFlagSVG(managerCountry, 22) : '<span style="font-size: 0.8rem; font-weight: 800; color: #94a3b8;">[PAÍS]</span>'}
                 <span style="font-weight: 900; font-size: 0.95rem; color: #fff;">${managerName || 'Director Técnico'}</span>
                 <span style="background: rgba(255,255,255,0.06); color: #cbd5e1; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: 700;">${managerAge}a ${managerCountry ? `· ${managerCountry}` : ''}</span>
               </div>
               <div style="display: flex; align-items: center; gap: 12px;">
                 <span style="font-size: 0.82rem; color: #94a3b8;">Estilo: <strong style="color: #10b981;">${MANAGER_ARCHETYPES[selectedArchetype]?.name || 'TIKI-TAKA'}</strong></span>
                 <button id="btnBackToStep2" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800; border-radius: 6px; background: #131c2e; border: 1px solid rgba(255,255,255,0.08); color:#cbd5e1;">
-                  ✏️ Cambiar
+                  Cambiar
                 </button>
               </div>
             </div>
@@ -381,10 +381,10 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
             <!-- SELECTOR DE PESTAÑA: FAVORITO ES LA OPCIÓN PRINCIPAL POR DEFECTO -->
             <div class="glass-panel mb-3" style="padding: 6px; border: 1px solid rgba(255,255,255,0.08); background: #080d16; border-radius: 12px; display: flex; gap: 8px;">
               <button id="tabBtnFavorite" class="btn-tab-step ${step3Tab === 'FAVORITE' ? 'active' : ''}" style="flex: 1; padding: 11px 16px; border-radius: 8px; font-weight: 900; font-size: 0.88rem; border: 1px solid ${step3Tab === 'FAVORITE' ? '#10b981' : 'transparent'}; background: ${step3Tab === 'FAVORITE' ? 'rgba(16, 185, 129, 0.15)' : 'transparent'}; color: ${step3Tab === 'FAVORITE' ? '#10b981' : '#94a3b8'}; cursor: pointer; transition: all 0.2s ease;">
-                ⭐ ELEGIR MI CLUB FAVORITO (LIBRE ELECCIÓN)
+                ELEGIR MI CLUB FAVORITO (LIBRE ELECCIÓN)
               </button>
               <button id="tabBtnRecommended" class="btn-tab-step ${step3Tab === 'RECOMMENDED' ? 'active' : ''}" style="flex: 1; padding: 11px 16px; border-radius: 8px; font-weight: 900; font-size: 0.88rem; border: 1px solid ${step3Tab === 'RECOMMENDED' ? '#10b981' : 'transparent'}; background: ${step3Tab === 'RECOMMENDED' ? 'rgba(16, 185, 129, 0.15)' : 'transparent'}; color: ${step3Tab === 'RECOMMENDED' ? '#10b981' : '#94a3b8'}; cursor: pointer; transition: all 0.2s ease;">
-                📩 3 OFERTAS RECOMENDADAS (${(managerCountry || 'PERÚ').toUpperCase()})
+                3 OFERTAS RECOMENDADAS (${(managerCountry || 'PERÚ').toUpperCase()})
               </button>
             </div>
 
@@ -397,13 +397,13 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
         ${currentStep === 4 ? `
           <div class="glass-panel" style="width: 100%; max-width: 660px; padding: 30px; border: 1px solid rgba(255,255,255,0.08); background: rgba(13, 19, 32, 0.9); backdrop-filter: blur(16px); border-radius: 16px;">
             <div class="text-center mb-4">
-              <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 900; margin-bottom: 4px;">⚙️ AJUSTES Y DIFICULTAD DE PARTIDA</h3>
+              <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 900; margin-bottom: 4px;">AJUSTES Y DIFICULTAD DE PARTIDA</h3>
               <p class="text-sub" style="font-size: 0.85rem; color: #94a3b8;">Ajusta la frecuencia imprevista y sistemas dinámicos para tus 25 temporadas:</p>
             </div>
 
             <!-- Frecuencia de Eventos -->
             <div class="form-group mb-3" style="background:#080d16; padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
-              <label class="form-label" style="font-size: 0.85rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">🚨 Eventos Inesperados & Crisis:</label>
+              <label class="form-label" style="font-size: 0.85rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: block;">Eventos Inesperados & Crisis:</label>
               <select id="selectEventFreqConfig" class="input-select" style="width: 100%; padding: 10px 12px; border-radius: 8px; background: #0e1626; border: 1px solid rgba(255,255,255,0.12); color: #fff; font-size: 0.88rem;">
                 <option value="off" ${eventFrequency === 'off' ? 'selected' : ''}>Desactivado (Sin imprevistos)</option>
                 <option value="baja" ${eventFrequency === 'baja' ? 'selected' : ''}>Baja (2 eventos por temporada)</option>
@@ -415,7 +415,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
             <!-- Sistema de Regens PES -->
             <div class="form-group mb-3" style="background:#080d16; padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <label class="form-label" style="font-size: 0.85rem; font-weight: 800; color: #f8fafc; margin:0;">♻️ Sistema de Regens Nostálgico (PES):</label>
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 800; color: #f8fafc; margin:0;">Sistema de Regens Nostálgico (PES):</label>
                 <p class="text-sub" style="font-size:0.76rem; color:#94a3b8; margin:2px 0 0 0;">Jugadores retirados reaparecen de 16 años en sus clubes de origen.</p>
               </div>
               <input type="checkbox" id="checkEnableRegensConfig" ${enableRegens ? 'checked' : ''} style="width:20px; height:20px; cursor:pointer; accent-color: #10b981;" />
@@ -424,7 +424,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
             <!-- Mercado de Entrenadores IA -->
             <div class="form-group mb-4" style="background:#080d16; padding:16px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <label class="form-label" style="font-size: 0.85rem; font-weight: 800; color: #f8fafc; margin:0;">🧑‍💼 Mercado Global de Entrenadores IA:</label>
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 800; color: #f8fafc; margin:0;">Mercado Global de Entrenadores IA:</label>
                 <p class="text-sub" style="font-size:0.76rem; color:#94a3b8; margin:2px 0 0 0;">Despidos y contrataciones dinámicas de DTs en clubes rivales.</p>
               </div>
               <input type="checkbox" id="checkEnableManagerMarketConfig" ${enableManagerMarket ? 'checked' : ''} style="width:20px; height:20px; cursor:pointer; accent-color: #10b981;" />
@@ -432,10 +432,10 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
 
             <div style="display: flex; gap: 14px;">
               <button id="btnBackToStep3" class="btn-secondary" style="flex: 1; padding: 12px; font-weight: 800; border-radius: 10px; background: #131c2e; border: 1px solid rgba(255,255,255,0.08); color: #94a3b8;">
-                ⬅️ VOLVER A CLUBES
+                &lt; VOLVER A CLUBES
               </button>
               <button id="btnConfirmStartGame" class="btn-primary btn-large" style="flex: 2; font-size: 1rem; font-weight: 900; padding: 12px; border-radius: 10px; background: #10b981; color: #000; border: none; cursor: pointer;">
-                🚀 INICIAR MI CARRERA PROFESIONAL ➔
+                INICIAR MI CARRERA PROFESIONAL &rarr;
               </button>
             </div>
           </div>
@@ -599,18 +599,18 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
 
                 <!-- CARTA NARRATIVA DE LA JUNTA DIRECTIVA -->
                 <div style="background: #080d16; border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px; margin: 14px 0; text-align: left; font-size: 0.8rem; line-height: 1.4; color: #cbd5e1;">
-                  📩 <strong>Carta de la Comisión Directiva:</strong><br>
+                  <strong>Carta de la Comisión Directiva:</strong><br>
                   <em style="color: #94a3b8;">"${o.letterMessage}"</em>
                 </div>
 
                 <div style="background: #080d16; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; text-align: left; font-size: 0.82rem; border: 1px solid rgba(255,255,255,0.04);">
-                  <p style="margin-bottom: 4px; color: #fff;">📊 <strong>Nivel Plantilla:</strong> <span style="color: #38bdf8; font-weight: 800;">OVR ${o.team.overall}</span></p>
-                  <p style="margin-bottom: 0; color: #fff;">💰 <strong>Presupuesto Fichajes:</strong> <strong style="color: #f59e0b;">€${(o.team.budget / 1000000).toFixed(1)}M</strong></p>
+                  <p style="margin-bottom: 4px; color: #fff;"><strong>Nivel Plantilla:</strong> <span style="color: #38bdf8; font-weight: 800;">OVR ${o.team.overall}</span></p>
+                  <p style="margin-bottom: 0; color: #fff;"><strong>Presupuesto Fichajes:</strong> <strong style="color: #f59e0b;">€${(o.team.budget / 1000000).toFixed(1)}M</strong></p>
                 </div>
               </div>
 
               <button class="btn-primary btn-sign-club" data-id="${o.team.id}" style="width: 100%; padding: 12px; font-weight: 900; font-size: 0.9rem; background: #10b981; color: #000; border-radius: 10px; border: none; cursor: pointer;">
-                ✍️ FIRMAR CON ${o.team.name.toUpperCase()} ➔
+                FIRMAR CON ${o.team.name.toUpperCase()} &rarr;
               </button>
             </div>
           `).join('')}
@@ -638,14 +638,14 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
           <!-- FILTROS Y BARRA DE BÚSQUEDA (SE RENDERIZAN UNA SOLA VEZ) -->
           <div style="display: flex; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; align-items: center;">
             <div style="flex: 1; min-width: 240px;">
-              <label style="font-size: 0.8rem; font-weight: 800; color: #f8fafc; display: block; margin-bottom: 4px;">🔍 Buscar Club por Nombre:</label>
+              <label style="font-size: 0.8rem; font-weight: 800; color: #f8fafc; display: block; margin-bottom: 4px;">Buscar Club por Nombre:</label>
               <input type="text" id="inputSearchFavorite" class="input-text" value="${favoriteSearchQuery}" placeholder="Escribe el nombre de tu club... (ej. Alianza Lima, Barcelona, Real Madrid, Boca...)" style="width: 100%; padding: 10px 14px; border-radius: 8px; background: #080d16; border: 1px solid rgba(255,255,255,0.12); color: #fff; font-size: 0.88rem;" />
             </div>
 
             <div style="flex: 1; min-width: 240px;">
-              <label style="font-size: 0.8rem; font-weight: 800; color: #f8fafc; display: block; margin-bottom: 4px;">🏆 Filtrar por Liga / Competición:</label>
+              <label style="font-size: 0.8rem; font-weight: 800; color: #f8fafc; display: block; margin-bottom: 4px;">Filtrar por Liga / Competición:</label>
               <select id="selectLeagueFavorite" class="input-select" style="width: 100%; padding: 10px 14px; border-radius: 8px; background: #080d16; border: 1px solid rgba(255,255,255,0.12); color: #fff; font-size: 0.88rem;">
-                <option value="ALL" ${favoriteFilterLeagueId === 'ALL' ? 'selected' : ''}>🌐 TODAS LAS LIGAS (${allEnrichedTeams.length} Clubes)</option>
+                <option value="ALL" ${favoriteFilterLeagueId === 'ALL' ? 'selected' : ''}>TODAS LAS LIGAS (${allEnrichedTeams.length} Clubes)</option>
                 ${leagues.map(l => `
                   <option value="${l.id}" ${favoriteFilterLeagueId === l.id ? 'selected' : ''}>
                     ${l.country} — ${l.name} (${l.teams.length} equipos)
@@ -690,7 +690,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
 
         gridEl.innerHTML = filteredTeams.length === 0 ? `
           <div style="grid-column: span 3; padding: 40px; text-align: center; color: #94a3b8;">
-            ❌ No se encontraron clubes que coincidan con "${favoriteSearchQuery}". Intenta con otro nombre o cambiando de liga.
+            No se encontraron clubes que coincidan con "${favoriteSearchQuery}". Intenta con otro nombre o cambiando de liga.
           </div>
         ` : filteredTeams.map(t => `
           <div class="team-fav-card" style="background: #080d16; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease;">
@@ -706,13 +706,13 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
               </div>
 
               <div style="display: flex; justify-content: space-between; background: #0e1626; padding: 7px 10px; border-radius: 6px; font-size: 0.76rem; margin-bottom: 10px;">
-                <span>📊 Media: <strong style="color: #38bdf8; font-weight: 800;">OVR ${t.overall}</strong></span>
-                <span>💰 Presupuesto: <strong style="color: #f59e0b; font-weight: 800;">€${(t.budget / 1000000).toFixed(1)}M</strong></span>
+                <span>Media: <strong style="color: #38bdf8; font-weight: 800;">OVR ${t.overall}</strong></span>
+                <span>Presupuesto: <strong style="color: #f59e0b; font-weight: 800;">€${(t.budget / 1000000).toFixed(1)}M</strong></span>
               </div>
             </div>
 
             <button class="btn-primary btn-sign-club" data-id="${t.id}" style="width: 100%; padding: 9px; font-weight: 900; font-size: 0.84rem; background: #10b981; color: #000; border-radius: 8px; border: none; cursor: pointer;">
-              ✍️ ELEGIR ${t.short || t.name} ➔
+              ELEGIR ${t.short || t.name} &rarr;
             </button>
           </div>
         `).join('');

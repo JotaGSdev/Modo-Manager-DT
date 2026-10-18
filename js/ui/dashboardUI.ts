@@ -11,6 +11,9 @@ import { ContractEngine } from '../engine/contracts.js';
 import { renderTeamBadgeSVG } from './badgeHelper.js';
 import { getLeaguePrizeByRank } from '../data/leaguePrizes.js';
 import { sfx } from '../../assets/audio/sfx.js';
+import { getRivalryInfo } from '../data/rivalries.js';
+import { ManagerRPG } from '../engine/managerRPG.js';
+import { AchievementsEngine } from '../engine/achievementsEngine.js';
 
 import type { CupPhase, EvolutionReportEntry, GameEvent, League, NavigateFn, Team } from '../types.js';
 
@@ -31,6 +34,9 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
   const nextRival: Team = otherTeams.length > 0
     ? otherTeams[(gameState.week - 1) % otherTeams.length]!
     : { id: 'rival_gen', name: 'Rival FC', short: 'RIV', overall: 73, colors: ['#cc0000', '#000000'], stadium: 'Estadio Rival', budget: 0, reputation: 50 };
+
+  const derbyInfo = getRivalryInfo(userTeam.id, nextRival.id);
+  const rpg = ManagerRPG.initIfMissing();
 
   const midSeasonWeek = Math.floor((gameState.maxWeeks || 38) / 2);
   const isSeasonCompleted = gameState.week >= gameState.maxWeeks;
@@ -63,19 +69,19 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
       <div class="glass-panel text-center" style="padding: 10px 12px;">
         <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">MÁXIMO GOLEADOR</span>
         <h4 style="margin: 2px 0 0 0; font-size: 1.05rem; color: #ffffff; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${topClubScorer.name}</h4>
-        <span class="stat-ovr mt-1" style="font-size: 0.72rem; padding: 2px 6px;">${topClubScorer.seasonGoals || 0} Goles ⚽</span>
+        <span class="stat-ovr mt-1" style="font-size: 0.72rem; padding: 2px 6px;">${topClubScorer.seasonGoals || 0} Goles</span>
       </div>
 
       <div class="glass-panel text-center" style="padding: 10px 12px;">
         <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">LÍDER ASISTENCIAS</span>
         <h4 style="margin: 2px 0 0 0; font-size: 1.05rem; color: #ffffff; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${topClubAssister.name}</h4>
-        <span class="text-highlight mt-1" style="font-size: 0.75rem;">${Math.floor((topClubAssister.overall - 65) / 4) + 1} Asistencias 👟</span>
+        <span class="text-highlight mt-1" style="font-size: 0.75rem;">${Math.floor((topClubAssister.overall - 65) / 4) + 1} Asistencias</span>
       </div>
 
-      <div class="glass-panel text-center" style="padding: 10px 12px;">
-        <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">ESTADO DE TORNEOS</span>
-        <h4 style="margin: 2px 0 0 0; font-size: 1.05rem; color: var(--accent-gold); font-weight: 800;">${userPosLabel}</h4>
-        <span class="text-sub" style="font-size: 0.72rem;">Liga / Copa 🏆</span>
+      <div class="glass-panel text-center" style="padding: 10px 12px; cursor: pointer;" id="kpiManagerLevel" title="Haz clic para ver el Árbol de Talentos">
+        <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">NIVEL DE DT</span>
+        <h4 style="margin: 2px 0 0 0; font-size: 1.05rem; color: var(--accent-gold); font-weight: 900;">Nivel ${rpg.level}</h4>
+        <span class="text-highlight" style="font-size: 0.72rem;">${rpg.talentPoints > 0 ? `[!] ${rpg.talentPoints} pts listos` : `(${userPosLabel})`}</span>
       </div>
     </div>
 
@@ -84,9 +90,15 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
       
       <!-- Columna 1: Tarjeta de Partido -->
       <div class="card glass-panel" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+        ${derbyInfo.isDerby ? `
+          <div style="background: linear-gradient(90deg, #f59e0b, #ef4444); color: #000; font-weight: 900; font-size: 0.74rem; text-align: center; padding: 5px 8px; border-radius: 6px; margin-bottom: 8px; letter-spacing: 0.5px;">
+            [DERBY] ${derbyInfo.tag || 'EL CLÁSICO DE LA JORNADA'}
+          </div>
+        ` : ''}
+
         <div class="card-header" style="margin-bottom: 8px;">
           <span class="badge ${isFinalMatch ? 'badge-final' : ''}" style="font-size: 0.75rem; padding: 3px 8px;">
-            ${isSeasonCompleted ? '🏆 TEMPORADA CONCLUIDA' : (gameState.week === midSeasonWeek ? '❄️ PARÓN INVERNAL' : `JORNADA ${gameState.week} / ${gameState.maxWeeks}`)}
+            ${isSeasonCompleted ? 'TEMPORADA CONCLUIDA' : (gameState.week === midSeasonWeek ? 'PARÓN INVERNAL' : `JORNADA ${gameState.week} / ${gameState.maxWeeks}`)}
           </span>
           <span class="league-name" style="font-size: 0.80rem;">${league.name} (${seasonLabel})</span>
         </div>
@@ -100,7 +112,7 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
 
           <div class="vs-divider text-center">
             <span class="vs-text" style="font-size: 1.4rem; font-weight: 900; color: var(--accent-cyan);">VS</span>
-            <span class="stadium-subtext text-sub d-block" style="font-size: 0.74rem;">🏟️ ${userTeam.stadium}</span>
+            <span class="stadium-subtext text-sub d-block" style="font-size: 0.74rem;">Estadio: ${userTeam.stadium}</span>
           </div>
 
           <div class="team-box text-center">
@@ -110,14 +122,29 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
           </div>
         </div>
 
-        <div class="match-actions" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+        <!-- ENFOQUE DE ENTRENAMIENTO SEMANAL -->
+        <div style="background: #0f172a; border: 1px solid rgba(255,255,255,0.08); padding: 8px 10px; border-radius: 8px; margin: 4px 0 8px 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-size: 0.74rem; font-weight: 800; color: var(--accent-gold);">Enfoque Semanal</span>
+            <span class="text-sub" style="font-size: 0.68rem;">Bonus táctico</span>
+          </div>
+          <select id="selectWeeklyTraining" class="input-select" style="font-size: 0.74rem; padding: 3px 6px; width: 100%; background: #141d2e;">
+            <option value="ATTACK" ${gameState.weeklyTraining === 'ATTACK' ? 'selected' : ''}>[ATA] Definición & Disparo (+Goles)</option>
+            <option value="DEFENSE" ${gameState.weeklyTraining === 'DEFENSE' ? 'selected' : ''}>[DEF] Cerrojo Defensivo (-Goles rival)</option>
+            <option value="PHYSICAL" ${gameState.weeklyTraining === 'PHYSICAL' ? 'selected' : ''}>[FÍS] Puesta a Punto Física (Energía)</option>
+            <option value="YOUTH" ${gameState.weeklyTraining === 'YOUTH' ? 'selected' : ''}>[CAN] Pulir Canteranos (+15 EXP Sub-22)</option>
+            <option value="SPIRIT" ${gameState.weeklyTraining === 'SPIRIT' ? 'selected' : ''}>[MOR] Asado de Vestuario (+5 Team Spirit)</option>
+          </select>
+        </div>
+
+        <div class="match-actions" style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
           ${isSeasonCompleted ? `
             <button id="btnFinishSeasonDirect" class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.95rem; background: var(--accent-gold); color: #000; font-weight: 900;">
-              🏆 VER EVALUACIÓN DE FIN DE TEMPORADA ➔
+              VER EVALUACIÓN DE FIN DE TEMPORADA &rarr;
             </button>
           ` : `
-            <button id="btnPlayMatch" class="btn-primary" style="width: 100%; padding: 10px; font-size: 0.88rem;">⚽ JUGAR PARTIDO EN VIVO</button>
-            <button id="btnSimBlock" class="btn-secondary" style="width: 100%; padding: 9px; font-size: 0.84rem;">⏩ SIMULAR HASTA MITAD / FINAL</button>
+            <button id="btnPlayMatch" class="btn-primary" style="width: 100%; padding: 10px; font-size: 0.88rem;">JUGAR PARTIDO EN VIVO</button>
+            <button id="btnSimBlock" class="btn-secondary" style="width: 100%; padding: 9px; font-size: 0.84rem;">SIMULAR HASTA MITAD / FINAL</button>
           `}
         </div>
       </div>
@@ -128,11 +155,11 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
         <!-- SELECTOR DE COMPETICIÓN (LIGA / COPA NACIONAL / COPA CONTINENTAL) -->
         <div>
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
-            <h4 style="margin:0; font-size: 0.92rem; color: #ffffff;">📊 Competición</h4>
+            <h4 style="margin:0; font-size: 0.92rem; color: #ffffff;">Competición</h4>
             <select id="selectCompetitionTab" class="input-select" style="font-size: 0.76rem; padding: 3px 8px; border-radius: 6px; background: #0f172a; color: var(--accent-cyan); font-weight: 800;">
-              <option value="LEAGUE" ${activeCompTab === 'LEAGUE' ? 'selected' : ''}>🏆 ${league.name}</option>
-              <option value="NATIONAL_CUP" ${activeCompTab === 'NATIONAL_CUP' ? 'selected' : ''}>🥊 ${natCupName}</option>
-              <option value="CONTINENTAL_CUP" ${activeCompTab === 'CONTINENTAL_CUP' ? 'selected' : ''}>🌐 ${contCupName}</option>
+              <option value="LEAGUE" ${activeCompTab === 'LEAGUE' ? 'selected' : ''}>[LIGA] ${league.name}</option>
+              <option value="NATIONAL_CUP" ${activeCompTab === 'NATIONAL_CUP' ? 'selected' : ''}>[COPA] ${natCupName}</option>
+              <option value="CONTINENTAL_CUP" ${activeCompTab === 'CONTINENTAL_CUP' ? 'selected' : ''}>[INT] ${contCupName}</option>
             </select>
           </div>
 
@@ -147,7 +174,7 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
         
         <!-- PICHICHI -->
         <div style="margin-bottom:12px;">
-          <h4 style="margin-bottom: 8px; font-size: 0.92rem; color: #ffffff;">⚽ Pichichi de la Liga</h4>
+          <h4 style="margin-bottom: 8px; font-size: 0.92rem; color: #ffffff;">Pichichi de la Liga</h4>
           <div class="table-responsive">
             <table class="data-table" style="font-size: 0.78rem;">
               <thead>
@@ -164,7 +191,7 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
                   <tr>
                     <td style="padding: 4px 6px;">${idx + 1}</td>
                     <td style="padding: 4px 6px;"><strong>${s.name}</strong></td>
-                    <td style="padding: 4px 6px;"><span class="stat-ovr" style="padding: 1px 5px; font-size: 0.72rem;">${s.goals} ⚽</span></td>
+                    <td style="padding: 4px 6px;"><span class="stat-ovr" style="padding: 1px 5px; font-size: 0.72rem;">${s.goals} goles</span></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -175,21 +202,21 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
         <!-- THE FEED (RED SOCIAL DE NOTICIAS) — v2.0 Exclusivo Dashboard -->
         <div style="border-top:1px solid var(--border-color); padding-top:10px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <h4 style="margin:0; font-size:0.85rem; color:var(--accent-cyan);">📲 THE FEED (RED SOCIAL)</h4>
+            <h4 style="margin:0; font-size:0.85rem; color:var(--accent-cyan);">THE FEED (RED SOCIAL)</h4>
             <span class="badge" style="font-size:0.65rem; background:#1e293b; color:var(--text-sub);">NOTICIAS DT</span>
           </div>
 
           <div id="feedListContainer" style="max-height:170px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
             ${(gameState.feedItems || []).length === 0 ? `
               <div class="text-sub text-center" style="font-size:0.75rem; padding:10px;">
-                📰 Sin publicaciones recientes en el Feed. Avanza la temporada para recibir rumores y noticias.
+                Sin publicaciones recientes en el Feed. Avanza la temporada para recibir rumores y noticias.
               </div>
             ` : (gameState.feedItems || []).slice(0, 10).map(f => `
               <div style="background:#0f172a; border:1px solid var(--border-color); border-radius:6px; padding:6px 8px; font-size:0.75rem; display:flex; gap:8px; align-items:flex-start;">
-                <span style="font-size:1.1rem; line-height:1;">${f.icon || '📰'}</span>
+                <span class="badge" style="font-size:0.62rem; background:#1e293b; color:var(--accent-gold); font-weight:800; padding:2px 4px; border-radius:4px; align-self:flex-start; margin-top:2px;">[NOTICIA]</span>
                 <div>
                   <div style="color:var(--text-sub); font-size:0.65rem; font-weight:800;">Semana ${f.week} · T${f.season}</div>
-                  <div style="color:#fff; line-height:1.3;">${f.text}</div>
+                  <div style="color:#fff; line-height:1.3;">${f.text.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1FA00}-\u{1FAFF}]/gu, '').trim()}</div>
                 </div>
               </div>
             `).join('')}
@@ -243,13 +270,13 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
 
       const phase: CupPhase = progressList?.[currentCupPhaseIdx] || { phaseIndex: 0, week: 0, phaseName: 'Fase Inicial', cupName: '', status: 'PENDIENTE', score: '- -', rivalName: 'Por definir' };
 
-      let statusBadge = '<span style="background: #334155; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">PENDIENTE ⏳</span>';
+      let statusBadge = '<span style="background: #334155; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">PENDIENTE</span>';
       if (phase.status === 'CLASIFICADO' || phase.status === 'VICTORIA') {
-        statusBadge = '<span style="background: var(--accent-green); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 900; font-size: 0.72rem;">CLASIFICADO 🟢</span>';
+        statusBadge = '<span style="background: var(--accent-green); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 900; font-size: 0.72rem;">CLASIFICADO</span>';
       } else if (phase.status === 'ELIMINADO' || phase.status === 'DERROTA') {
-        statusBadge = '<span style="background: var(--accent-red); color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">ELIMINADO 🔴</span>';
+        statusBadge = '<span style="background: var(--accent-red); color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 0.72rem;">ELIMINADO</span>';
       } else if (phase.status === 'CAMPEÓN') {
-        statusBadge = '<span style="background: var(--accent-gold); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 900; font-size: 0.72rem;">🥇 ¡CAMPEÓN!</span>';
+        statusBadge = '<span style="background: var(--accent-gold); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 900; font-size: 0.72rem;">¡CAMPEÓN!</span>';
       }
 
       contentEl.innerHTML = `
@@ -257,9 +284,9 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
           
           <!-- CONTROLES NAVEGADORES DEL CARRUSEL DE FASES -->
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-            <button id="btnPrevCupPhase" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" ${currentCupPhaseIdx === 0 ? 'disabled style="opacity:0.3;"' : ''}>◀ Anterior</button>
+            <button id="btnPrevCupPhase" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" ${currentCupPhaseIdx === 0 ? 'disabled style="opacity:0.3;"' : ''}>&lt; Anterior</button>
             <span style="font-size: 0.82rem; font-weight: 900; color: var(--accent-cyan);">${phase.phaseName}</span>
-            <button id="btnNextCupPhase" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" ${currentCupPhaseIdx === totalPhases - 1 ? 'disabled style="opacity:0.3;"' : ''}>Siguiente ▶</button>
+            <button id="btnNextCupPhase" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" ${currentCupPhaseIdx === totalPhases - 1 ? 'disabled style="opacity:0.3;"' : ''}>Siguiente &gt;</button>
           </div>
 
           <!-- TARJETA DEL CRUCE DE LA FASE -->
@@ -310,6 +337,22 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
     renderCompTab();
   });
 
+  // Listener para Nivel de DT
+  document.getElementById('kpiManagerLevel')?.addEventListener('click', () => {
+    sfx.playClick();
+    navigateTo('tactics');
+  });
+
+  // Listener para cambio de enfoque semanal
+  document.getElementById('selectWeeklyTraining')?.addEventListener('change', (e) => {
+    sfx.playClick();
+    gameState.weeklyTraining = (e.target as HTMLSelectElement).value;
+    if (gameState.weeklyTraining === 'SPIRIT') {
+      gameState.teamSpirit = Math.min(100, gameState.teamSpirit + 5);
+    }
+    db.saveGame();
+  });
+
   if (isSeasonCompleted) {
     document.getElementById('btnFinishSeasonDirect')?.addEventListener('click', () => {
       sfx.playClick();
@@ -318,6 +361,14 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
   } else {
     document.getElementById('btnPlayMatch')?.addEventListener('click', () => {
       sfx.playWhistle();
+
+      // Aplicar bonificaciones del enfoque de entrenamiento semanal
+      if (gameState.weeklyTraining === 'ATTACK') {
+        gameState.matchBonus.tacticalBonus = (gameState.matchBonus.tacticalBonus || 0) + 1;
+      } else if (gameState.weeklyTraining === 'DEFENSE') {
+        gameState.matchBonus.moraleBonus = (gameState.matchBonus.moraleBonus || 0) + 1;
+      }
+
       const event = EventsEngine.getEventForWeek(gameState.week);
       if (event) {
         EventsEngine.renderEventModal(event, () => {
@@ -347,7 +398,10 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
         const match = new MatchEngine(userTeam, currentRival, userTeam.overall, currentRival.overall, gameState.matchBonus?.moraleBonus || 0);
         const res = match.simulateFullMatch();
 
-        const totalTicketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
+        let totalTicketRevenue = Math.round(500000 + (userTeam.overall * 20000) + (Math.random() * 500000));
+        if (match.isDerby) totalTicketRevenue = Math.round(totalTicketRevenue * 1.5);
+        if (ManagerRPG.hasTalent('financial_guru')) totalTicketRevenue = Math.round(totalTicketRevenue * 1.15);
+
         const transferAllocation = Math.round(totalTicketRevenue * 0.25);
         gameState.budget += transferAllocation;
 
@@ -425,16 +479,16 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
     modal.classList.remove('hidden');
 
     content.innerHTML = `
-      <h2>❄️ Parón de Mitad de Temporada ${seasonLabel} (Semana ${midSeasonWeek})</h2>
+      <h2>Parón de Mitad de Temporada ${seasonLabel} (Semana ${midSeasonWeek})</h2>
       <p class="text-sub mt-2">¡Ha comenzado el receso invernal! La <strong>Ventana de Fichajes de Invierno</strong> está abierta. Las negociaciones bloqueadas previamente han sido liberadas.</p>
       
       <div class="mt-3">
-        <h4>📊 Tu Posición en la Liga: #${gameState.standings.findIndex(s => s.teamId === userTeam.id) + 1}</h4>
+        <h4>Tu Posición en la Liga: #${gameState.standings.findIndex(s => s.teamId === userTeam.id) + 1}</h4>
         <p>Puntos Acumulados: <strong class="text-highlight">${gameState.standings.find(s => s.teamId === userTeam.id)?.points || 0} PTS</strong></p>
       </div>
 
       <div class="modal-actions mt-4" style="display: flex; gap: 14px; justify-content: center;">
-        <button id="btnContinueFromMidSeason" class="btn-primary btn-large">CONTINUAR TEMPORADA ⚽</button>
+        <button id="btnContinueFromMidSeason" class="btn-primary btn-large">CONTINUAR TEMPORADA</button>
       </div>
     `;
 
@@ -450,21 +504,31 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
     const content = document.getElementById('seasonModalContent')!;
     modal.classList.remove('hidden');
 
-    // v3.9: premio realista por liga (antes €15M plano para cualquier campeón
-    // — no reflejaba la brecha entre el Brasileirão y la Liga 1).
     const isChampion = userRank === 1;
     const prizeMoney = getLeaguePrizeByRank(gameState.userLeagueId, userRank);
     gameState.budget += prizeMoney;
     if (gameState.finances) gameState.finances.leaguePrize = prizeMoney;
 
+    // v4.0: EXP de Mánager y Logros de fin de temporada
+    if (isChampion) {
+      ManagerRPG.awardXP(1200, 'Campeón de Liga');
+      AchievementsEngine.checkAndUnlock('trophy_winner', 1);
+    } else if (userRank <= 4) {
+      ManagerRPG.awardXP(600, 'Clasificación a Copas');
+    } else {
+      ManagerRPG.awardXP(300, 'Temporada Completada');
+    }
+
+    AchievementsEngine.checkAndUnlock('veteran', (gameState.careerHistory?.length || 0) + 1);
+
     if (gameState.season >= 2050) {
       gameState.isCareerFinished = true;
       content.innerHTML = `
-        <div style="font-size: 3rem; margin-bottom: 10px;">🏆👑</div>
+        <div style="font-size: 1.5rem; font-weight:900; color:var(--accent-gold); margin-bottom: 10px;">[CARRERA DE LEYENDA]</div>
         <h2>¡CARRERA PROFESIONAL COMPLETADA DE 25 TEMPORADAS!</h2>
         <p class="text-sub mt-2">Has culminado tu brillante trayectoria de 25 años como Director Técnico (2026 - 2051).</p>
         <div class="mt-4">
-          <button id="btnFinish25Years" class="btn-primary btn-large" style="width: 100%;">VER PALMARÉS Y REGISTRO DE LEYENDA 📜</button>
+          <button id="btnFinish25Years" class="btn-primary btn-large" style="width: 100%;">VER PALMARÉS Y REGISTRO DE LEYENDA</button>
         </div>
       `;
 
@@ -489,13 +553,13 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
     let headline = 'EL RIVAL LE PASÓ EL TRAPO';
     let headlineColor = 'var(--accent-red)';
     if (isChampion) {
-      headline = '🏆 CAMPEONES DE GLORIA: TEMPORADA LEGENDARIA';
+      headline = 'CAMPEONES DE GLORIA: TEMPORADA LEGENDARIA';
       headlineColor = 'var(--accent-gold)';
     } else if (userRank <= 4) {
-      headline = '🔥 CAMPAÑA EXTRAORDINARIA EN LA ZONA ALTA';
+      headline = 'CAMPAÑA EXTRAORDINARIA EN LA ZONA ALTA';
       headlineColor = 'var(--accent-green)';
     } else if (userRank <= 8) {
-      headline = '⚽ BALANCE REGULAR Y PROTAGONISMO TÁCTICO';
+      headline = 'BALANCE REGULAR Y PROTAGONISMO TÁCTICO';
       headlineColor = 'var(--accent-cyan)';
     }
 
@@ -515,24 +579,24 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
         </div>
 
         <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 14px; border-radius: 10px; margin-bottom: 16px; font-size: 0.85rem;">
-          <p style="margin-bottom: 6px;">🌟 <strong>MVP del Club:</strong> ${mvpName}</p>
-          <p style="margin-bottom: 6px;">🏆 <strong>Posición Final:</strong> Puesto #${userRank} (${userStanding ? userStanding.points : 0} Pts | ${userStanding ? userStanding.won : 0} Victorias)</p>
-          <p style="margin-bottom: 6px;">💰 <strong>Premio por Posición:</strong> <strong class="text-highlight">+€${prizeMoney >= 1000000 ? (prizeMoney / 1000000).toFixed(1) + 'M' : (prizeMoney / 1000).toFixed(0) + 'K'}</strong> <span class="text-sub" style="font-size:0.75rem;">(según la liga)</span></p>
-          <p style="margin-bottom: 6px;">🔥 <strong>Racha Más Larga:</strong> ${gameState.bestWinStreak || 0} victorias consecutivas esta temporada.</p>
-          <p style="margin-bottom: 6px;">⚽ <strong>Victorias en el Clásico:</strong> ${gameState.classicWins || 0} triunfos ante el rival histórico.</p>
-          <p style="margin-bottom: 0;">📋 <strong>Fichajes de la Temporada:</strong> ${(gameState.seasonPlayersIn || []).length} entradas · ${(gameState.seasonPlayersOut || []).length} salidas.</p>
+          <p style="margin-bottom: 6px;"><strong>[MVP] Jugador del Año:</strong> ${mvpName}</p>
+          <p style="margin-bottom: 6px;"><strong>Posición Final:</strong> Puesto #${userRank} (${userStanding ? userStanding.points : 0} Pts | ${userStanding ? userStanding.won : 0} Victorias)</p>
+          <p style="margin-bottom: 6px;"><strong>Premio por Posición:</strong> <strong class="text-highlight">+€${prizeMoney >= 1000000 ? (prizeMoney / 1000000).toFixed(1) + 'M' : (prizeMoney / 1000).toFixed(0) + 'K'}</strong> <span class="text-sub" style="font-size:0.75rem;">(según la liga)</span></p>
+          <p style="margin-bottom: 6px;"><strong>Racha Más Larga:</strong> ${gameState.bestWinStreak || 0} victorias consecutivas esta temporada.</p>
+          <p style="margin-bottom: 6px;"><strong>Victorias en el Clásico:</strong> ${gameState.classicWins || 0} triunfos ante el rival histórico.</p>
+          <p style="margin-bottom: 0;"><strong>Fichajes de la Temporada:</strong> ${(gameState.seasonPlayersIn || []).length} entradas · ${(gameState.seasonPlayersOut || []).length} salidas.</p>
         </div>
 
         <div style="background: #0f172a; border: 1px solid var(--accent-cyan); padding: 14px; border-radius: 10px; margin-bottom: 16px;">
-          <h4 style="color: var(--accent-cyan); font-size: 0.9rem; margin-bottom: 6px;">🎤 Rueda de Prensa de Cierre (Estilo José Mourinho)</h4>
+          <h4 style="color: var(--accent-cyan); font-size: 0.9rem; margin-bottom: 6px;">Rueda de Prensa de Cierre (Estilo José Mourinho)</h4>
           <p style="font-size: 0.82rem;" class="text-sub mb-3">La prensa internacional te pregunta: <em>"¿Cuál es su respuesta a las críticas tras esta campaña?"</em></p>
 
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <button class="btn-secondary btn-mourinho-answer" data-bonus="board" style="text-align: left; font-size: 0.78rem; padding: 10px;">
-              👉 "Respeto, respeto y más respeto. Soy el Special One y los números hablan solos." (+5% Confianza Directiva)
+              "Respeto, respeto y más respeto. Soy el Special One y los números hablan solos." (+5% Confianza Directiva)
             </button>
             <button class="btn-secondary btn-mourinho-answer" data-bonus="morale" style="text-align: left; font-size: 0.78rem; padding: 10px;">
-              👉 "Si hablo de los arbitrajes y del presupuesto rival, me sancionan. No tengo nada que decir." (+5% Moral Plantilla)
+              "Si hablo de los arbitrajes y del presupuesto rival, me sancionan. No tengo nada que decir." (+5% Moral Plantilla)
             </button>
           </div>
           <div id="mourinhoFeedback" class="mt-2 text-highlight hidden" style="font-size: 0.8rem; text-align: center;"></div>
@@ -540,19 +604,19 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
 
         ${isContractExpired ? `
           <div style="background: #0f172a; border: 1px solid var(--accent-gold); padding: 12px; border-radius: 8px; text-align: left; margin-bottom: 14px;">
-            <h4 style="color: var(--accent-gold); margin-bottom: 4px; font-size: 0.88rem;">📜 Vínculo Contractual de 3 Años Finalizado</h4>
+            <h4 style="color: var(--accent-gold); margin-bottom: 4px; font-size: 0.88rem;">Vínculo Contractual de 3 Años Finalizado</h4>
             <p style="font-size: 0.8rem;" class="text-sub">Confianza Directiva: <strong>${contract.boardConfidence}%</strong>.</p>
           </div>
         ` : ''}
 
         <div class="modal-actions mt-3" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
           ${isContractExpired && contract.renewalChance >= 60 ? `
-            <button id="btnRenew3Years" class="btn-primary">✍️ RENOVAR POR 3 AÑOS MÁS (${userTeam.name})</button>
-            <button id="btnSearchJobOffersSeason" class="btn-secondary">💼 FIRMAR POR UN NUEVO CLUB</button>
+            <button id="btnRenew3Years" class="btn-primary">RENOVAR POR 3 AÑOS MÁS (${userTeam.name})</button>
+            <button id="btnSearchJobOffersSeason" class="btn-secondary">FIRMAR POR UN NUEVO CLUB</button>
           ` : isContractExpired ? `
-            <button id="btnSearchJobOffersSeason" class="btn-primary">💼 EXPLORAR OFERTAS Y CAMBIAR DE CLUB</button>
+            <button id="btnSearchJobOffersSeason" class="btn-primary">EXPLORAR OFERTAS Y CAMBIAR DE CLUB</button>
           ` : `
-            <button id="btnAdvanceSeason" class="btn-primary btn-large">🚀 EVOLUCIONAR PLANTILLA & TEMPORADA ${gameState.season + 1}/${gameState.season + 2}</button>
+            <button id="btnAdvanceSeason" class="btn-primary btn-large">EVOLUCIONAR PLANTILLA & TEMPORADA ${gameState.season + 1}/${gameState.season + 2}</button>
           `}
         </div>
       </div>
@@ -606,7 +670,7 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
 
     content.innerHTML = `
       <div style="text-align: left;">
-        <h2 style="color: var(--accent-green); margin-bottom: 6px;">📈 REPORTE DE EVOLUCIÓN DE PLANTILLA (${gameState.season}/${gameState.season + 1})</h2>
+        <h2 style="color: var(--accent-green); margin-bottom: 6px;">REPORTE DE EVOLUCIÓN DE PLANTILLA (${gameState.season}/${gameState.season + 1})</h2>
         <p class="text-sub mb-3">Tus futbolistas han envejecido +1 año. Revisa los crecimientos de media y desarrollos alcanzados:</p>
 
         <div class="table-responsive mb-4" style="max-height: 280px; overflow-y: auto;">
@@ -631,8 +695,8 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
                   <td><strong style="color: var(--accent-cyan);">${p.newOvr}</strong></td>
                   <td>
                     ${p.delta > 0 
-                      ? `<span class="stat-ovr" style="background: var(--accent-green); color: #000; font-weight: 900; padding: 2px 6px;">+${p.delta} 🚀</span>`
-                      : (p.delta < 0 ? `<span style="background: var(--accent-red); color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 800;">${p.delta} 🔻</span>` : `<span class="text-sub">= CERO</span>`)}
+                      ? `<span class="stat-ovr" style="background: var(--accent-green); color: #000; font-weight: 900; padding: 2px 6px;">+${p.delta}</span>`
+                      : (p.delta < 0 ? `<span style="background: var(--accent-red); color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 800;">${p.delta}</span>` : `<span class="text-sub">= CERO</span>`)}
                   </td>
                 </tr>
               `).join('')}
@@ -642,7 +706,7 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
 
         <div class="modal-actions text-center">
           <button id="btnContinueToNewSeasonDashboard" class="btn-primary btn-large" style="width: 100%;">
-            🚀 INICIAR NUEVA TEMPORADA ${gameState.season}/${gameState.season + 1}
+            INICIAR NUEVA TEMPORADA ${gameState.season}/${gameState.season + 1}
           </button>
         </div>
       </div>

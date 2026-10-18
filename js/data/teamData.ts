@@ -9,10 +9,10 @@ import type { AIManager, ManagerArchetypeId, PersonalityRole, Player, Position, 
  * El DT ya no asigna roles a mano (se eliminó el selector de squadUI); cada
  * futbolista nace con el suyo según su perfil, con algo de azar para que
  * ninguna plantilla quede uniforme:
- *   - 👑 Capitán: veterano consolidado (≥30 y OVR alto) o peso pesado (25-29, OVR ≥ 80)
- *   - 🎓 El Mentor: veterano (≥30, OVR medio-alto) que guía a los jóvenes
- *   - ⭐ Joven Promesa: talento joven (≤22) con techo alto (potencial ≥ 80)
- *   - 🔥 El Rebelde: wildcard que puede salir en cualquier perfil (~8%)
+ *   - Capitán: veterano consolidado (≥30 y OVR alto) o peso pesado (25-29, OVR ≥ 80)
+ *   - El Mentor: veterano (≥30, OVR medio-alto) que guía a los jóvenes
+ *   - Joven Promesa: talento joven (≤22) con techo alto (potencial ≥ 80)
+ *   - El Rebelde: wildcard que puede salir en cualquier perfil (~8%)
  */
 export function assignPersonalityRole(age: number, overall: number, potential: number): PersonalityRole | null {
   const r = Math.random();

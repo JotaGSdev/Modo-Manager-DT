@@ -130,7 +130,7 @@ export class ContractEngine {
       contract.status = 'DESPEDIDO';
       gameState.eventsLog.unshift({
         date: `Año ${gameState.season}`,
-        text: `⚠️ DESPIDO: La directiva de ${contract.teamName} ha rescindido tu contrato por falta de resultados.`
+        text: `[DESPIDO] La directiva de ${contract.teamName} ha rescindido tu contrato por falta de resultados.`
       });
       return { action: 'SACKED', contract };
     }

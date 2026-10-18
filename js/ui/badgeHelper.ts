@@ -27,20 +27,9 @@ const TEAM_API_FOOTBALL_IDS: Record<string, number> = {
   'san_lorenzo': 1067, 'estudiantes': 1068, 'velez': 1070
 };
 
-const COUNTRY_FLAGS_EMOJI: Record<string, string> = {
-  'Argentina': '🇦🇷', 'Brasil': '🇧🇷', 'Colombia': '🇨🇴', 'Chile': '🇨🇱', 'Uruguay': '🇺🇾',
-  'Perú': '🇵🇪', 'Ecuador': '🇪🇨', 'Paraguay': '🇵🇾', 'Bolivia': '🇧🇴', 'Venezuela': '🇻🇪',
-  'España': '🇪🇸', 'Inglaterra': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Italia': '🇮🇹', 'Alemania': '🇩🇪', 'Francia': '🇫🇷',
-  'Portugal': '🇵🇹', 'Países Bajos': '🇳🇱', 'Bélgica': '🇧🇪', 'Escocia': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'Turquía': '🇹🇷',
-  'Grecia': '🇬🇷', 'Suiza': '🇨🇭', 'Austria': '🇦🇹', 'Dinamarca': '🇩🇰', 'Noruega': '🇳🇴',
-  'Suecia': '🇸🇪', 'Polonia': '🇵🇱', 'República Checa': '🇨🇿', 'Croacia': '🇭🇷', 'México': '🇲🇽',
-  'Estados Unidos': '🇺🇸', 'Arabia Saudita': '🇸🇦', 'Japón': '🇯🇵', 'Emiratos Árabes': '🇦🇪',
-  'Australia': '🇦🇺', 'Marruecos': '🇲🇦', 'Egipto': '🇪🇬',
-  'Canadá': '🇨🇦', 'Costa Rica': '🇨🇷', 'Honduras': '🇭🇳', 'Guatemala': '🇬🇹'
-};
-
 export function getCountryFlag(countryName: string): string {
-  return COUNTRY_FLAGS_EMOJI[countryName] || '🏳️';
+  const code = COUNTRY_FLAG_CODES[countryName];
+  return code ? `[${code.toUpperCase()}]` : `[${countryName.slice(0, 3).toUpperCase()}]`;
 }
 
 export function getCountryCode(countryName: string): string {
@@ -54,7 +43,9 @@ export function getCountryCode(countryName: string): string {
  */
 export function renderCountryFlagSVG(countryName: string, height = 20): string {
   const code = COUNTRY_FLAG_CODES[countryName];
-  if (!code) return getCountryFlag(countryName);
+  if (!code) {
+    return `<span class="badge" style="font-weight:800; font-size:0.75rem; background:#1e293b; color:#38bdf8; padding:2px 6px; border-radius:4px;">[${countryName.slice(0, 3).toUpperCase()}]</span>`;
+  }
 
   const localUrl = `./assets/flags/${code}.svg`;
   const cdnUrl = `https://media.api-sports.io/flags/${code}.svg`;

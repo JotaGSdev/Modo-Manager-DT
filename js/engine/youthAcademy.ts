@@ -59,7 +59,7 @@ export const SCOUT_LEVEL_DATA: Record<number, ScoutLevelData> = {
   2: { name: 'Experimentado (Regional)', upgradeCost: 500000, scoutCost: 250000, minOvr: 60, maxOvr: 68, minPot: 72, maxPot: 84, accuracy: 'Media' },
   3: { name: 'Profesional (Continental)', upgradeCost: 1500000, scoutCost: 500000, minOvr: 63, maxOvr: 72, minPot: 78, maxPot: 89, accuracy: 'Alta' },
   4: { name: 'Internacional (Mundial)', upgradeCost: 3500000, scoutCost: 1000000, minOvr: 66, maxOvr: 75, minPot: 83, maxPot: 93, accuracy: 'Élite' },
-  5: { name: 'Leyenda (Cazatalentos Élite)', upgradeCost: 7000000, scoutCost: 2000000, minOvr: 70, maxOvr: 78, minPot: 87, maxPot: 97, accuracy: 'Perfecta ⭐' }
+  5: { name: 'Leyenda (Cazatalentos Élite)', upgradeCost: 7000000, scoutCost: 2000000, minOvr: 70, maxOvr: 78, minPot: 87, maxPot: 97, accuracy: 'Perfecta' }
 };
 
 /** Resultado de acciones de cantera: éxito con datos o fallo con razón */
@@ -236,7 +236,7 @@ export class YouthAcademyEngine {
     if (gameState.youthTournamentPlayed) {
       return {
         success: false,
-        reason: `🏆 El Torneo de Cantera Sub-19 ya fue disputado durante la presente temporada (${gameState.season}/${gameState.season + 1}). Solo se permite 1 torneo juvenil por temporada.`
+        reason: `El Torneo de Cantera Sub-19 ya fue disputado durante la presente temporada (${gameState.season}/${gameState.season + 1}). Solo se permite 1 torneo juvenil por temporada.`
       };
     }
 
@@ -256,7 +256,7 @@ export class YouthAcademyEngine {
     db.saveGame();
     return {
       success: true,
-      message: `🏆 ¡TORNEO DE CANTERA SUB-19 COMPLETADO! Tus ${academy.length} canteranos disputaron la edición anual y evolucionaron (+1 a +3 OVR).`
+      message: `[CANTERA] ¡TORNEO DE CANTERA SUB-19 COMPLETADO! Tus ${academy.length} canteranos disputaron la edición anual y evolucionaron (+1 a +3 OVR).`
     };
   }
 }

@@ -77,76 +77,76 @@ export class EventsEngine {
       // CATEGORÍA: TÁCTICA
       {
         category: 'TÁCTICA',
-        title: '🧩 REVOLUCIÓN TÁCTICA EN EL ENTRENAMIENTO',
+        title: 'REVOLUCIÓN TÁCTICA EN EL ENTRENAMIENTO',
         description: `Durante la sesión táctica de la semana, ${starPlayer.name} propuso un cambio de dibujo táctico para sorprender al próximo rival.`,
-        optionA: { label: '👉 Aceptar la propuesta e innovar (+5% Solidez Defensiva)', bonusType: 'tactical', bonusVal: 5 },
-        optionB: { label: '👉 Mantener la filosofía rígida del DT (+3% Moral por liderazgo)', bonusType: 'morale', bonusVal: 3 }
+        optionA: { label: 'Aceptar la propuesta e innovar (+5% Solidez Defensiva)', bonusType: 'tactical', bonusVal: 5 },
+        optionB: { label: 'Mantener la filosofía rígida del DT (+3% Moral por liderazgo)', bonusType: 'morale', bonusVal: 3 }
       },
       {
         category: 'TÁCTICA',
-        title: '📐 ANÁLISIS DE VIDEO DEL RIVAL HISTÓRICO',
+        title: 'ANÁLISIS DE VIDEO DEL RIVAL HISTÓRICO',
         description: `El analista de video del club descubrió un patrón repetitivo en los saques de esquina del rival.`,
-        optionA: { label: '👉 Trabajar defensa de balón parado (+6% Solidez Defensiva)', bonusType: 'tactical', bonusVal: 6 },
-        optionB: { label: '👉 Priorizar contragolpe directo (+4% Efectividad de Ataque)', bonusType: 'morale', bonusVal: 4 }
+        optionA: { label: 'Trabajar defensa de balón parado (+6% Solidez Defensiva)', bonusType: 'tactical', bonusVal: 6 },
+        optionB: { label: 'Priorizar contragolpe directo (+4% Efectividad de Ataque)', bonusType: 'morale', bonusVal: 4 }
       },
 
       // CATEGORÍA: VESTUARIO
       {
         category: 'VESTUARIO',
-        title: '🔥 TENSIÓN EN EL VESTUARIO',
+        title: 'TENSIÓN EN EL VESTUARIO',
         description: `Surgió una discusión acalorada entre la estrella ${starPlayer.name} y la joven promesa ${youngPlayer.name} por la titularidad.`,
-        optionA: { label: '👉 Apoyar a la estrella veterana (+5% Moral al plantel)', bonusType: 'morale', bonusVal: 5 },
-        optionB: { label: '👉 Respaldar al juvenil para marcar autoridad (+4% Confianza Directiva)', bonusType: 'board', bonusVal: 4 }
+        optionA: { label: 'Apoyar a la estrella veterana (+5% Moral al plantel)', bonusType: 'morale', bonusVal: 5 },
+        optionB: { label: 'Respaldar al juvenil para marcar autoridad (+4% Confianza Directiva)', bonusType: 'board', bonusVal: 4 }
       },
       {
         category: 'VESTUARIO',
-        title: '🍖 ASADO INTEGRADOR DE LA PLANTILLA',
+        title: 'ASADO INTEGRADOR DE LA PLANTILLA',
         description: `Los referentes del plantel organizaron una cena de integración antes de la recta decisiva del torneo.`,
-        optionA: { label: '👉 Financiar el asado de tu bolsillo (€10K) (+8% Moral de Plantilla)', bonusType: 'morale', bonusVal: 8, cost: 10000 },
-        optionB: { label: '👉 Asistir como oyente manteniendo distancia profesional (+3% Moral)', bonusType: 'morale', bonusVal: 3 }
+        optionA: { label: 'Financiar el asado de tu bolsillo (€10K) (+8% Moral de Plantilla)', bonusType: 'morale', bonusVal: 8, cost: 10000 },
+        optionB: { label: 'Asistir como oyente manteniendo distancia profesional (+3% Moral)', bonusType: 'morale', bonusVal: 3 }
       },
 
       // CATEGORÍA: MERCADO & REPRESENTANTES
       {
         category: 'MERCADO',
-        title: '💼 PRESIÓN DEL REPRESENTANTE',
+        title: 'PRESIÓN DEL REPRESENTANTE',
         description: `El representante de ${youngPlayer.name} amenaza con buscarle club si no recibe un aumento salarial inmediato.`,
-        optionA: { label: '👉 Ceder y renovarle contrato (+5% Moral del jugador)', bonusType: 'morale', bonusVal: 5 },
-        optionB: { label: '👉 Exigir profesionalismo y rechazar el chantaje (+3% Confianza Directiva)', bonusType: 'board', bonusVal: 3 }
+        optionA: { label: 'Ceder y renovarle contrato (+5% Moral del jugador)', bonusType: 'morale', bonusVal: 5 },
+        optionB: { label: 'Exigir profesionalismo y rechazar el chantaje (+3% Confianza Directiva)', bonusType: 'board', bonusVal: 3 }
       },
       {
         category: 'MERCADO',
-        title: '🕵️ OJEADOR RECOMIENDA GANG A INTERNACIONAL',
+        title: 'OJEADOR RECOMIENDA GANGA INTERNACIONAL',
         description: `Un cazatalentos internacional detectó a un mediocampista sudamericano con clausula de rescisión baja.`,
-        optionA: { label: '👉 Mandar ojeador privado (€50K) (+5% Confianza Directiva)', bonusType: 'board', bonusVal: 5, cost: 50000 },
-        optionB: { label: '👉 Confiar únicamente en la cantera local (Sin costo)', bonusType: 'morale', bonusVal: 2 }
+        optionA: { label: 'Mandar ojeador privado (€50K) (+5% Confianza Directiva)', bonusType: 'board', bonusVal: 5, cost: 50000 },
+        optionB: { label: 'Confiar únicamente en la cantera local (Sin costo)', bonusType: 'morale', bonusVal: 2 }
       },
 
       // CATEGORÍA: PRENSA & MEDIOS
       {
         category: 'PRENSA',
-        title: '🎤DECLARACIONES BOMBA EN CONFERENCIA',
+        title: 'DECLARACIONES BOMBA EN CONFERENCIA',
         description: `Un periodista provocador cuestionó públicamente tu planteamiento táctico en el último partido.`,
-        optionA: { label: '👉 Responder al estilo Mourinho con personalidad (+6% Moral al vestuario)', bonusType: 'morale', bonusVal: 6 },
-        optionB: { label: '👉 Dar una respuesta diplomática de manual (+4% Confianza Directiva)', bonusType: 'board', bonusVal: 4 }
+        optionA: { label: 'Responder al estilo Mourinho con personalidad (+6% Moral al vestuario)', bonusType: 'morale', bonusVal: 6 },
+        optionB: { label: 'Dar una respuesta diplomática de manual (+4% Confianza Directiva)', bonusType: 'board', bonusVal: 4 }
       },
 
       // CATEGORÍA: FINANZAS & PATROCINADORES
       {
         category: 'FINANZAS',
-        title: '💰 SPONSOR OFRECE BONO POR METAS',
+        title: 'SPONSOR OFRECE BONO POR METAS',
         description: `El patrocinador principal del club ofrece un bono extraordinario de €500K si ganamos los próximos 3 partidos.`,
-        optionA: { label: '👉 Aceptar el desafío y motivar al equipo (+6% Moral de Plantilla)', bonusType: 'morale', bonusVal: 6 },
-        optionB: { label: '👉 Exigir al sponsor un adelanto en efectivo hoy (+€200K Presupuesto)', bonusType: 'budget', bonusVal: 200000 }
+        optionA: { label: 'Aceptar el desafío y motivar al equipo (+6% Moral de Plantilla)', bonusType: 'morale', bonusVal: 6 },
+        optionB: { label: 'Exigir al sponsor un adelanto en efectivo hoy (+€200K Presupuesto)', bonusType: 'budget', bonusVal: 200000 }
       },
 
       // CATEGORÍA: INSTITUCIONAL
       {
         category: 'INSTITUCIONAL',
-        title: '🏠 INVERSIÓN EN EL SISTEMA DE RIEGO Y CÉSPED',
+        title: 'INVERSIÓN EN EL SISTEMA DE RIEGO Y CÉSPED',
         description: `El canchero del estadio solicita reparar el sistema de drenaje del campo de juego para partidos con lluvia.`,
-        optionA: { label: '👉 Aprobar las obras (€100K) (+5% Solidez Defensiva en casa)', bonusType: 'tactical', bonusVal: 5, cost: 100000 },
-        optionB: { label: '👉 Posponer las obras para el próximo año (Sin costo)', bonusType: 'morale', bonusVal: 1 }
+        optionA: { label: 'Aprobar las obras (€100K) (+5% Solidez Defensiva en casa)', bonusType: 'tactical', bonusVal: 5, cost: 100000 },
+        optionB: { label: 'Posponer las obras para el próximo año (Sin costo)', bonusType: 'morale', bonusVal: 1 }
       },
 
       // ======================================================================
@@ -156,37 +156,37 @@ export class EventsEngine {
       // FILTRACIÓN SALARIAL — Reduce Team Spirit si hay disparidad salarial
       {
         category: 'FILTRACIÓN',
-        title: '📰 FILTRACIÓN SALARIAL EN EL VESTUARIO',
+        title: 'FILTRACIÓN SALARIAL EN EL VESTUARIO',
         description: `Los medios publicaron los salarios internos del club. Varios suplentes exigen equiparación salarial. El ambiente en el vestuario se tensa.`,
-        optionA: { label: '👉 Convocar reunión y explicar la jerarquía salarial (€50K bonus pl. / -5 Team Spirit)', bonusType: 'spirit', bonusVal: -5, cost: 50000 },
-        optionB: { label: '👉 Ignorar la situación y confiar en la profesionalidad (-10 Team Spirit)', bonusType: 'spirit', bonusVal: -10 }
+        optionA: { label: 'Convocar reunión y explicar la jerarquía salarial (€50K bonus pl. / -5 Team Spirit)', bonusType: 'spirit', bonusVal: -5, cost: 50000 },
+        optionB: { label: 'Ignorar la situación y confiar en la profesionalidad (-10 Team Spirit)', bonusType: 'spirit', bonusVal: -10 }
       },
 
       // AUDITORÍA FINANCIERA — Congela el 30% del presupuesto
       {
         category: 'CRISIS FINANCIERA',
-        title: '🕵️ AUDITORÍA INTERNA SORPRESIVA',
+        title: 'AUDITORÍA INTERNA SORPRESIVA',
         description: `La junta directiva ha ordenado una auditoría de cuentas. El 30% del presupuesto de traspasos queda congelado durante 4 semanas. Puedes liberar los fondos vendiendo a un jugador con salario elevado.`,
-        optionA: { label: '👉 Aceptar la auditoría y mostrar transparencia (Fondos bloqueados 4 semanas)', bonusType: 'freeze_budget', bonusVal: 4 },
-        optionB: { label: '👉 Negociar con el director financiero (€200K) para liberar los fondos inmediatamente', bonusType: 'unfreeze_budget', bonusVal: 0, cost: 200000 }
+        optionA: { label: 'Aceptar la auditoría y mostrar transparencia (Fondos bloqueados 4 semanas)', bonusType: 'freeze_budget', bonusVal: 4 },
+        optionB: { label: 'Negociar con el director financiero (€200K) para liberar los fondos inmediatamente', bonusType: 'unfreeze_budget', bonusVal: 0, cost: 200000 }
       },
 
       // DERECHOS DE TRANSMISIÓN — Inyección extraordinaria de capital
       {
         category: 'FINANZAS',
-        title: '📺 ACUERDO DE DERECHOS DE TRANSMISIÓN',
+        title: 'ACUERDO DE DERECHOS DE TRANSMISIÓN',
         description: `La liga anuncia un nuevo acuerdo de derechos de TV. ${db.teams[gameState.userTeamId]?.name || 'El club'} recibe una distribución extraordinaria de ingresos.`,
-        optionA: { label: '👉 Destinar el bono (€3M-€8M) al presupuesto de traspasos', bonusType: 'tv_rights', bonusVal: 'transfer' },
-        optionB: { label: '👉 Reinvertir los fondos en infraestructura (Mejora Team Spirit +8)', bonusType: 'tv_rights', bonusVal: 'infrastructure' }
+        optionA: { label: 'Destinar el bono (€3M-€8M) al presupuesto de traspasos', bonusType: 'tv_rights', bonusVal: 'transfer' },
+        optionB: { label: 'Reinvertir los fondos en infraestructura (Mejora Team Spirit +8)', bonusType: 'tv_rights', bonusVal: 'infrastructure' }
       },
 
       // DESCONTENTO DE ESTRELLA — El goleador exige el mayor salario
       {
         category: 'VESTUARIO',
-        title: '💥 DESCONTENTO DE LA ESTRELLA',
+        title: 'DESCONTENTO DE LA ESTRELLA',
         description: `Tu máximo goleador exige ser el mejor pagado de la plantilla. Su representante amenza con activar cláusulas de rescisión si no hay acuerdo en 2 semanas.`,
-        optionA: { label: '👉 Acceder y renovarle (€50K/sem extra) (+8 Moral del jugador, -Team Spirit resto)', bonusType: 'morale', bonusVal: 8, cost: 50000 },
-        optionB: { label: '👉 Mantener firmeza y demostrar que nadie está por encima del equipo (+5 Confianza Directiva)', bonusType: 'board', bonusVal: 5 }
+        optionA: { label: 'Acceder y renovarle (€50K/sem extra) (+8 Moral del jugador, -Team Spirit resto)', bonusType: 'morale', bonusVal: 8, cost: 50000 },
+        optionB: { label: 'Mantener firmeza y demostrar que nadie está por encima del equipo (+5 Confianza Directiva)', bonusType: 'board', bonusVal: 5 }
       }
     ];
 
@@ -274,7 +274,7 @@ export class EventsEngine {
         gameState.transferBudgetLocked = true;
         gameState.lockedBudgetAmount = toFreeze;
         gameState.budget -= toFreeze;
-        EventsEngine.generateFeedItem('CRISIS_FINANCIERA', { text: '🕵️ Auditoría activa: El 30% del presupuesto de traspasos está bloqueado.' });
+        EventsEngine.generateFeedItem('CRISIS_FINANCIERA', { text: 'Auditoría activa: El 30% del presupuesto de traspasos está bloqueado.' });
       } else if (opt.bonusType === 'unfreeze_budget') {
         // Pagó para liberar los fondos
         gameState.transferBudgetLocked = false;
@@ -284,10 +284,10 @@ export class EventsEngine {
         const tvBonus = 3000000 + Math.floor(Math.random() * 5000000);
         if (opt.bonusVal === 'transfer') {
           gameState.budget += tvBonus;
-          EventsEngine.generateFeedItem('DERECHOS_TV', { text: `📺 Derechos de TV: +€${(tvBonus/1000000).toFixed(1)}M al presupuesto de traspasos.` });
+          EventsEngine.generateFeedItem('DERECHOS_TV', { text: `Derechos de TV: +€${(tvBonus/1000000).toFixed(1)}M al presupuesto de traspasos.` });
         } else {
           gameState.teamSpirit = Math.min(100, (gameState.teamSpirit || 50) + 8);
-          EventsEngine.generateFeedItem('DERECHOS_TV', { text: `📺 Derechos de TV reinvertidos en infraestructura: Team Spirit +8.` });
+          EventsEngine.generateFeedItem('DERECHOS_TV', { text: `Derechos de TV reinvertidos en infraestructura: Team Spirit +8.` });
         }
         if (gameState.finances) gameState.finances.balance = (gameState.finances.balance || 0) + tvBonus;
       }
@@ -295,7 +295,7 @@ export class EventsEngine {
       db.saveGame();
 
       const feedback = document.getElementById('eventFeedback')!;
-      feedback.innerText = '✅ ¡Decisión registrada por el Director Técnico!';
+      feedback.innerText = '[REGISTRADO] ¡Decisión registrada por el Director Técnico!';
       feedback.classList.remove('hidden');
 
       setTimeout(() => {
@@ -324,15 +324,15 @@ export class EventsEngine {
     if (!Array.isArray(gameState.feedItems)) gameState.feedItems = [];
 
     const iconMap: Record<string, string> = {
-      RUMOR_SALIDA:        '🔗',
-      FILTRACIÓN_SALARIAL: '💰',
-      CRISIS_FINANCIERA:   '🕵️',
-      DERECHOS_TV:         '📺',
-      CAMBIO_DT:           '🧑‍💼',
-      OFERTA_DT_JUGADOR:   '📨',
-      AGENTE_EXIGE:        '🤝',
-      RIVAL_SONDEA:        '🔍',
-      DESCONTENTO:         '😡'
+      RUMOR_SALIDA:        '[RUMOR]',
+      FILTRACIÓN_SALARIAL: '[SALARIO]',
+      CRISIS_FINANCIERA:   '[CRISIS]',
+      DERECHOS_TV:         '[TV]',
+      CAMBIO_DT:           '[DT]',
+      OFERTA_DT_JUGADOR:   '[OFERTA]',
+      AGENTE_EXIGE:        '[AGENTE]',
+      RIVAL_SONDEA:        '[SONDEO]',
+      DESCONTENTO:         '[ALERTA]'
     };
 
     const feedItem: FeedItem = {
@@ -341,7 +341,7 @@ export class EventsEngine {
       season: gameState.season,
       type,
       text: data.text || `Novedad de tipo ${type} en la Semana ${gameState.week}.`,
-      icon: data.icon || iconMap[type] || '📰',
+      icon: data.icon || iconMap[type] || '[NOTICIA]',
       isRead: false,
       linkedPlayerId: data.linkedPlayerId || null
     };

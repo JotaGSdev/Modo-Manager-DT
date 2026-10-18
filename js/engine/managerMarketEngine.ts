@@ -98,7 +98,7 @@ export class ManagerMarketEngine {
 
     // Notificar en The Feed
     EventsEngine.generateFeedItem('CAMBIO_DT', {
-      text: `🧑‍💼 ${teamName} ha despedido a su DT ${oldManager.name} (${oldManager.archetype.replace('_', ' ')}). El club busca sustituto.`
+      text: `[MERCADO DT] ${teamName} ha despedido a su DT ${oldManager.name} (${oldManager.archetype.replace('_', ' ')}). El club busca sustituto.`
     });
 
     // Asignar interino
@@ -126,7 +126,7 @@ export class ManagerMarketEngine {
     gameState.managerMarket.aiManagers[teamId] = interim;
 
     EventsEngine.generateFeedItem('CAMBIO_DT', {
-      text: `🧑‍💼 ${db.teams[teamId]?.name || teamId} designa a ${interim.name} como técnico interino hasta la próxima ventana.`
+      text: `[MERCADO DT] ${db.teams[teamId]?.name || teamId} designa a ${interim.name} como técnico interino hasta la próxima ventana.`
     });
   }
 
@@ -146,7 +146,7 @@ export class ManagerMarketEngine {
         gameState.managerMarket.aiManagers[teamId] = newManager;
 
         EventsEngine.generateFeedItem('CAMBIO_DT', {
-          text: `🧑‍💼 ${db.teams[teamId]?.name || teamId} ha contratado a ${newManager.name} (${newManager.archetype.replace(/_/g, ' ')}) como nuevo DT.`
+          text: `[MERCADO DT] ${db.teams[teamId]?.name || teamId} ha contratado a ${newManager.name} (${newManager.archetype.replace(/_/g, ' ')}) como nuevo DT.`
         });
       }
     });
@@ -191,9 +191,9 @@ export class ManagerMarketEngine {
           offerBudget: team.budget || 0,
           contractYears: 2,
           reason: philosophyMatch
-            ? '✨ La filosofía del club encaja con tu estilo de juego.'
-            : '📋 El club busca un técnico urgente de tu nivel de reputación.',
-          urgencyLabel: '🔴 PLAZA URGENTE'
+            ? 'La filosofía del club encaja con tu estilo de juego.'
+            : 'El club busca un técnico urgente de tu nivel de reputación.',
+          urgencyLabel: '[PLAZA URGENTE]'
         });
       }
     });

@@ -57,7 +57,7 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
             <span class="text-sub">Edad Actual: <strong>${player.age} años</strong> | Morale: <strong>${player.morale || 90}%</strong> | Forma: <strong>${player.form || 85}%</strong></span>
           </div>
         </div>
-        <button id="btnCloseInspector" class="btn-secondary btn-sm" style="font-size: 1.2rem;">✖</button>
+        <button id="btnCloseInspector" class="btn-secondary btn-sm" style="font-size: 1.1rem; font-weight: 800; padding: 4px 10px;">X</button>
       </div>
 
       <!-- Atributos y Valor de Mercado -->
@@ -82,7 +82,7 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
 
       <!-- v2.0: GRÁFICO RADAR HEXAGONAL DE ATRIBUTOS EN CANVAS PURO (FASE 5B) -->
       <div style="background: #0d1320; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-bottom: 20px; text-align: center;">
-        <div style="font-size:0.8rem; font-weight:800; color:var(--accent-cyan); margin-bottom:8px;">📊 GRÁFICO RADAR DE ATRIBUTOS (6 DIMENSIONES)</div>
+        <div style="font-size:0.8rem; font-weight:800; color:var(--accent-cyan); margin-bottom:8px;">[RADAR] ATRIBUTOS TÉCNICOS (6 DIMENSIONES)</div>
         <canvas id="playerRadarCanvas" width="300" height="240" style="max-width:100%; border-radius:6px; background:#070b12;"></canvas>
       </div>
 
@@ -90,7 +90,7 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
       ${isOwnPlayer ? `
         <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 14px; border-radius: 10px; margin-bottom: 20px;">
           <label style="font-size: 0.88rem; font-weight: 800; color: var(--accent-cyan); display: block; margin-bottom: 6px;">
-            ⚙️ Rol Táctico e Instrucción Individual en Cancha:
+            Rol Táctico e Instrucción Individual en Cancha:
           </label>
           <select id="selectIndividualRole" class="input-select" style="width: 100%;">
             ${availableRoles.map(r => `
@@ -102,18 +102,18 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
 
       <!-- Estadísticas de Rendimiento y Vínculo contractual Actualizado -->
       <div style="background: #141d2e; border: 1px solid var(--border-color); padding: 16px; border-radius: 10px; margin-bottom: 20px;">
-        <h4 style="margin-bottom: 10px; color: var(--accent-green);">📊 Rendimiento Deportivo & Estado del Contrato</h4>
+        <h4 style="margin-bottom: 10px; color: var(--accent-green);">Rendimiento Deportivo & Estado del Contrato</h4>
         <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 0.9rem; margin-bottom: 12px;">
           <span>Partidos Jugados (PJ): <strong>${appearances}</strong></span>
-          <span>Goles Marcados: <strong>${goals} ⚽</strong></span>
-          <span>Promedio de Calificación: <strong>${ratingAvg} ⭐</strong></span>
+          <span>Goles Marcados: <strong>${goals}</strong></span>
+          <span>Promedio de Calificación: <strong>${ratingAvg}</strong></span>
           <span>Vínculo contractual: <strong style="color: ${contractYears <= 1 ? 'var(--accent-red)' : 'var(--accent-gold)'}">${contractYears} Años (${monthsRemaining} Meses restantes)</strong></span>
         </div>
 
         <!-- ── v2.0: TABLA DE HISTORIAL DE RENDIMIENTO DE TEMPORADAS PASADAS (FASE 5B) ── -->
         ${(player.statsHistory && player.statsHistory.length > 0) ? `
           <div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:10px;">
-            <div style="font-size:0.8rem; font-weight:800; color:var(--accent-gold); margin-bottom:6px;">📜 Histórico de Temporadas Anteriores</div>
+            <div style="font-size:0.8rem; font-weight:800; color:var(--accent-gold); margin-bottom:6px;">Histórico de Temporadas Anteriores</div>
             <table class="data-table" style="font-size:0.75rem;">
               <thead>
                 <tr>
@@ -130,8 +130,8 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
                     <td>T${h.season}</td>
                     <td><span class="stat-ovr">${h.ovr}</span></td>
                     <td>${h.appearances}</td>
-                    <td>${h.goals} ⚽</td>
-                    <td>${h.ratingAvg || '6.8'} ⭐</td>
+                    <td>${h.goals}</td>
+                    <td>${h.ratingAvg || '6.8'}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -149,13 +149,13 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
       ${isOwnPlayer ? `
         <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
           <button id="btnSellPlayer" class="btn-primary" style="background: var(--accent-red); color: #fff;">
-            💰 VENDER JUGADOR (Aceptar Oferta de Mercado)
+            VENDER JUGADOR (Ofertas de Mercado)
           </button>
           <button id="btnRenewContract" class="btn-primary" style="background: var(--accent-gold); color: #000;">
-            📝 RENOVAR CONTRATO (+2 AÑOS)
+            RENOVAR CONTRATO (+2 AÑOS)
           </button>
           <button id="btnSwapPlayer" class="btn-secondary">
-            🔄 PROPONER TRUEQUE / INTERCAMBIO
+            PROPONER TRUEQUE / INTERCAMBIO
           </button>
         </div>
       ` : `
@@ -299,8 +299,8 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
       offersPanel.classList.remove('hidden');
       offersPanel.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-          <h4 style="margin: 0; color: var(--accent-green); font-size: 0.95rem;">💼 OFERTAS RECIBIDAS POR ${player.name.toUpperCase()}</h4>
-          <button class="btn-secondary btn-sm" id="btnDeclineAllOffers">✖ Rechazar todas</button>
+          <h4 style="margin: 0; color: var(--accent-green); font-size: 0.95rem;">[OFERTAS RECIBIDAS] ${player.name.toUpperCase()}</h4>
+          <button class="btn-secondary btn-sm" id="btnDeclineAllOffers">Rechazar todas</button>
         </div>
         ${offers.map(o => `
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; flex-wrap: wrap;">
@@ -312,7 +312,7 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
               </div>
             </div>
             <button class="btn-primary btn-sm btn-accept-bid" data-id="${o.team.id}" data-fee="${o.fee}">
-              💰 Aceptar €${(o.fee / 1000000).toFixed(1)}M
+              Aceptar €${(o.fee / 1000000).toFixed(1)}M
             </button>
           </div>
         `).join('')}
@@ -340,7 +340,7 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
 
           gameState.eventsLog.unshift({
             date: `Semana ${gameState.week}`,
-            text: `💰 VENTA OFICIAL: ${player.name} fue vendido a ${buyerTeam.name} por €${(fee / 1000000).toFixed(1)}M.`
+            text: `[VENTA OFICIAL] ${player.name} fue vendido a ${buyerTeam.name} por €${(fee / 1000000).toFixed(1)}M.`
           });
 
           // Recalcular el OVR del equipo con el XI resultante
@@ -367,14 +367,14 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
       const newWage = Math.round(player.salary * 1.10);
       const newYears = Math.min(5, (player.contractYears || 2) + 2);
 
-      if (confirm(`📝 NEGOCIACIÓN DE RENOVACIÓN:\n\n¿Ofrecer a ${player.name} una extensión de ${newYears} años de contrato con un salario ajustado de €${(newWage / 1000).toFixed(0)}K/sem?`)) {
+      if (confirm(`NEGOCIACIÓN DE RENOVACIÓN:\n\n¿Ofrecer a ${player.name} una extensión de ${newYears} años de contrato con un salario ajustado de €${(newWage / 1000).toFixed(0)}K/sem?`)) {
         player.contractYears = newYears;
         player.salary = newWage;
         player.morale = 100;
 
         gameState.eventsLog.unshift({
           date: `Semana ${gameState.week}`,
-          text: `📝 RENOVACIÓN: ${player.name} renovó su contrato por ${newYears} años con el club.`
+          text: `[RENOVACIÓN] ${player.name} renovó su contrato por ${newYears} años con el club.`
         });
 
         db.saveGame();
@@ -396,7 +396,7 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
       const suitableTarget = targetPlayers.find(p => Math.abs(p.overall - player.overall) <= 3) || targetPlayers[0];
 
       if (suitableTarget) {
-        if (confirm(`🔄 PROPUESTA DE TRUEQUE CON ${targetTeam.name.toUpperCase()}:\n\n¿Ofrecer a ${player.name} (OVR ${player.overall}) a cambio de ${suitableTarget.name} (${suitableTarget.pos}, OVR ${suitableTarget.overall})?`)) {
+        if (confirm(`PROPUESTA DE TRUEQUE CON ${targetTeam.name.toUpperCase()}:\n\n¿Ofrecer a ${player.name} (OVR ${player.overall}) a cambio de ${suitableTarget.name} (${suitableTarget.pos}, OVR ${suitableTarget.overall})?`)) {
           const userSquad = db.getTeamPlayers(userTeamId);
           const rivalSquad = db.getTeamPlayers(targetTeam.id);
 
@@ -414,7 +414,7 @@ export function openPlayerInspectorModal(player: Player, onUpdate?: () => void):
 
           gameState.eventsLog.unshift({
             date: `Semana ${gameState.week}`,
-            text: `🔄 INTERCAMBIO OFICIAL: ${player.name} traspasado a ${targetTeam.name} a cambio de ${suitableTarget.name}.`
+            text: `[INTERCAMBIO] ${player.name} traspasado a ${targetTeam.name} a cambio de ${suitableTarget.name}.`
           });
 
           db.saveGame();

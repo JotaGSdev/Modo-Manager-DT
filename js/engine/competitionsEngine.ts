@@ -150,9 +150,9 @@ export class CompetitionsEngine {
     if (userGoals > rivalGoals) {
       gameState.budget += prize;
       currentSlot.status = (roundIndex === 4) ? 'CAMPEÓN' : 'CLASIFICADO';
-      matchText = `🏆 ${cupName} (${roundLabel}): ¡VICTORIA! ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName} (+€${(prize / 1000).toFixed(0)}K)`;
+      matchText = `[COPA] ${cupName} (${roundLabel}): ¡VICTORIA! ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName} (+€${(prize / 1000).toFixed(0)}K)`;
       if (roundIndex === 4) {
-        matchText = `🥇 ¡CAMPEÓN NACIONAL! ${userTeam.name} conquistó la ${cupName} (+€${(prize / 1000000).toFixed(1)}M)`;
+        matchText = `[CAMPEÓN] ¡CAMPEÓN NACIONAL! ${userTeam.name} conquistó la ${cupName} (+€${(prize / 1000000).toFixed(1)}M)`;
         gameState.trophies = gameState.trophies || [];
         gameState.trophies.push({
           title: `${cupName} - Campeón`,
@@ -161,7 +161,7 @@ export class CompetitionsEngine {
       }
     } else {
       currentSlot.status = 'ELIMINADO';
-      matchText = `🏆 ${cupName} (${roundLabel}): Eliminado ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName}`;
+      matchText = `[COPA] ${cupName} (${roundLabel}): Eliminado ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName}`;
     }
 
     gameState.eventsLog.unshift({
@@ -250,9 +250,9 @@ export class CompetitionsEngine {
         season: gameState.season,
         type: 'PREMIOS_CONTINENTAL',
         text: userGoals > rivalGoals && isFinal
-          ? `🥇 ¡CAMPEÓN CONTINENTAL! ${userTeam.name} conquistó la ${cupName} (+${fmtEuro(reward)}) y embolsa ${fmtEuro(cont.finalPrize)} por el título.`
-          : `🌎 ${cupName} (${roundLabel}): ${userTeam.name} recibe ${feedParts.join(' + ')} (+${fmtEuro(reward)}).`,
-        icon: userGoals > rivalGoals && isFinal ? '🥇' : '🌎',
+          ? `[CAMPEÓN] ¡CAMPEÓN CONTINENTAL! ${userTeam.name} conquistó la ${cupName} (+${fmtEuro(reward)}) y embolsa ${fmtEuro(cont.finalPrize)} por el título.`
+          : `[CONTINENTAL] ${cupName} (${roundLabel}): ${userTeam.name} recibe ${feedParts.join(' + ')} (+${fmtEuro(reward)}).`,
+        icon: userGoals > rivalGoals && isFinal ? 'CAMPEON' : 'CONTINENTAL',
         isRead: false,
         linkedPlayerId: null
       });
@@ -277,9 +277,9 @@ export class CompetitionsEngine {
 
     if (userGoals > rivalGoals) {
       currentSlot.status = isFinal ? 'CAMPEÓN' : 'CLASIFICADO';
-      matchText = `🏆 ${cupName} (${roundLabel}): ¡VICTORIA! ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName}${reward > 0 ? ` (+${fmtEuro(reward)})` : ''}`;
+      matchText = `[COPA] ${cupName} (${roundLabel}): ¡VICTORIA! ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName}${reward > 0 ? ` (+${fmtEuro(reward)})` : ''}`;
       if (isFinal) {
-        matchText = `🥇 ¡CAMPEÓN CONTINENTAL! ${userTeam.name} conquistó la ${cupName} (+${fmtEuro(reward)})`;
+        matchText = `[CAMPEÓN] ¡CAMPEÓN CONTINENTAL! ${userTeam.name} conquistó la ${cupName} (+${fmtEuro(reward)})`;
         gameState.trophies = gameState.trophies || [];
         gameState.trophies.push({
           title: `${cupName} - Campeón`,
@@ -289,7 +289,7 @@ export class CompetitionsEngine {
     } else {
       currentSlot.status = isGroupStage ? 'DERROTA' : 'ELIMINADO';
       // Aun perdiendo la J1, clasificar a la Fase de Grupos ya aseguró premio.
-      matchText = `🏆 ${cupName} (${roundLabel}): ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName}${breakdown.entry > 0 ? ` (+${fmtEuro(breakdown.entry)} por jugar la Fase de Grupos)` : ''}`;
+      matchText = `[COPA] ${cupName} (${roundLabel}): ${userTeam.name} ${userGoals} - ${rivalGoals} ${rivalName}${breakdown.entry > 0 ? ` (+${fmtEuro(breakdown.entry)} por jugar la Fase de Grupos)` : ''}`;
     }
 
     gameState.eventsLog.unshift({

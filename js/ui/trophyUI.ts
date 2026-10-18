@@ -3,6 +3,7 @@
 
 import { db } from '../data/db.js';
 import { renderCountryFlagSVG } from './badgeHelper.js';
+import { AchievementsEngine } from '../engine/achievementsEngine.js';
 
 /** Claves de los SVG vectoriales de trofeos (TROPHY_SVGS) */
 type TrophySvgKey = keyof typeof TROPHY_SVGS;
@@ -87,6 +88,8 @@ export function renderTrophyRoom(container: HTMLElement): void {
   const gameState = db.gameState!;
   const trophies = gameState.trophies || [];
   const careerHistory = gameState.careerHistory || [];
+  const achievements = AchievementsEngine.getAllAchievements();
+  const unlockedCount = achievements.filter(a => a.unlocked).length;
 
   container.innerHTML = `
     <div class="trophy-layout">
@@ -94,26 +97,27 @@ export function renderTrophyRoom(container: HTMLElement): void {
       <div class="glass-panel mb-4 text-center" style="background: linear-gradient(135deg, #0d1320 0%, #162032 100%); padding: 24px;">
         <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 8px;">
           ${renderCountryFlagSVG(gameState.managerCountry, 28)}
-          <h2 style="font-size: 1.8rem; margin: 0; color: #fff;">🏆 Salón de la Fama & Palmarés del Entrenador</h2>
+          <h2 style="font-size: 1.8rem; margin: 0; color: #fff;">Salón de la Fama & Palmarés del Entrenador</h2>
         </div>
         <p class="text-sub" style="font-size: 0.9rem;">
           Director Técnico: <strong style="color: var(--accent-gold);">${gameState.managerName}</strong> | 
           Años de Carrera: <strong>${gameState.season - 2026 + 1} de 25 Temporadas</strong> | 
-          Títulos Conquistados: <strong style="color: var(--accent-green);">${trophies.length} Títulos</strong>
+          Títulos Conquistados: <strong style="color: var(--accent-green);">${trophies.length} Títulos</strong> | 
+          Retos Desbloqueados: <strong style="color: var(--accent-gold);">${unlockedCount}/${achievements.length}</strong>
         </p>
       </div>
 
       <!-- Vitrina de Trofeos Conquistados -->
       <div class="glass-panel mb-4" style="padding: 20px;">
         <h3 style="color: var(--accent-gold); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-          🏛️ Vitrina de Trofeos Conquistados (${trophies.length})
+          Vitrina de Trofeos Conquistados (${trophies.length})
         </h3>
 
         ${trophies.length === 0 ? `
           <div class="text-center py-5" style="background: #0f172a; border: 1px dashed var(--border-color); border-radius: 12px;">
-            <div style="font-size: 3rem; margin-bottom: 8px; opacity: 0.5;">🏆</div>
+            <div style="font-size: 1.5rem; margin-bottom: 8px; color: var(--accent-gold); font-weight: 800;">[VITRINA VACÍA]</div>
             <h4 class="text-sub">Aún no has conquistado trofeos en tu carrera.</h4>
-            <p class="text-sub" style="font-size: 0.8rem;">Lucha por la Liga, la Copa Nacional y la Champions/Libertadores para llenar tu vitrina.</p>
+            <p class="text-sub" style="font-size: 0.8rem;">Lucha por la Liga, la Copa Nacional y los torneos continentales para llenar tu vitrina.</p>
           </div>
         ` : `
           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;">
@@ -137,9 +141,64 @@ export function renderTrophyRoom(container: HTMLElement): void {
         `}
       </div>
 
+      <!-- SALÓN DE RETOS Y LOGROS DE CARRERA -->
+      <div class="glass-panel mb-4" style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+          <h3 style="color: var(--accent-gold); margin: 0; display: flex; align-items: center; gap: 8px;">
+            Salón de Retos y Logros de Carrera
+          </h3>
+          <span class="badge" style="background: rgba(250, 189, 0, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); font-size: 0.8rem; font-weight: 800; padding: 4px 10px;">
+            ${unlockedCount} / ${achievements.length} Completados (${Math.round((unlockedCount / achievements.length) * 100)}%)
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+          ${achievements.map(a => {
+            const isUnlocked = a.unlocked;
+            const progress = a.progress || 0;
+            const maxProg = a.maxProgress || 1;
+            const pct = Math.min(100, Math.round((progress / maxProg) * 100));
+
+            return `
+              <div class="glass-panel" style="padding: 14px; border-radius: 10px; background: ${isUnlocked ? 'linear-gradient(135deg, rgba(250, 189, 0, 0.08), rgba(15, 23, 42, 0.8))' : '#0f172a'}; border: 1px solid ${isUnlocked ? 'var(--accent-gold)' : 'var(--border-color)'}; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="font-size: 0.72rem; font-weight: 800; color: var(--accent-gold); background: #0f172a; padding: 2px 6px; border-radius: 4px;">${a.icon}</span>
+                      <strong style="color: ${isUnlocked ? '#fff' : '#94a3b8'}; font-size: 0.92rem;">${a.title}</strong>
+                    </div>
+                    <span style="font-size: 0.72rem; font-weight: 800; color: var(--accent-cyan); background: rgba(56, 189, 248, 0.1); padding: 2px 6px; border-radius: 4px;">+${a.xpReward} EXP</span>
+                  </div>
+                  <p class="text-sub" style="font-size: 0.76rem; line-height: 1.4; margin: 0 0 10px 0;">${a.desc}</p>
+                </div>
+
+                <div>
+                  ${isUnlocked ? `
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: var(--accent-green); font-weight: 800; background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 4px;">
+                      <span>CONSEGUIDO</span>
+                      <span style="color: var(--text-sub);">${a.date || ''}</span>
+                    </div>
+                  ` : `
+                    <div>
+                      <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #94a3b8; margin-bottom: 4px;">
+                        <span>Progreso</span>
+                        <span><strong>${progress}</strong> / ${maxProg}</span>
+                      </div>
+                      <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;">
+                        <div style="width: ${pct}%; height: 100%; background: var(--accent-gold); border-radius: 3px;"></div>
+                      </div>
+                    </div>
+                  `}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
       <!-- HISTORIAL MULTI-CLUB DE TEMPORADAS PASADAS -->
       <div class="glass-panel" style="padding: 20px;">
-        <h3 style="color: var(--accent-cyan); margin-bottom: 16px;">📋 Historial Anual de Trayectoria</h3>
+        <h3 style="color: var(--accent-cyan); margin-bottom: 16px;">Historial Anual de Trayectoria</h3>
         
         ${careerHistory.length === 0 ? `
           <p class="text-sub">Completarás tu primer registro al finalizar la Temporada 2026/2027.</p>
@@ -160,7 +219,7 @@ export function renderTrophyRoom(container: HTMLElement): void {
                 ${careerHistory.map(h => `
                   <tr>
                     <td><strong>${h.season}/${h.season + 1}</strong></td>
-                    <td><strong>${h.club}</strong> ${h.isTitleWon ? '🏆' : ''}</td>
+                    <td><strong>${h.club}</strong> ${h.isTitleWon ? '<span style="color:var(--accent-gold); font-size:0.75rem;">[CAMPEÓN]</span>' : ''}</td>
                     <td><span class="badge ${h.isTitleWon ? 'badge-final' : ''}">Puesto #${h.leagueRank}</span></td>
                     <td>${h.cupPhase || 'N/A'}</td>
                     <td>${h.mvpPlayer || 'N/A'}</td>

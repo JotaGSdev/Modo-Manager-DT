@@ -292,7 +292,7 @@ export class TransferEngine {
         executed++;
 
         if (player.overall >= 78) {
-          news.push(`🔁 ${buyerTeam.name} ficha a ${player.name} (${player.pos}, OVR ${player.overall}) por €${(fee / 1000000).toFixed(0)}M desde ${sellerTeam.name}.`);
+          news.push(`[FICHAJE] ${buyerTeam.name} ficha a ${player.name} (${player.pos}, OVR ${player.overall}) por €${(fee / 1000000).toFixed(0)}M desde ${sellerTeam.name}.`);
         }
       }
     }
@@ -306,7 +306,7 @@ export class TransferEngine {
         season: gameState.season,
         type: 'TRASPASO_IA',
         text,
-        icon: '🔁',
+        icon: '[FICHAJE]',
         isRead: false,
         linkedPlayerId: null
       });
@@ -314,7 +314,7 @@ export class TransferEngine {
 
     gameState.eventsLog.unshift({
       date: `Semana ${gameState.week}`,
-      text: `🔁 MERCADO DE FICHAJES IA: ${executed} traspasos entre clubes rivales en la ventana de ${transferWindow === 'summer' ? 'verano' : 'invierno'}.`
+      text: `[MERCADO IA] ${executed} traspasos entre clubes rivales en la ventana de ${transferWindow === 'summer' ? 'verano' : 'invierno'}.`
     });
 
     // ── 3b) AGENTES LIBRES (v3.8): clubes con plantilla corta reponen con
@@ -429,7 +429,7 @@ export class TransferEngine {
     const leagueTeam = league?.teams.find(t => t.id === team.id);
     if (leagueTeam) leagueTeam.budget = team.budget;
     if (bestFree!.overall >= 78) {
-      news.push(`🕊️ ${team.name} firma al agente libre ${bestFree!.name} (${bestFree!.pos}, OVR ${bestFree!.overall}) sin pagar traspaso.`);
+      news.push(`[LIBRE] ${team.name} firma al agente libre ${bestFree!.name} (${bestFree!.pos}, OVR ${bestFree!.overall}) sin pagar traspaso.`);
     }
     return true;
   }
@@ -481,7 +481,7 @@ export class TransferEngine {
         season: gs.season,
         type: 'AGENTE_LIBRE',
         text,
-        icon: '🕊️',
+        icon: '[LIBRE]',
         isRead: false,
         linkedPlayerId: null
       });
@@ -648,7 +648,7 @@ export class TransferEngine {
     if (count > 0) {
       gs.eventsLog.unshift({
         date: `Temporada ${gs.season}`,
-        text: `💰 ECONOMÍA IA: ${count} clubes rivales liquidaron ingresos por resultados por €${(totalIncome / 1000000).toFixed(0)}M (€${(totalPrizes / 1000000).toFixed(0)}M en premios de liga por puesto final, según el país). El mercado de fichajes IA se financia solo.`
+        text: `[ECONOMÍA IA] ${count} clubes rivales liquidaron ingresos por resultados por €${(totalIncome / 1000000).toFixed(0)}M (€${(totalPrizes / 1000000).toFixed(0)}M en premios de liga por puesto final, según el país). El mercado de fichajes IA se financia solo.`
       });
     }
 
@@ -661,8 +661,8 @@ export class TransferEngine {
     if (!Array.isArray(gs.feedItems)) gs.feedItems = [];
     crisisClubs.sort(() => Math.random() - 0.5).slice(0, AI_CRISIS_MAX_NEWS).forEach(({ team, wages, crisisSeasons }) => {
       const text = crisisSeasons === 1
-        ? `💸 CRISIS FINANCIERA: ${team.name} no cubre su masa salarial (€${(wages / 1000000).toFixed(0)}M anuales). El club vive al día y deberá vender.`
-        : `💸 CRISIS AGRAVADA: ${team.name} acumula ${crisisSeasons} temporadas sin cubrir su nómina. Su estrella podría salir en el próximo mercado.`;
+        ? `CRISIS FINANCIERA: ${team.name} no cubre su masa salarial (€${(wages / 1000000).toFixed(0)}M anuales). El club vive al día y deberá vender.`
+        : `CRISIS AGRAVADA: ${team.name} acumula ${crisisSeasons} temporadas sin cubrir su nómina. Su estrella podría salir en el próximo mercado.`;
       gs.feedItems!.unshift({
         id: `ai_crisis_${Date.now()}_${Math.floor(Math.random() * 100000)}`,
         week: gs.week,
@@ -735,7 +735,7 @@ export class TransferEngine {
           week: gs.week,
           season: gs.season,
           type: 'TRASPASO_IA',
-          text: `🔥 VENTA FORZOSA: ${team.name} vende a su estrella ${star.name} (${star.pos}, OVR ${star.overall}) por €${(fee / 1000000).toFixed(0)}M para sanear sus cuentas.`,
+          text: `VENTA FORZOSA: ${team.name} vende a su estrella ${star.name} (${star.pos}, OVR ${star.overall}) por €${(fee / 1000000).toFixed(0)}M para sanear sus cuentas.`,
           icon: '🔥',
           isRead: false,
           linkedPlayerId: star.id
@@ -757,8 +757,8 @@ export class TransferEngine {
           week: gs.week,
           season: gs.season,
           type: 'INVERSOR_IA',
-          text: `💼 INVERSOR: un fondo de inversión inyecta €${(injection / 1000000).toFixed(0)}M en ${team.name} tras ${AI_FLOOR_SEASONS_TRIGGER}+ temporadas al borde de la quiebra.`,
-          icon: '💼',
+          text: `INVERSOR: un fondo de inversión inyecta €${(injection / 1000000).toFixed(0)}M en ${team.name} tras ${AI_FLOOR_SEASONS_TRIGGER}+ temporadas al borde de la quiebra.`,
+          icon: '[INVERSOR]',
           isRead: false,
           linkedPlayerId: null
         });
@@ -768,7 +768,7 @@ export class TransferEngine {
     if (starSales + investors > 0) {
       gs.eventsLog.unshift({
         date: `Temporada ${gs.season}`,
-        text: `🚨 CLUBES EN EL SUELO: ${starSales} vendieron a su estrella (venta forzosa) y ${investors} recibieron un inversor para reflotar.`
+        text: `[CLUBES EN CRISIS] ${starSales} vendieron a su estrella (venta forzosa) y ${investors} recibieron un inversor para reflotar.`
       });
     }
 
@@ -947,7 +947,7 @@ export class TransferEngine {
       return {
         success: false,
         breakNegotiation: true,
-        reason: `🔒 NEGOCIACIÓN ROTA: El club consideró la oferta insultante (€${(fee / 1000000).toFixed(1)}M vs €${(player.value / 1000000).toFixed(1)}M valor de mercado). Se han cerrado las conversaciones hasta la próxima ventana de fichajes.`
+        reason: `[NEGOCIACIÓN ROTA] El club consideró la oferta insultante (€${(fee / 1000000).toFixed(1)}M vs €${(player.value / 1000000).toFixed(1)}M valor de mercado). Se han cerrado las conversaciones hasta la próxima ventana de fichajes.`
       };
     }
   }
@@ -1005,7 +1005,7 @@ export class TransferEngine {
 
       gameState.eventsLog.unshift({
         date: `Semana ${gameState.week}`,
-        text: `📝 FICHAJE OFICIAL: ${player.name} se une al equipo firmando por ${contractYears} años con salario de €${(wage / 1000).toFixed(0)}K/sem.${transferFee > 0 ? '' : ' (Agente libre: sin coste de traspaso)'}`
+        text: `[FICHAJE OFICIAL] ${player.name} se une al equipo firmando por ${contractYears} años con salario de €${(wage / 1000).toFixed(0)}K/sem.${transferFee > 0 ? '' : ' (Agente libre: sin coste de traspaso)'}`
       });
 
       db.saveGame();
@@ -1020,7 +1020,7 @@ export class TransferEngine {
       return {
         success: false,
         breakNegotiation: true,
-        reason: `🔒 NEGOCIACIÓN ROTA: El representante y el jugador rechazaron las condiciones de rol (${role}) o salario (€${(wage / 1000).toFixed(0)}K vs €${(expectedWage / 1000).toFixed(0)}K exigidos). No aceptarán más ofertas en esta ventana.`
+        reason: `[NEGOCIACIÓN ROTA] El representante y el jugador rechazaron las condiciones de rol (${role}) o salario (€${(wage / 1000).toFixed(0)}K vs €${(expectedWage / 1000).toFixed(0)}K exigidos). No aceptarán más ofertas en esta ventana.`
       };
     }
   }

@@ -39,7 +39,7 @@ export const MANAGER_ARCHETYPES: Record<ManagerArchetypeKey, ManagerArchetypeInf
     coachStyle: 'Posesión Prolongada & Triangulación',
     description: 'Construcción paciente desde el fondo, pases cortos, triangulaciones de apoyo y control del espacio.',
     badgeColor: '#00c885',
-    icon: '⚽',
+    icon: 'POS',
     skills: {
       possession: { name: 'Control de Posesión y Triangulación', level: 1, maxLevel: 10 },
       shortPassing: { name: 'Precisión de Pase Corto en Salida', level: 1, maxLevel: 10 }
@@ -52,7 +52,7 @@ export const MANAGER_ARCHETYPES: Record<ManagerArchetypeKey, ManagerArchetypeInf
     coachStyle: 'Presión Tras Pérdida & Vértigo',
     description: 'Presión asfixiante en campo rival inmediatamente tras perder el balón y zarpazo vertical al espacio.',
     badgeColor: '#0096c7',
-    icon: '⚡',
+    icon: 'PRE',
     skills: {
       counterSpeed: { name: 'Velocidad de Transición al Espacio', level: 1, maxLevel: 10 },
       directAttacking: { name: 'Efectividad en Recuperación Alta', level: 1, maxLevel: 10 }
@@ -65,7 +65,7 @@ export const MANAGER_ARCHETYPES: Record<ManagerArchetypeKey, ManagerArchetypeInf
     coachStyle: 'El Autobús & Cerrojo Defensivo',
     description: 'Organización defensiva impenetrable en área propia, marcaje estricto, garra y córners letales.',
     badgeColor: '#e5a93c',
-    icon: '🚌',
+    icon: 'DEF',
     skills: {
       setPiece: { name: 'Jugadas de Balón Parado & Córners', level: 1, maxLevel: 10 },
       potreroGrit: { name: 'Garra de Cerrojo & Marca Física', level: 1, maxLevel: 10 }
@@ -78,7 +78,7 @@ export const MANAGER_ARCHETYPES: Record<ManagerArchetypeKey, ManagerArchetypeInf
     coachStyle: 'Amplitud Total & Desborde',
     description: 'Laterales proyectados en ataque, uno contra uno por los costados y centros al área para rematadores.',
     badgeColor: '#a855f7',
-    icon: '🌊',
+    icon: 'BAN',
     skills: {
       crossing: { name: 'Precisión de Centros al Área', level: 1, maxLevel: 10 },
       wingPace: { name: 'Desborde de Extremos', level: 1, maxLevel: 10 }
@@ -91,7 +91,7 @@ export const MANAGER_ARCHETYPES: Record<ManagerArchetypeKey, ManagerArchetypeInf
     coachStyle: 'Transición Relámpago al Espacio',
     description: 'Ceder la iniciativa al rival para explotar la espalda de su defensa con zarpazos a alta velocidad.',
     badgeColor: '#ff0055',
-    icon: '🎯',
+    icon: 'DIR',
     skills: {
       counterPace: { name: 'Ataque Relámpago', level: 1, maxLevel: 10 },
       longBalls: { name: 'Balón Largo al Espacio', level: 1, maxLevel: 10 }

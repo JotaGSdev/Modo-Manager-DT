@@ -385,7 +385,7 @@ class DatabaseManager {
       this.gameState.isCareerFinished = true;
       this.gameState.eventsLog.unshift({
         date: `Año 2051`,
-        text: `🏆 ¡CARRERA FINALIZADA! Has completado tu trayectoria profesional de 25 años como Director Técnico.`
+        text: `[CARRERA FINALIZADA] Has completado tu trayectoria profesional de 25 años como Director Técnico.`
       });
       this.saveGame();
       return;
@@ -552,7 +552,7 @@ class DatabaseManager {
           if (p.contractYears === 0 && tId === userTeamId) {
             this.gameState!.eventsLog.unshift({
               date: `Temporada ${this.gameState!.season + 1}`,
-              text: `⚠️ ALERTA DE CONTRATO: El contrato de ${p.name} ha vencido (0 años restantes). ¡Renueva su vínculo en el Inspector de Jugador!`
+              text: `[ALERTA DE CONTRATO] El contrato de ${p.name} ha vencido (0 años restantes). ¡Renueva su vínculo en el Inspector de Jugador!`
             });
           }
         });
@@ -577,7 +577,7 @@ class DatabaseManager {
           if (tId === userTeamId) {
             this.gameState!.eventsLog.unshift({
               date: `Temporada ${this.gameState!.season + 1}`,
-              text: `🕊️ AGENTES LIBRES: ${expiredToFree.map(p => p.name).join(', ')} dejaron el club al expirar su contrato sin renovar. Búscalos en el mercado (sin traspaso).`
+              text: `[AGENTES LIBRES] ${expiredToFree.map(p => p.name).join(', ')} dejaron el club al expirar su contrato sin renovar. Búscalos en el mercado (sin traspaso).`
             });
           } else if (topFree && topFree.overall >= 78) {
             // Noticia en The Feed solo para estrellas que quedan libres
@@ -587,8 +587,8 @@ class DatabaseManager {
               week: this.gameState!.week,
               season: this.gameState!.season,
               type: 'AGENTE_LIBRE',
-              text: `🕊️ ${topFree.name} (${topFree.pos}, OVR ${topFree.overall}) quedó como agente libre al expirar su contrato con ${this.teams[tId]?.name || 'su club'}.`,
-              icon: '🕊️',
+              text: `[LIBRE] ${topFree.name} (${topFree.pos}, OVR ${topFree.overall}) quedó como agente libre al expirar su contrato con ${this.teams[tId]?.name || 'su club'}.`,
+              icon: 'LIBRE',
               isRead: false,
               linkedPlayerId: topFree.id
             });
@@ -636,16 +636,16 @@ class DatabaseManager {
               const reaction = reactions[Math.floor(Math.random() * reactions.length)];
 
               const captainLine = promotion.newCaptain
-                ? `👑 <strong>${promotion.newCaptain.name}</strong> (${promotion.newCaptain.pos}, ${promotion.newCaptain.overall} OVR) heredó el brazalete de Capitán.`
+                ? `[CAPITÁN] <strong>${promotion.newCaptain.name}</strong> (${promotion.newCaptain.pos}, ${promotion.newCaptain.overall} OVR) heredó el brazalete de Capitán.`
                 : '';
               const mentorLine = promotion.newMentor
-                ? `🎓 <strong>${promotion.newMentor.name}</strong> (${promotion.newMentor.pos}, ${promotion.newMentor.overall} OVR) asumió el rol de Mentor del vestuario.`
+                ? `[MENTOR] <strong>${promotion.newMentor.name}</strong> (${promotion.newMentor.pos}, ${promotion.newMentor.overall} OVR) asumió el rol de Mentor del vestuario.`
                 : '';
 
               this.gameState!.eventsLog.unshift({
                 date: `Temporada ${this.gameState!.season + 1}`,
                 text: [
-                  `🔄 CAMBIO DE LIDERAZGO — Temporada ${this.gameState!.season + 1}:`,
+                  `[LIDERAZGO] CAMBIO DE LIDERAZGO — Temporada ${this.gameState!.season + 1}:`,
                   captainLine,
                   mentorLine,
                   reaction,
@@ -655,15 +655,15 @@ class DatabaseManager {
               // Noticia en The Feed (inline para evitar dependencia circular con eventsEngine)
               if (!Array.isArray(this.gameState!.feedItems)) this.gameState!.feedItems = [];
               const feedText = promotion.newCaptain
-                ? `👑 ${promotion.newCaptain.name} porta ahora el brazalete de Capitán. ${reaction}`
-                : `🎓 ${promotion.newMentor!.name} asume como nuevo Mentor del vestuario. ${reaction}`;
+                ? `[CAPITÁN] ${promotion.newCaptain.name} porta ahora el brazalete de Capitán. ${reaction}`
+                : `[MENTOR] ${promotion.newMentor!.name} asume como nuevo Mentor del vestuario. ${reaction}`;
               this.gameState!.feedItems.unshift({
                 id: `feed_cap_${Date.now()}`,
                 week: this.gameState!.week,
                 season: this.gameState!.season,
                 type: 'CAMBIO_DT' as const,
                 text: feedText,
-                icon: promotion.newCaptain ? '👑' : '🎓',
+                icon: promotion.newCaptain ? 'CAPITAN' : 'MENTOR',
                 isRead: false,
                 linkedPlayerId: promotion.newCaptain?.id ?? promotion.newMentor?.id ?? null,
               });
@@ -677,7 +677,7 @@ class DatabaseManager {
 
             this.gameState!.eventsLog.unshift({
               date: `Temporada ${this.gameState!.season + 1}`,
-              text: `👋 JUBILACIONES: ${retiring.map(p => p.name).join(', ')} cuelgan los botines. ${newTeamLegends.length > 0 ? `Nacen ${newTeamLegends.length} regen(s) del vivero de leyendas.` : 'La cantera repone efectivos.'}`,
+              text: `[JUBILACIONES] ${retiring.map(p => p.name).join(', ')} cuelgan los botines. ${newTeamLegends.length > 0 ? `Nacen ${newTeamLegends.length} regen(s) del vivero de leyendas.` : 'La cantera repone efectivos.'}`,
             });
           }
         }
@@ -782,7 +782,7 @@ class DatabaseManager {
     this.gameState.week = 1;
     this.gameState.eventsLog.unshift({
       date: `Temporada ${this.gameState.season}`,
-      text: `🔄 ¡Nueva Temporada ${this.gameState.season}/${this.gameState.season + 1}! Se han reiniciado las posiciones, victorias y mercado de fichajes.`
+      text: `[NUEVA TEMPORADA] ¡Nueva Temporada ${this.gameState.season}/${this.gameState.season + 1}! Se han reiniciado las posiciones, victorias y mercado de fichajes.`
     });
 
     // Sincronizar OVR del equipo con la plantilla evolucionada y reparar el XI
@@ -1094,7 +1094,7 @@ class DatabaseManager {
 
     gs.eventsLog.unshift({
       date: `Semana ${gs.week}`,
-      text: `✍️ NUEVO DESAFÍO PROFESIONAL: Has dejado ${oldTeamName} para dirigir a ${newTeam.name}. El consejo directivo fija un objetivo temporal para tu contrato.`
+      text: `[NUEVO CLUB] Has dejado ${oldTeamName} para dirigir a ${newTeam.name}. El consejo directivo fija un objetivo temporal para tu contrato.`
     });
 
     this.saveGame();
@@ -1365,7 +1365,7 @@ class DatabaseManager {
     const storedCheck = localStorage.getItem(SAVE_CHECK_KEY);
     const checksumOk = !storedCheck || fnv1a(dataStr) === storedCheck;
     if (!parsed || !checksumOk) {
-      console.error('⚠️ v3.7: Save principal corrupto (parse o checksum).', { hasChecksum: Boolean(storedCheck) });
+      console.error('v3.7: Save principal corrupto (parse o checksum).', { hasChecksum: Boolean(storedCheck) });
       return 'corrupted';
     }
     return 'ok';
@@ -1412,7 +1412,7 @@ class DatabaseManager {
       if (loaded && this.gameState) {
         this.gameState.eventsLog.unshift({
           date: `Semana ${this.gameState.week}`,
-          text: '🚑 RECUPERACIÓN: Tu partida estaba dañada y se restauró el último autoguardado válido.'
+          text: '[RECUPERACIÓN] Tu partida estaba dañada y se restauró el último autoguardado válido.'
         });
         this.saveGame(); // reescribe el principal (regenera el checksum)
       }

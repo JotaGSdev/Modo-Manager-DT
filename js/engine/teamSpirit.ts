@@ -136,15 +136,15 @@ export class TeamSpiritEngine {
       : spirit >= 50 ? '#e5a93c'
       : '#ff4460';
 
-    const spiritLabel = spirit >= 80 ? '🔥 VESTUARIO EN LLAMAS'
-      : spirit >= 65 ? '💪 BUENA COHESIÓN'
-      : spirit >= 45 ? '😐 AMBIENTE NEUTRO'
-      : spirit >= 30 ? '⚠️ TENSIÓN INTERNA'
-      : '💥 CRISIS DE VESTUARIO';
+    const spiritLabel = spirit >= 80 ? 'VESTUARIO EN AUGE'
+      : spirit >= 65 ? 'BUENA COHESIÓN'
+      : spirit >= 45 ? 'AMBIENTE NEUTRO'
+      : spirit >= 30 ? 'TENSIÓN INTERNA'
+      : 'CRISIS DE VESTUARIO';
 
     return `
       <div class="stat-card" style="border-left: 3px solid ${spiritColor};">
-        <div class="stat-label">🤝 Team Spirit</div>
+        <div class="stat-label">Team Spirit</div>
         <div class="stat-value" style="color: ${spiritColor};">${spirit}/100</div>
         <div class="progress-bar" style="margin-top: 6px; height: 6px; background: var(--surface-3); border-radius: 3px;">
           <div style="width: ${spirit}%; height: 100%; background: ${spiritColor}; border-radius: 3px; transition: width 0.4s;"></div>

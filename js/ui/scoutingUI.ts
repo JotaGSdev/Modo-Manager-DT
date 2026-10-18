@@ -48,14 +48,14 @@ export function renderScoutingView(container: HTMLElement): void {
         <!-- Header del Centro de Análisis -->
         <div class="glass-panel mb-4" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
           <div>
-            <h2>🔭 Centro de Análisis de Datos & Seguimiento Multiliga</h2>
+            <h2>Centro de Análisis de Datos & Seguimiento Multiliga</h2>
             <p class="text-sub">Monitorea estadísticas globales de hasta 5 ligas externas y asigna ojeadores directamente.</p>
           </div>
           
           <div style="display:flex; gap:10px; align-items:center;">
             <span class="text-sub" style="font-size:0.8rem; font-weight:700;">LIGAS MONITOREADAS (${gameState.watchedLeagues.length}/5):</span>
             <button id="btnAddLeagueWatch" class="btn-primary btn-sm" ${gameState.watchedLeagues.length >= 5 ? 'disabled style="opacity:0.5;"' : ''}>
-              ➕ Añadir Liga Actual
+              Añadir Liga Actual
             </button>
           </div>
         </div>
@@ -74,7 +74,7 @@ export function renderScoutingView(container: HTMLElement): void {
           
           <!-- TABLA DE POSICIONES INTERNACIONAL -->
           <div class="glass-panel" style="padding:16px;">
-            <h4 style="margin-bottom:10px; color:var(--accent-cyan);">🏆 Clasificación: ${activeLeague?.name || 'Liga Externa'}</h4>
+            <h4 style="margin-bottom:10px; color:var(--accent-cyan);">Clasificación: ${activeLeague?.name || 'Liga Externa'}</h4>
             <div class="table-responsive">
               <table class="data-table" style="font-size:0.8rem;">
                 <thead>
@@ -101,7 +101,7 @@ export function renderScoutingView(container: HTMLElement): void {
 
           <!-- TABLA DE TOP FIGURAS Y ASIGNACIÓN DIRECTA DE OJEADORES -->
           <div class="glass-panel" style="padding:16px;">
-            <h4 style="margin-bottom:10px; color:var(--accent-green);">⭐ Top Talentos & Asignación Directa de Ojeadores</h4>
+            <h4 style="margin-bottom:10px; color:var(--accent-green);">Top Talentos & Asignación Directa de Ojeadores</h4>
             <div class="table-responsive">
               <table class="data-table" style="font-size:0.8rem;">
                 <thead>
@@ -122,7 +122,7 @@ export function renderScoutingView(container: HTMLElement): void {
                       <td>${p.age}a</td>
                       <td>
                         <button class="btn-primary btn-sm btn-scout-direct" data-id="${p.id}" data-name="${p.name}">
-                          🔍 Ojear (€20K)
+                          Ojear (€20K)
                         </button>
                       </td>
                     </tr>
@@ -165,7 +165,7 @@ export function renderScoutingView(container: HTMLElement): void {
         gameState.budget -= 20000;
         db.saveGame();
         sfx.playClick();
-        alert(`🔎 OJEADOR ENVIADO: Un cazatalentos privado asistirá a los próximos 3 encuentros de ${pname} para elaborar un informe completo de rendimiento.`);
+        alert(`OJEADOR ENVIADO: Un cazatalentos privado asistirá a los próximos 3 encuentros de ${pname} para elaborar un informe completo de rendimiento.`);
       });
     });
   };

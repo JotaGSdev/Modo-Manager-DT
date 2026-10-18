@@ -5,16 +5,17 @@ import { db } from '../data/db.js';
 import { openPlayerInspectorModal } from './playerInspectorUI.js';
 import { sfx } from '../../assets/audio/sfx.js';
 import { TeamSpiritEngine } from '../engine/teamSpirit.js';
+import { PlayerFormEngine } from '../engine/playerForm.js';
 
 const POS_ORDER: Record<string, number> = { 'POR': 1, 'DFC': 2, 'LI': 3, 'LD': 4, 'MCD': 5, 'MC': 6, 'MCO': 7, 'EI': 8, 'ED': 9, 'DC': 10 };
 
 // v4.0 — El Rol Vestuario ya NO se asigna a mano: cada jugador nace con el suyo
 // (assignPersonalityRole en teamData). Aquí solo se muestra, como insignia.
 const PERSONALITY_ROLE_LABELS: Record<string, string> = {
-  captain: '👑 Capitán',
-  youngStar: '⭐ Joven Promesa',
-  rebel: '🔥 El Rebelde',
-  mentor: '🎓 El Mentor',
+  captain: 'Capitán',
+  youngStar: 'Joven Promesa',
+  rebel: 'El Rebelde',
+  mentor: 'El Mentor',
 };
 
 export function renderSquad(container: HTMLElement): void {
@@ -75,11 +76,13 @@ export function renderSquad(container: HTMLElement): void {
         ? 'border-left: 3px solid #94a3b8; background: rgba(148,163,184,0.04);'
         : '';
 
+      const formBadge = PlayerFormEngine.getFormBadgeHTML(p);
+
       return `
         <tr class="player-squad-row" data-id="${p.id}" style="cursor: pointer; ${leaderBorderStyle}">
           <td><span class="pos-tag pos-${p.pos}">${p.pos}</span></td>
           <td>
-            <strong>${p.name} ${xiIds.has(p.id) ? '<span class="xi-badge starter">XI</span>' : '<span class="xi-badge bench">SUP</span>'}</strong><br>
+            <strong>${p.name} ${xiIds.has(p.id) ? '<span class="xi-badge starter">XI</span>' : '<span class="xi-badge bench">SUP</span>'} ${formBadge}</strong><br>
             <span class="text-sub" style="font-size: 0.75rem;">Rol: ${roleText}</span>
           </td>
           <td><strong>${p.age}a</strong></td>
@@ -95,7 +98,7 @@ export function renderSquad(container: HTMLElement): void {
           <td style="color: var(--accent-gold);">€${(p.salary / 1000).toFixed(0)}K/s</td>
           <td style="color: ${contractYears <= 1 ? 'var(--accent-red)' : 'inherit'}; font-weight: 700;">${contractYears}a (${monthsLeft}m)</td>
           <td class="text-center">
-            <button class="btn-primary btn-sm btn-inspect-player" data-id="${p.id}">🔍 Gestionar / Vender</button>
+            <button class="btn-primary btn-sm btn-inspect-player" data-id="${p.id}">Gestionar / Vender</button>
           </td>
         </tr>
       `;
@@ -131,14 +134,14 @@ export function renderSquad(container: HTMLElement): void {
       <!-- Encabezado de Gestión de Plantilla Estilo EA FC -->
       <div class="glass-panel mb-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
-          <h2>📋 Plantilla Profesional del Club: ${userTeam.name}</h2>
+          <h2>Plantilla Profesional del Club: ${userTeam.name}</h2>
           <p class="text-sub">Total de Futbolistas: <strong>${squad.length} Jugadores</strong> | Presupuesto Salarial: <strong style="color: var(--accent-gold);">€${(gameState.wageBudget / 1000).toFixed(0)}K/sem</strong></p>
         </div>
         
         <div style="display: flex; gap: 10px; align-items:center;">
           <!-- Panel Embebido de Team Spirit (v2.0) -->
           ${TeamSpiritEngine.renderSpiritPanel()}
-          <input type="text" id="inputSearchSquad" class="input-select" placeholder="🔍 Buscar jugador..." style="width: 200px;">
+          <input type="text" id="inputSearchSquad" class="input-select" placeholder="Buscar jugador..." style="width: 200px;">
         </div>
       </div>
 
@@ -150,7 +153,7 @@ export function renderSquad(container: HTMLElement): void {
         <button class="btn-secondary btn-filter-pos" data-pos="DEF">DEFENSAS</button>
         <button class="btn-secondary btn-filter-pos" data-pos="MED">MEDIOCAMPISTAS</button>
         <button class="btn-secondary btn-filter-pos" data-pos="DEL">DELANTEROS</button>
-        <button class="btn-secondary btn-filter-pos" data-pos="EXPIRING" style="color: ${expiringCount > 0 ? 'var(--accent-red)' : 'var(--accent-gold)'}; font-weight: 800; border: 1px solid ${expiringCount > 0 ? 'var(--accent-red)' : 'var(--accent-gold)'};">⚠️ CONTRATOS POR VENCER (${expiringCount})</button>
+        <button class="btn-secondary btn-filter-pos" data-pos="EXPIRING" style="color: ${expiringCount > 0 ? 'var(--accent-red)' : 'var(--accent-gold)'}; font-weight: 800; border: 1px solid ${expiringCount > 0 ? 'var(--accent-red)' : 'var(--accent-gold)'};">CONTRATOS POR VENCER (${expiringCount})</button>
       </div>
 
       <!-- ════ BANNER DE LIDERAZGO DEL VESTUARIO ════ -->
@@ -169,7 +172,7 @@ export function renderSquad(container: HTMLElement): void {
             <div style="flex:1; min-width:240px; background:rgba(255,255,255,0.03); border:1px dashed #334155;
                          border-radius:14px; padding:18px; display:flex; align-items:center; gap:14px;
                          opacity:0.5;">
-              <span style="font-size:2.2rem;">${icon}</span>
+              <span style="font-size:1.5rem; font-weight:900; color:#64748b;">${icon}</span>
               <div>
                 <div style="font-size:0.7rem; font-weight:700; color:#64748b; letter-spacing:1px;">${label}</div>
                 <div style="color:#64748b; font-size:0.85rem;">Sin designar</div>
@@ -189,7 +192,7 @@ export function renderSquad(container: HTMLElement): void {
                          cursor:pointer;"
                  data-leader-id="${player.id}">
               <!-- Icono rol -->
-              <div style="font-size:2.6rem; line-height:1;">${icon}</div>
+              <div style="font-size:1.6rem; font-weight:900; color:${borderColor}; line-height:1;">${icon}</div>
 
               <!-- Info principal -->
               <div style="flex:1; min-width:0;">
@@ -210,7 +213,7 @@ export function renderSquad(container: HTMLElement): void {
               <div style="display:flex; flex-direction:column; gap:5px; text-align:right; min-width:80px;">
                 <div style="font-size:0.68rem; color:#94a3b8;">
                   Moral
-                  <span style="color:${moraleColor}; font-weight:800; display:block; font-size:0.9rem;">${morale}%</span>
+                  <span style="color:${moraleColor}; font-weight:700; display:block; font-size:0.85rem;">${morale}%</span>
                 </div>
                 <div style="font-size:0.68rem; color:#94a3b8;">
                   Contrato
@@ -228,8 +231,8 @@ export function renderSquad(container: HTMLElement): void {
 
         return `
           <div style="position:relative; display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
-            ${leaderCard(captain, '👑', 'CAPITÁN', 'var(--accent-gold)', 'var(--accent-gold)')}
-            ${leaderCard(mentor,  '🎓', 'MENTOR',  '#94a3b8',           '#94a3b8')}
+            ${leaderCard(captain, '[C]', 'CAPITÁN', 'var(--accent-gold)', 'var(--accent-gold)')}
+            ${leaderCard(mentor,  '[M]', 'MENTOR',  '#94a3b8',           '#94a3b8')}
           </div>`;
       })()}
 

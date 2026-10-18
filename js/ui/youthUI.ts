@@ -21,7 +21,7 @@ export function renderYouth(container: HTMLElement): void {
     if (academy.length === 0) {
       listEl.innerHTML = `
         <div class="empty-state glass-panel text-center py-5">
-          <p class="fs-5">🌱 No tienes canteranos en la academia. Elige una región abajo y envía a tu ojeador Nivel ${scoutLevel} (${scoutData.name}) a explorar nuevas promesas.</p>
+          <p class="fs-5">No tienes canteranos en la academia. Elige una región abajo y envía a tu ojeador Nivel ${scoutLevel} (${scoutData.name}) a explorar nuevas promesas.</p>
         </div>
       `;
       return;
@@ -33,7 +33,7 @@ export function renderYouth(container: HTMLElement): void {
           <span class="pos-tag pos-${p.pos}">${p.pos}</span>
           <div class="player-info">
             <h4>${p.name}</h4>
-            <span class="club-subtext">📍 ${p.country} (${p.region}) | Edad: ${p.age} años</span>
+            <span class="club-subtext">[ORIGEN] ${p.country} (${p.region}) | Edad: ${p.age} años</span>
           </div>
         </div>
 
@@ -44,8 +44,8 @@ export function renderYouth(container: HTMLElement): void {
         </div>
 
         <div class="youth-card-actions">
-          <button class="btn-primary btn-promote" data-id="${p.id}">⭐ PROMOCIONAR (€${(p.promotionCost / 1000).toFixed(0)}K)</button>
-          <button class="btn-danger btn-dismiss" data-id="${p.id}">❌ DESCARTAR</button>
+          <button class="btn-primary btn-promote" data-id="${p.id}">PROMOCIONAR (€${(p.promotionCost / 1000).toFixed(0)}K)</button>
+          <button class="btn-danger btn-dismiss" data-id="${p.id}">DESCARTAR</button>
         </div>
       </div>
     `).join('');
@@ -90,44 +90,44 @@ export function renderYouth(container: HTMLElement): void {
       <!-- Encabezado de la Cantera -->
       <div class="youth-header glass-panel">
         <div>
-          <h2>🌱 Cantera y Cazatalentos de Élite</h2>
+          <h2>Cantera y Cazatalentos de Élite</h2>
           <p class="text-sub">Presupuesto Disponible: <strong class="text-highlight">€${(gameState.budget / 1000000).toFixed(2)}M</strong></p>
         </div>
 
         <!-- Panel del Ojeador y Mejora -->
         <div class="scout-status-panel">
           <div class="scout-info">
-            <span class="scout-badge">🔍 Ojeador Nivel ${scoutLevel}: ${scoutData.name}</span>
+            <span class="scout-badge">Ojeador Nivel ${scoutLevel}: ${scoutData.name}</span>
             <span class="scout-meta">Rango Potencial: <strong>${scoutData.minPot}-${scoutData.maxPot}</strong> | Precisión: <strong>${scoutData.accuracy}</strong></span>
           </div>
           ${nextScoutData ? `
             <button id="btnUpgradeScout" class="btn-upgrade">
-              ⬆️ MEJORAR OJEADOR (Nivel ${scoutLevel + 1} - €${(nextScoutData.upgradeCost / 1000000).toFixed(1)}M)
+              MEJORAR OJEADOR (Nivel ${scoutLevel + 1} - €${(nextScoutData.upgradeCost / 1000000).toFixed(1)}M)
             </button>
-          ` : '<span class="max-scout-tag">⭐ OJEADOR EN NIVEL MÁXIMO</span>'}
+          ` : '<span class="max-scout-tag">OJEADOR EN NIVEL MÁXIMO</span>'}
         </div>
       </div>
 
       <!-- Selector de Regiones para Ojear -->
       <div class="scout-regions-bar glass-panel mt-3">
-        <h3>🌍 Misiones de Scouting (Costo por viaje: €${(scoutData.scoutCost / 1000).toFixed(0)}K)</h3>
+        <h3>Misiones de Scouting (Costo por viaje: €${(scoutData.scoutCost / 1000).toFixed(0)}K)</h3>
         <p class="text-sub mb-2">Selecciona la región del mundo para descubrir jóvenes promesas autóctonas:</p>
         <div class="region-buttons-grid">
-          <button class="btn-region" data-region="Sudamérica">🌎 Sudamérica (Brasil, Arg, Col...)</button>
-          <button class="btn-region" data-region="Europa">🌍 Europa (España, Ing, Ita...)</button>
-          <button class="btn-region" data-region="Norteamérica">🦅 Norteamérica (USA, Méx, Can)</button>
-          <button class="btn-region" data-region="Centroamérica">🌴 Centroamérica (Costa Rica, Hon...)</button>
-          <button class="btn-region" data-region="Asia">🌸 Asia (Japón, Arabia Saudita)</button>
+          <button class="btn-region" data-region="Sudamérica">Sudamérica (Brasil, Arg, Col...)</button>
+          <button class="btn-region" data-region="Europa">Europa (España, Ing, Ita...)</button>
+          <button class="btn-region" data-region="Norteamérica">Norteamérica (USA, Méx, Can)</button>
+          <button class="btn-region" data-region="Centroamérica">Centroamérica (Costa Rica, Hon...)</button>
+          <button class="btn-region" data-region="Asia">Asia (Japón, Arabia Saudita)</button>
         </div>
       </div>
 
       <!-- Lista de Canteranos y Torneo Sub-19 Unico -->
       <div class="youth-prospects-header mt-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-        <h3>📋 Jugadores en la Cantera del Club (${academy.length})</h3>
+        <h3>Jugadores en la Cantera del Club (${academy.length})</h3>
         <button id="btnRunYouthTournament" class="btn-primary" 
                 style="${isTournamentPlayed ? 'background: #334155; color: #94a3b8; opacity: 0.7; cursor: not-allowed;' : 'background: var(--accent-gold); color: #000; font-weight: 800;'}"
                 ${isTournamentPlayed ? 'disabled' : ''}>
-          ${isTournamentPlayed ? '✅ TORNEO SUB-19 DISPUTADO (1/1 ESTA TEMPORADA)' : '🏆 SIMULAR TORNEO CANTERA SUB-19 (+1 A +3 OVR)'}
+          ${isTournamentPlayed ? 'TORNEO SUB-19 DISPUTADO (1/1 ESTA TEMPORADA)' : 'SIMULAR TORNEO CANTERA SUB-19 (+1 A +3 OVR)'}
         </button>
       </div>
       <div id="youthProspectsList" class="youth-list mt-2"></div>

@@ -25,12 +25,12 @@ export function renderTransfers(container: HTMLElement): void {
 
     if (infoEl) {
       infoEl.innerHTML = players.length === 0
-        ? `<span style="color: var(--text-sub); font-size: 0.8rem;">🔍 Sin jugadores que coincidan con los filtros seleccionados.</span>`
-        : `<span style="color: ${mode === 'free' ? 'var(--accent-gold)' : 'var(--accent-cyan)'}; font-weight: 800; font-size: 0.8rem;">${mode === 'free' ? '🕊️' : '🔎'} ${players.length} ${mode === 'free' ? 'agentes libres' : 'jugadores'} encontrados</span><span style="color: var(--text-sub); font-size: 0.75rem;"> · mostrando los primeros ${Math.min(40, players.length)}</span>`;
+        ? `<span style="color: var(--text-sub); font-size: 0.8rem;">Sin jugadores que coincidan con los filtros seleccionados.</span>`
+        : `<span style="color: ${mode === 'free' ? 'var(--accent-gold)' : 'var(--accent-cyan)'}; font-weight: 800; font-size: 0.8rem;">${players.length} ${mode === 'free' ? 'agentes libres' : 'jugadores'} encontrados</span><span style="color: var(--text-sub); font-size: 0.75rem;"> · mostrando los primeros ${Math.min(40, players.length)}</span>`;
     }
 
     if (players.length === 0) {
-      listContainer.innerHTML = `<div class="text-sub text-center" style="padding: 30px 10px; font-size: 0.85rem;">${mode === 'free' ? '🕊️ No hay agentes libres que coincidan. Los jugadores quedan libres cuando expira su contrato sin renovar.' : '🔍 No se encontraron jugadores. Prueba a ampliar los filtros o cambiar la liga.'}</div>`;
+      listContainer.innerHTML = `<div class="text-sub text-center" style="padding: 30px 10px; font-size: 0.85rem;">${mode === 'free' ? 'No hay agentes libres que coincidan. Los jugadores quedan libres cuando expira su contrato sin renovar.' : 'No se encontraron jugadores. Prueba a ampliar los filtros o cambiar la liga.'}</div>`;
       return;
     }
 
@@ -40,7 +40,7 @@ export function renderTransfers(container: HTMLElement): void {
           <span class="pos-tag pos-${p.pos}">${p.pos}</span>
           <div class="player-info">
             <h4>${p.name}</h4>
-            <span class="club-subtext">${mode === 'free' ? '🕊️' : '🏰'} ${p.teamName} | Edad: ${p.age}</span>
+            <span class="club-subtext">${mode === 'free' ? '[LIBRE]' : '[CLUB]'} ${p.teamName} | Edad: ${p.age}</span>
           </div>
         </div>
 
@@ -52,15 +52,15 @@ export function renderTransfers(container: HTMLElement): void {
 
         ${mode === 'free' ? `
           <button class="btn-primary btn-sign-free" data-id="${p.id}">
-            🕊️ FIRMAR CONTRATO (sin traspaso)
+            FIRMAR CONTRATO (sin traspaso)
           </button>
         ` : p.isLocked ? `
           <button class="btn-secondary" disabled style="opacity: 0.6; cursor: not-allowed; border-color: var(--accent-red); color: var(--accent-red);">
-            🔒 NEGOCIACIÓN ROTA
+            NEGOCIACIÓN ROTA
           </button>
         ` : `
           <button class="btn-primary btn-negotiate" data-id="${p.id}" ${!marketOpen ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-            ${marketOpen ? '📝 NEGOCIAR' : '🔒 MERCADO CERRADO'}
+            ${marketOpen ? 'NEGOCIAR' : 'MERCADO CERRADO'}
           </button>
         `}
       </div>
@@ -114,17 +114,17 @@ export function renderTransfers(container: HTMLElement): void {
         <div class="budget-box" style="margin-left: auto;">
           <span class="lbl">Estado del Mercado:</span>
           <span class="val ${marketOpen ? 'text-highlight' : 'text-sub'}">
-            ${marketOpen ? '🟢 VENTANA ABIERTA' : '🔴 MERCADO CERRADO (Próxima apertura: Semana 19 / Sem. 1)'}
+            ${marketOpen ? '[ABIERTO] VENTANA ABIERTA' : '[CERRADO] MERCADO CERRADO (Próxima apertura: Semana 19 / Sem. 1)'}
           </span>
         </div>
       </div>
 
       <!-- Filtros de Búsqueda (Estilo FIFA / EA FC) -->
       <div class="filters-bar glass-panel">
-        <button id="btnModeMarket" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800; background: var(--accent-cyan); color: #0b111e; border-color: var(--accent-cyan);">🔁 Mercado</button>
-        <button id="btnModeFree" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800;">🕊️ Agentes Libres</button>
+        <button id="btnModeMarket" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800; background: var(--accent-cyan); color: #0b111e; border-color: var(--accent-cyan);">Mercado</button>
+        <button id="btnModeFree" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; font-weight: 800;">Agentes Libres</button>
         <span style="opacity: 0.4; margin: 0 2px;">|</span>
-        <input type="text" id="inputSearchName" class="input-text" placeholder="🔍 Buscar por nombre..." />
+        <input type="text" id="inputSearchName" class="input-text" placeholder="Buscar por nombre..." />
         
         <select id="selectPosFilter" class="input-select">
           <option value="ALL">Todas las Posiciones</option>
@@ -184,7 +184,7 @@ export function renderTransfers(container: HTMLElement): void {
           <option value="name">Ordenar: Nombre A-Z</option>
         </select>
 
-        <button id="btnClearFilters" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">✕ Limpiar</button>
+        <button id="btnClearFilters" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;">Limpiar Filtros</button>
       </div>
 
       <!-- Resultado de la búsqueda -->
@@ -270,7 +270,7 @@ export function renderTransfers(container: HTMLElement): void {
 
     const renderStep1 = () => {
       content.innerHTML = `
-        <h3>📝 Negociación de Traspaso (Paso 1 de 2: Con el Club)</h3>
+        <h3>Negociación de Traspaso (Paso 1 de 2: Con el Club)</h3>
         <p class="text-sub">Jugador: <strong>${player.name}</strong> (${player.pos}) | OVR: ${player.overall} | Valor de Mercado: <strong>€${(player.value / 1000000).toFixed(1)}M</strong></p>
         <p class="text-sub">Club Propietario: <strong>${db.teams[player.teamId]?.name || 'Club'}</strong></p>
 
@@ -305,7 +305,7 @@ export function renderTransfers(container: HTMLElement): void {
         <div id="step1Result" class="mt-3"></div>
 
         <div class="modal-actions mt-4">
-          <button id="btnSubmitStep1" class="btn-primary">🤝 ENVIAR OFERTA AL CLUB</button>
+          <button id="btnSubmitStep1" class="btn-primary">ENVIAR OFERTA AL CLUB</button>
           <button id="btnCloseWizard" class="btn-secondary">Cancelar</button>
         </div>
       `;
@@ -368,7 +368,7 @@ export function renderTransfers(container: HTMLElement): void {
       const defaultWage = Math.round(player.salary * 1.10);
 
       content.innerHTML = `
-        <h3>✍️ Negociación de Contrato (${isFreeAgent ? 'Agente Libre — sin traspaso' : 'Paso 2 de 2: Con el Jugador'})</h3>
+        <h3>Negociación de Contrato (${isFreeAgent ? 'Agente Libre — sin traspaso' : 'Paso 2 de 2: Con el Jugador'})</h3>
         <p class="text-sub">Jugador: <strong>${player.name}</strong> | Rol Deseado: <strong>${player.overall >= 80 ? 'Crucial / Titular' : 'Rotación'}</strong></p>
 
         <!-- BANNER DE PRESUPUESTO SALARIAL Y PRIMAS PARA PASO 2 -->
@@ -412,10 +412,10 @@ export function renderTransfers(container: HTMLElement): void {
           <input type="number" id="inputSigningBonus" class="input-text" value="0" step="50000" />
         </div>
 
-        <!-- ── v2.0: BARRA DE IMPACIENCIA DEL AGENTE EN TIEMPO REAL (FASE 6C) ── -->
+        <!-- BARRA DE IMPACIENCIA DEL AGENTE EN TIEMPO REAL -->
         <div style="background:#0b111e; border:1px solid var(--border-color); padding:10px; border-radius:8px; margin:10px 0;">
           <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:4px;">
-            <span style="color:var(--accent-gold); font-weight:800;">🤝 Impaciencia del Representante del Jugador:</span>
+            <span style="color:var(--accent-gold); font-weight:800;">Impaciencia del Representante del Jugador:</span>
             <span id="agentImpatienceText" style="font-weight:900; color:var(--accent-green);">0% (Tranquilo)</span>
           </div>
           <div style="height:6px; background:#1e293b; border-radius:3px; overflow:hidden;">
@@ -428,7 +428,7 @@ export function renderTransfers(container: HTMLElement): void {
         <div id="step2Result" class="mt-3"></div>
 
         <div class="modal-actions mt-4">
-          <button id="btnSubmitStep2" class="btn-primary">✍️ ESTAMPAR FIRMA Y CERRAR FICHAJE</button>
+          <button id="btnSubmitStep2" class="btn-primary">ESTAMPAR FIRMA Y CERRAR FICHAJE</button>
           <button id="btnCloseWizard2" class="btn-secondary">Rechazar Contrato</button>
         </div>
       `;
@@ -471,11 +471,11 @@ export function renderTransfers(container: HTMLElement): void {
         if (!infoEl) return;
 
         if (wage > gameState.wageBudget) {
-          infoEl.innerHTML = `<span style="color: var(--accent-red); font-weight: 700;">⚠️ Presupuesto salarial insuficiente. Tu oferta de €${(wage/1000).toFixed(0)}K/sem supera tus €${(gameState.wageBudget/1000).toFixed(0)}K/sem disponibles.</span>`;
+          infoEl.innerHTML = `<span style="color: var(--accent-red); font-weight: 700;">Presupuesto salarial insuficiente. Tu oferta de €${(wage/1000).toFixed(0)}K/sem supera tus €${(gameState.wageBudget/1000).toFixed(0)}K/sem disponibles.</span>`;
         } else if (bonus > remainingBudgetForBonus) {
-          infoEl.innerHTML = `<span style="color: var(--accent-red); font-weight: 700;">⚠️ Presupuesto de fichajes insuficiente para la prima. Te quedan €${(remainingBudgetForBonus/1e6).toFixed(2)}M tras el traspaso.</span>`;
+          infoEl.innerHTML = `<span style="color: var(--accent-red); font-weight: 700;">Presupuesto de fichajes insuficiente para la prima. Te quedan €${(remainingBudgetForBonus/1e6).toFixed(2)}M tras el traspaso.</span>`;
         } else {
-          infoEl.innerHTML = `<span style="color: var(--accent-green);">✓ Oferta salarial dentro del presupuesto disponible de tu club.</span>`;
+          infoEl.innerHTML = `<span style="color: var(--accent-green);">Oferta salarial dentro del presupuesto disponible de tu club.</span>`;
         }
       };
 
