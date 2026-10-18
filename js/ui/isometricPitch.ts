@@ -2,12 +2,16 @@
  * ============================================================================
  * ENTRENADOR LEYENDA - MOTOR DE SIMULACIÓN Y CANCHA 2D ISOMÉTRICA (isometricPitch.ts)
  * ============================================================================
- * Renderizado de campo de fútbol isométrico con 22 futbolistas miniatura estilo chibi.
- * - Proyección isométrica centrada y calibrada a 60fps con sombras y profundidad.
- * - Simulación continua: futbolistas corriendo, pasándose el balón, presionando y rematando.
- * - Sincronizado para que los 90 minutos de partido duren 90 segundos reales (1s = 1min).
- * - Secuencias dinámicas en goles, remates al arco, atajadas de arqueros y festejos.
- * - Totalmente libre de emojis con rótulos y badges vectoriales profesionales.
+ * VISTA TÁCTICA INTERACTIVA ESTILO EA SPORTS FC / FIFA CON FUTBOLISTAS CHIBI
+ * - Proyección isométrica broadcast calibrada y centrada a 60 FPS.
+ * - Indicador de control de jugador activo (cursor triangular + nametag flotante FIFA).
+ * - Barra de Momentum y Peligro Táctico en vivo (Momentum Meter).
+ * - Jugadas reales: desbordes por banda con centros al área, remates de cabeza en salto,
+ *   pases filtrados entre líneas, disparos de media distancia, barridas defensivas (tackles)
+ *   y atajadas en vuelo horizontal de los arqueros.
+ * - Respeta órdenes tácticas en vivo (Presión Alta, Bloque Bajo, Contraataque, Tiqui-taca).
+ * - 90 minutos reglamentarios en 90 segundos reales sincronizados.
+ * - Cero emojis: badges y marcadores tipográficos profesionales.
  */
 
 import type { Team, FormationId, MatchEvent } from '../types.js';
@@ -21,20 +25,24 @@ export interface ChibiPlayer {
   isGK: boolean;
   number: number;
   pos: string;
-  x: number;          // Posición táctica en cancha (X: 0 - 100)
-  y: number;          // Posición lateral en cancha (Y: 0 - 65)
+  x: number;          // Posición en cancha (0 - 100)
+  y: number;          // Posición lateral (0 - 65)
+  z: number;          // Elevación / salto (cabezazo, atajada)
   tx: number;         // Destino interpolado X
   ty: number;         // Destino interpolado Y
+  tz: number;
   vx: number;
   vy: number;
-  baseX: number;      // Posición base táctica según formación
+  baseX: number;      // Posición base según formación
   baseY: number;
-  speed: number;      // Velocidad de movimiento
+  speed: number;      // Velocidad de desplazamiento
   facing: number;     // 1 = derecha, -1 = izquierda
-  animStep: number;   // Ciclo de animación de piernas y brazos
-  state: 'idle' | 'running' | 'kicking' | 'diving' | 'celebrating';
+  animStep: number;   // Ciclo de animación
+  state: 'idle' | 'running' | 'kicking' | 'diving' | 'sliding' | 'celebrating';
   diveTimer: number;
   kickTimer: number;
+  slideTimer: number;
+  stamina: number;    // % de energía en vivo
   skinColor: string;
   hairColor: string;
 }
@@ -52,8 +60,11 @@ interface Ball {
   holder: ChibiPlayer | null;
   targetReceiver: ChibiPlayer | null;
   isShot: boolean;
+  isCross: boolean;
   trail: Array<{ x: number; y: number; z: number; alpha: number }>;
 }
+
+export type TacticalStyle = 'NORMAL' | 'PRESSING' | 'LOW_BLOCK' | 'COUNTER' | 'CONTROL';
 
 export class IsometricPitch {
   private canvas: HTMLCanvasElement;
@@ -64,21 +75,32 @@ export class IsometricPitch {
   private players: ChibiPlayer[] = [];
   private ball: Ball;
   private lastTime = 0;
+  private gameTime = 0;
+
+  // Rótulos de estado y celebración
   private goalBannerTimer = 0;
   private goalScorerName = '';
   private goalTeamName = '';
 
-  // Dimensiones del campo centradas en el lienzo de 900x520
+  // Dimensiones del campo calibradas al lienzo de 900x520
   private originX = 450;
   private originY = 245;
   private scaleX = 5.8;
   private scaleY = 4.8;
-  private isoAngle = 0.46; // radianes
+  private isoAngle = 0.46;
 
-  // Control de flujo autónomo de jugadas
+  // Dinámica de cámara y Momentum Táctico EA Sports FC
+  private cameraPanX = 0;
+  private momentum = 15; // -100 (dominio visitante) a +100 (dominio local)
+  private currentPlayText = '[JUGADA] INICIO DE ENCUENTRO EN MITAD DE CANCHA';
+  private playTextTimer = 3.0;
+  private activeTacticalStyle: TacticalStyle = 'NORMAL';
+
+  // Flujo autónomo de jugadas
   private currentAttackingTeam: 'home' | 'away' = 'home';
-  private possessionCooldown = 0;
   private passCooldown = 0;
+  private phaseTimer = 0;
+
   private specialPlayQueue: Array<{
     type: 'goal' | 'shot';
     team: 'home' | 'away';
@@ -110,6 +132,7 @@ export class IsometricPitch {
       holder: null,
       targetReceiver: null,
       isShot: false,
+      isCross: false,
       trail: []
     };
 
@@ -129,8 +152,7 @@ export class IsometricPitch {
   }
 
   /**
-   * Proyección isométrica: convierte coordenadas de cancha (x: 0-100, y: 0-65, z: altura)
-   * a coordenadas de píxeles en pantalla (px, py).
+   * Proyección isométrica con seguimiento suave de cámara sobre la acción
    */
   private toScreen(x: number, y: number, z = 0): { px: number; py: number } {
     const cosA = Math.cos(this.isoAngle);
@@ -139,14 +161,14 @@ export class IsometricPitch {
     const nx = (x - 50) * this.scaleX;
     const ny = (y - 32.5) * this.scaleY;
 
-    const px = this.originX + (nx - ny) * cosA;
+    const px = this.originX + this.cameraPanX + (nx - ny) * cosA;
     const py = this.originY + (nx + ny) * sinA * 0.58 - z;
 
     return { px, py };
   }
 
   /**
-   * Inicializa a los 22 futbolistas estilo chibi en sus posiciones tácticas
+   * Inicializa a los 22 futbolistas chibi con sus roles y características
    */
   private initPlayers(homeFormationId: FormationId, awayFormationId: FormationId): void {
     const homeForm = FORMATIONS[homeFormationId] || FORMATIONS['4-3-3'];
@@ -172,8 +194,10 @@ export class IsometricPitch {
         pos: posSlot.role,
         x: slotX,
         y: slotY,
+        z: 0,
         tx: slotX,
         ty: slotY,
+        tz: 0,
         vx: 0,
         vy: 0,
         baseX: slotX,
@@ -184,6 +208,8 @@ export class IsometricPitch {
         state: 'idle',
         diveTimer: 0,
         kickTimer: 0,
+        slideTimer: 0,
+        stamina: 96 - idx * 2,
         skinColor: skins[idx % skins.length]!,
         hairColor: hairs[idx % hairs.length]!
       });
@@ -204,8 +230,10 @@ export class IsometricPitch {
         pos: posSlot.role,
         x: slotX,
         y: slotY,
+        z: 0,
         tx: slotX,
         ty: slotY,
+        tz: 0,
         vx: 0,
         vy: 0,
         baseX: slotX,
@@ -216,6 +244,8 @@ export class IsometricPitch {
         state: 'idle',
         diveTimer: 0,
         kickTimer: 0,
+        slideTimer: 0,
+        stamina: 94 - idx * 2,
         skinColor: skins[(idx + 2) % skins.length]!,
         hairColor: hairs[(idx + 1) % hairs.length]!
       });
@@ -223,7 +253,29 @@ export class IsometricPitch {
   }
 
   /**
-   * Asigna la posesión inicial o tras recuperación al equipo indicado
+   * Cambia o aplica una orden táctica del DT en tiempo real
+   */
+  public setTacticalOrder(order: TacticalStyle): void {
+    this.activeTacticalStyle = order;
+    if (order === 'PRESSING') {
+      this.momentum = Math.min(100, this.momentum + 18);
+      this.currentPlayText = '[ORDEN ACTIVA] PRESIÓN ASFIXIANTE: BLOQUE ALTO ADELANTADO';
+    } else if (order === 'LOW_BLOCK') {
+      this.momentum = Math.max(-100, this.momentum - 12);
+      this.currentPlayText = '[ORDEN ACTIVA] REPLIEGUE DEFENSIVO: CERROJO EN ÁREA PROPIA';
+    } else if (order === 'COUNTER') {
+      this.currentPlayText = '[ORDEN ACTIVA] CONTRAATAQUE DIRECTO: BALONES LARGOS A ESPALDA RIVAL';
+    } else if (order === 'CONTROL') {
+      this.currentPlayText = '[ORDEN ACTIVA] PAUSA Y TIQUI-TACA: CONTROL PACIENTE DE LA POSESIÓN';
+    } else {
+      this.currentPlayText = '[ORDEN ACTIVA] ESTRUCTURA TÁCTICA EQUILIBRADA';
+    }
+    this.playTextTimer = 2.5;
+    this.updateTacticalLines();
+  }
+
+  /**
+   * Entrega la posesión a un equipo tras recuperación o saque
    */
   private giveBallToTeam(team: 'home' | 'away'): void {
     this.currentAttackingTeam = team;
@@ -236,12 +288,13 @@ export class IsometricPitch {
       this.ball.y = mid.y;
       this.ball.z = 0;
       this.ball.isShot = false;
-      this.passCooldown = 0.8;
+      this.ball.isCross = false;
+      this.passCooldown = 0.7;
     }
   }
 
   /**
-   * Sincronización invocada cada minuto real (o tick de simulación)
+   * Sincronización invocada cada minuto simulado
    */
   public onMinuteTick(
     minute: number,
@@ -250,16 +303,19 @@ export class IsometricPitch {
     _homeScore: number,
     _awayScore: number
   ): void {
-    // Alternar posesión basándose en el porcentaje táctico
+    // Sincronizar Momentum con la posesión y peligro
+    const targetMomentum = (homePossession - 50) * 1.8;
+    this.momentum += (targetMomentum - this.momentum) * 0.25;
+
+    // Alternar posesión dinámica según porcentaje
     if (this.specialPlayQueue.length === 0) {
       const favorsHome = Math.random() * 100 < homePossession;
       const targetTeam = favorsHome ? 'home' : 'away';
-      if (targetTeam !== this.currentAttackingTeam && Math.random() < 0.35) {
+      if (targetTeam !== this.currentAttackingTeam && Math.random() < 0.4) {
         this.giveBallToTeam(targetTeam);
       }
     }
 
-    // Gestionar eventos específicos
     if (event) {
       if (event.type === 'goal_home') {
         this.specialPlayQueue.push({
@@ -267,33 +323,36 @@ export class IsometricPitch {
           team: 'home',
           scorerName: event.scorerName || 'Goleador'
         });
+        this.currentPlayText = `[PELIGRO CRÍTICO] ¡ATAQUE LETAL DE ${this.homeTeam.name.toUpperCase()}!`;
+        this.playTextTimer = 3.5;
       } else if (event.type === 'goal_away') {
         this.specialPlayQueue.push({
           type: 'goal',
           team: 'away',
           scorerName: event.scorerName || 'Goleador Riv'
         });
+        this.currentPlayText = `[PELIGRO CRÍTICO] ¡LLEGADA A FONDO DE ${this.awayTeam.name.toUpperCase()}!`;
+        this.playTextTimer = 3.5;
       } else if (event.type === 'shot_home') {
-        this.specialPlayQueue.push({
-          type: 'shot',
-          team: 'home'
-        });
+        this.specialPlayQueue.push({ type: 'shot', team: 'home' });
+        this.currentPlayText = `[OCASIÓN DE GOL] Disparo directo a puerta de ${this.homeTeam.name}`;
+        this.playTextTimer = 2.8;
       } else if (event.type === 'shot_away') {
-        this.specialPlayQueue.push({
-          type: 'shot',
-          team: 'away'
-        });
+        this.specialPlayQueue.push({ type: 'shot', team: 'away' });
+        this.currentPlayText = `[OCASIÓN DE GOL] Remate peligroso de ${this.awayTeam.name} que exige al portero`;
+        this.playTextTimer = 2.8;
       } else if (event.type === 'halftime' || minute === 45) {
         this.resetPositionsToHalf();
+        this.currentPlayText = '[ENTRETIEMPO] Fin del primer tiempo · Jugadores al vestuario';
+        this.playTextTimer = 3.0;
       }
     }
 
-    // Actualizar objetivos dinámicos de líneas
     this.updateTacticalLines();
   }
 
   /**
-   * Ajusta las posiciones de apoyo y repliegue de los 22 jugadores
+   * Modifica las líneas y la presión según la táctica activa y posesión
    */
   private updateTacticalLines(): void {
     const ballX = this.ball.x;
@@ -302,7 +361,7 @@ export class IsometricPitch {
       if (p.state === 'celebrating' || p.state === 'diving') return;
 
       if (p.isGK) {
-        // El arquero sigue el ángulo del balón
+        // Arquero sigue el balón protegiendo su palo
         const gkBaseX = p.team === 'home' ? 5 : 95;
         p.tx = gkBaseX;
         p.ty = Math.max(24, Math.min(41, 32.5 + (this.ball.y - 32.5) * 0.45));
@@ -310,25 +369,28 @@ export class IsometricPitch {
       }
 
       const isMyTeamAttacking = p.team === this.currentAttackingTeam;
+      let tacticBonus = 0;
+      if (this.activeTacticalStyle === 'PRESSING') tacticBonus = p.team === 'home' ? 14 : -14;
+      if (this.activeTacticalStyle === 'LOW_BLOCK') tacticBonus = p.team === 'home' ? -12 : 12;
 
       if (isMyTeamAttacking) {
-        // Equipo en ataque: adelantar líneas hacia el arco rival
-        const forwardPush = p.team === 'home' ? 14 : -14;
-        const driftY = (Math.random() - 0.5) * 10;
-        p.tx = Math.max(8, Math.min(92, p.baseX + forwardPush + (ballX - 50) * 0.25));
-        p.ty = Math.max(6, Math.min(59, p.baseY + driftY));
+        // Despliegue ofensivo: abrir bandas y pisar área
+        const pushForward = (p.team === 'home' ? 16 : -16) + tacticBonus;
+        const driftY = (Math.random() - 0.5) * 8;
+        p.tx = Math.max(8, Math.min(92, p.baseX + pushForward + (ballX - 50) * 0.28));
+        p.ty = Math.max(5, Math.min(60, p.baseY + driftY));
       } else {
-        // Equipo en defensa: replegar y presionar el balón
-        const retreat = p.team === 'home' ? -10 : 10;
-        p.tx = Math.max(6, Math.min(94, p.baseX + retreat + (ballX - 50) * 0.2));
-        p.ty = Math.max(6, Math.min(59, p.baseY + (this.ball.y - 32.5) * 0.2));
+        // Repliegue defensivo: achique de espacios y marca
+        const pushBack = (p.team === 'home' ? -10 : 10) + tacticBonus * 0.5;
+        p.tx = Math.max(6, Math.min(94, p.baseX + pushBack + (ballX - 50) * 0.22));
+        p.ty = Math.max(6, Math.min(59, p.baseY + (this.ball.y - 32.5) * 0.25));
 
-        // El defensor más cercano presiona activamente al portador
+        // El defensor más cercano presiona al portador
         if (this.ball.holder && this.ball.holder.team !== p.team) {
           const distToBall = Math.hypot(p.x - this.ball.x, p.y - this.ball.y);
-          if (distToBall < 18) {
-            p.tx = this.ball.x + (p.team === 'home' ? -2 : 2);
-            p.ty = this.ball.y + (Math.random() - 0.5) * 2;
+          if (distToBall < 16) {
+            p.tx = this.ball.x + (p.team === 'home' ? -2.2 : 2.2);
+            p.ty = this.ball.y + (Math.random() - 0.5) * 1.5;
           }
         }
       }
@@ -339,6 +401,7 @@ export class IsometricPitch {
     this.players.forEach(p => {
       p.tx = p.baseX;
       p.ty = p.baseY;
+      p.z = 0;
       p.state = 'idle';
     });
     this.ball.holder = null;
@@ -346,15 +409,15 @@ export class IsometricPitch {
     this.ball.x = 50;
     this.ball.y = 32.5;
     this.ball.z = 0;
+    this.ball.isShot = false;
+    this.ball.isCross = false;
   }
 
-  /**
-   * Bucle principal de animación a 60 FPS
-   */
   private startLoop(): void {
     const loop = (timestamp: number) => {
       const dt = this.lastTime ? Math.min(0.06, (timestamp - this.lastTime) / 1000) : 0.016;
       this.lastTime = timestamp;
+      this.gameTime += dt;
 
       this.update(dt);
       this.draw();
@@ -365,69 +428,81 @@ export class IsometricPitch {
   }
 
   /**
-   * Actualización continua de física, pases, regates y jugadas
+   * Actualización continua de física, pases reales, centros y remates
    */
   private update(dt: number): void {
-    this.possessionCooldown = Math.max(0, this.possessionCooldown - dt);
     this.passCooldown = Math.max(0, this.passCooldown - dt);
+    this.phaseTimer += dt;
+    if (this.playTextTimer > 0) this.playTextTimer -= dt;
 
-    // 1) Ejecutar jugadas especiales pendientes (Gol o Tiro con peligro)
+    // Seguimiento dinámico de cámara (glide suave hacia la acción activa)
+    const targetPanX = (50 - this.ball.x) * 1.2;
+    this.cameraPanX += (targetPanX - this.cameraPanX) * Math.min(1, dt * 2.5);
+
+    // 1) Ejecutar jugadas especiales pendientes
     if (this.specialPlayQueue.length > 0 && this.passCooldown <= 0) {
       const special = this.specialPlayQueue.shift()!;
       this.executeSpecialPlay(special);
     }
 
-    // 2) IA de Pases y Avances del portador del balón
+    // 2) Flujo autónomo de juego continuo
     if (this.ball.holder) {
       const carrier = this.ball.holder;
       const isHome = carrier.team === 'home';
 
-      // El portador avanza hacia la portería rival
-      carrier.tx = isHome ? Math.min(92, carrier.x + 8) : Math.max(8, carrier.x - 8);
-      carrier.ty = Math.max(8, Math.min(57, carrier.y + (Math.random() - 0.5) * 6));
-      carrier.state = 'running';
-
-      // Posicionar el balón en los pies del jugador con rebote leve
+      // Posicionar el balón en los pies del portador con rebote natural
       this.ball.x = carrier.x + (carrier.facing * 1.6);
       this.ball.y = carrier.y;
-      this.ball.z = Math.abs(Math.sin(carrier.animStep * 2)) * 1.2;
+      this.ball.z = Math.abs(Math.sin(carrier.animStep * 2.2)) * 1.2;
 
-      // Evaluar remate si está en zona de definición
-      const inShootingZone = isHome ? carrier.x > 76 : carrier.x < 24;
-      if (inShootingZone && this.passCooldown <= 0 && Math.random() < 0.04) {
-        this.shootAtGoal(carrier, Math.random() < 0.35);
-      } else if (this.passCooldown <= 0) {
-        // Buscar compañero para pase
-        const teammates = this.players.filter(p => p.team === carrier.team && p.id !== carrier.id && !p.isGK);
-        const forwardTeammates = teammates.filter(p => isHome ? p.x > carrier.x - 4 : p.x < carrier.x + 4);
-        const pool = forwardTeammates.length > 0 ? forwardTeammates : teammates;
-        const receiver = pool[Math.floor(Math.random() * pool.length)];
+      // El portador avanza hacia el campo contrario
+      const advanceRate = this.activeTacticalStyle === 'COUNTER' ? 12 : 7.5;
+      carrier.tx = isHome ? Math.min(92, carrier.x + advanceRate) : Math.max(8, carrier.x - advanceRate);
+      carrier.ty = Math.max(8, Math.min(57, carrier.y + (Math.random() - 0.5) * 5));
+      carrier.state = 'running';
 
-        if (receiver && Math.random() < 0.06) {
-          this.passBallTo(carrier, receiver);
-        }
+      // Decisiones tácticas de jugadas reales estilo EA FC:
+      const inShootingZone = isHome ? carrier.x > 75 : carrier.x < 25;
+      const onTheWing = carrier.y < 14 || carrier.y > 51;
+
+      if (inShootingZone && this.passCooldown <= 0 && Math.random() < 0.045) {
+        // Disparo directo a puerta
+        this.currentPlayText = `[TIRO A PUERTA] ${carrier.name} busca el arco con potencia`;
+        this.playTextTimer = 2.2;
+        this.shootAtGoal(carrier, Math.random() < 0.4);
+      } else if (onTheWing && (isHome ? carrier.x > 68 : carrier.x < 32) && this.passCooldown <= 0 && Math.random() < 0.05) {
+        // Centro bombeado al área desde la banda
+        this.crossBallIntoBox(carrier);
+      } else if (this.passCooldown <= 0 && (this.phaseTimer > 1.2 || Math.random() < 0.05)) {
+        // Pase filtrado o pase al pie a compañero
+        this.executeTacticalPass(carrier);
+        this.phaseTimer = 0;
       }
 
-      // Presión del defensor rival: posible intercepción
+      // Presión y barridas de los defensores rivales
       const rivals = this.players.filter(p => p.team !== carrier.team && !p.isGK);
       for (const rival of rivals) {
         const dist = Math.hypot(rival.x - carrier.x, rival.y - carrier.y);
-        if (dist < 2.2 && Math.random() < 0.05) {
-          // El rival roba el balón
+        if (dist < 2.4 && Math.random() < 0.06) {
+          // Barrida limpia del defensor
+          rival.state = 'sliding';
+          rival.slideTimer = 0.5;
           carrier.state = 'idle';
+          this.currentPlayText = `[BARRIDA DEFENSIVA] ${rival.name} corta limpio y recupera`;
+          this.playTextTimer = 1.8;
           this.giveBallToTeam(rival.team);
           break;
         }
       }
     }
 
-    // 3) Balón en trayectoria aérea o pase libre
+    // 3) Balón en el aire o rodando
     if (!this.ball.holder) {
       const bdx = this.ball.tx - this.ball.x;
       const bdy = this.ball.ty - this.ball.y;
       const dist = Math.hypot(bdx, bdy);
 
-      const ballSpeed = this.ball.isShot ? 38 : 22;
+      const ballSpeed = this.ball.isShot ? 42 : (this.ball.isCross ? 28 : 22);
       if (dist > 1.0) {
         this.ball.x += (bdx / dist) * Math.min(dist, ballSpeed * dt);
         this.ball.y += (bdy / dist) * Math.min(dist, ballSpeed * dt);
@@ -437,30 +512,35 @@ export class IsometricPitch {
           this.ball.holder = this.ball.targetReceiver;
           this.ball.targetReceiver = null;
           this.ball.isShot = false;
+          this.ball.isCross = false;
           this.ball.z = 0;
           this.passCooldown = 0.6;
         }
       }
 
-      // Efecto parabólico en la altura del balón
+      // Efecto de comba y gravedad en centros y tiros
       if (this.ball.tz > 0 || this.ball.z > 0) {
-        const progress = Math.max(0, 1 - (dist / 20));
+        const progress = Math.max(0, 1 - (dist / 24));
         this.ball.z = Math.max(0, Math.sin(progress * Math.PI) * (this.ball.tz || 4));
       }
 
       // Rastro visual para tiros potentes
       if (this.ball.isShot) {
-        this.ball.trail.push({ x: this.ball.x, y: this.ball.y, z: this.ball.z, alpha: 0.65 });
+        this.ball.trail.push({ x: this.ball.x, y: this.ball.y, z: this.ball.z, alpha: 0.75 });
         if (this.ball.trail.length > 8) this.ball.trail.shift();
       } else {
         this.ball.trail.length = 0;
       }
     }
 
-    // 4) Interpolación suave de los 22 futbolistas
+    // 4) Interpolación de los 22 futbolistas
     this.players.forEach(p => {
       if (p.kickTimer > 0) p.kickTimer -= dt;
       if (p.diveTimer > 0) p.diveTimer -= dt;
+      if (p.slideTimer > 0) p.slideTimer -= dt;
+
+      // Caída natural de salto de cabeza
+      if (p.z > 0) p.z = Math.max(0, p.z - dt * 10);
 
       const dx = p.tx - p.x;
       const dy = p.ty - p.y;
@@ -472,10 +552,12 @@ export class IsometricPitch {
         p.y += (dy / dist) * moveDist;
         p.facing = dx >= 0 ? 1 : -1;
         p.animStep += dt * 14;
-        p.state = p.state === 'celebrating' || p.state === 'diving' ? p.state : 'running';
+        if (p.state !== 'celebrating' && p.state !== 'diving' && p.state !== 'sliding') {
+          p.state = 'running';
+        }
       } else {
         p.animStep += dt * 2.5;
-        if (p.state !== 'celebrating' && p.state !== 'diving') {
+        if (p.state !== 'celebrating' && p.state !== 'diving' && p.state !== 'sliding') {
           p.state = 'idle';
         }
       }
@@ -487,22 +569,71 @@ export class IsometricPitch {
   }
 
   /**
-   * Realiza un pase de balón entre compañeros
+   * Ejecuta un pase filtrado o de construcción entre compañeros
    */
-  private passBallTo(kicker: ChibiPlayer, receiver: ChibiPlayer): void {
-    kicker.state = 'kicking';
-    kicker.kickTimer = 0.3;
+  private executeTacticalPass(carrier: ChibiPlayer): void {
+    const isHome = carrier.team === 'home';
+    const teammates = this.players.filter(p => p.team === carrier.team && p.id !== carrier.id && !p.isGK);
+    const forwardTeammates = teammates.filter(p => isHome ? p.x > carrier.x - 2 : p.x < carrier.x + 2);
+    const pool = forwardTeammates.length > 0 ? forwardTeammates : teammates;
+    const receiver = pool[Math.floor(Math.random() * pool.length)];
+
+    if (!receiver) return;
+
+    carrier.state = 'kicking';
+    carrier.kickTimer = 0.3;
     this.ball.holder = null;
     this.ball.targetReceiver = receiver;
     this.ball.tx = receiver.x;
     this.ball.ty = receiver.y;
-    this.ball.tz = Math.random() < 0.25 ? 5 : 0;
+    this.ball.tz = Math.random() < 0.2 ? 4 : 0;
     this.ball.isShot = false;
-    this.passCooldown = 1.0;
+    this.ball.isCross = false;
+    this.passCooldown = 0.9;
+
+    this.currentPlayText = `[PASE ASOCIATIVO] ${carrier.name} toca hacia ${receiver.name}`;
+    this.playTextTimer = 1.6;
   }
 
   /**
-   * Ejecuta un disparo a portería con reacción del arquero
+   * Centro al área desde la banda con salto del delantero centro
+   */
+  private crossBallIntoBox(winger: ChibiPlayer): void {
+    const isHome = winger.team === 'home';
+    const attackers = this.players.filter(p => p.team === winger.team && !p.isGK);
+    const striker = attackers.find(p => ['DC', 'ED', 'EI'].includes(p.pos)) || attackers[0];
+
+    winger.state = 'kicking';
+    winger.kickTimer = 0.4;
+
+    const crossTargetX = isHome ? 88 : 12;
+    const crossTargetY = 32.5 + (Math.random() - 0.5) * 8;
+
+    this.ball.holder = null;
+    this.ball.targetReceiver = striker || null;
+    this.ball.tx = crossTargetX;
+    this.ball.ty = crossTargetY;
+    this.ball.tz = 9; // Centro alto en parábola
+    this.ball.isShot = false;
+    this.ball.isCross = true;
+    this.passCooldown = 1.3;
+
+    if (striker) {
+      striker.tx = crossTargetX;
+      striker.ty = crossTargetY;
+      // Salto de cabeza
+      setTimeout(() => {
+        striker.z = 6;
+        striker.state = 'kicking';
+      }, 350);
+    }
+
+    this.currentPlayText = `[CENTRO AL ÁREA] Desborde por banda de ${winger.name} y balón aéreo`;
+    this.playTextTimer = 2.4;
+  }
+
+  /**
+   * Ejecuta un disparo a portería con vuelo del arquero rival
    */
   private shootAtGoal(shooter: ChibiPlayer, isGoal: boolean): void {
     shooter.state = 'kicking';
@@ -515,33 +646,31 @@ export class IsometricPitch {
     this.ball.holder = null;
     this.ball.targetReceiver = null;
     this.ball.tx = isGoal ? goalX : (isHome ? 98 : 2);
-    this.ball.ty = isGoal ? goalY : (goalY + (Math.random() > 0.5 ? 8 : -8));
-    this.ball.tz = 4 + Math.random() * 4;
+    this.ball.ty = isGoal ? goalY : (goalY + (Math.random() > 0.5 ? 9 : -9));
+    this.ball.tz = 5 + Math.random() * 3;
     this.ball.isShot = true;
 
-    // Arquero rival intenta atajar
+    // Arquero rival se estira en vuelo horizontal
     const rivalGK = this.players.find(p => p.team !== shooter.team && p.isGK);
     if (rivalGK) {
       rivalGK.state = 'diving';
-      rivalGK.diveTimer = 0.8;
+      rivalGK.diveTimer = 0.9;
       rivalGK.ty = Math.max(25, Math.min(40, goalY));
     }
 
     if (isGoal) {
       setTimeout(() => {
         this.triggerGoalCelebration(shooter.team, shooter.name);
-      }, 350);
+      }, 320);
     } else {
       setTimeout(() => {
-        // Balón despejado o fuera
+        this.currentPlayText = `[ATAJADA CLAVE] El arquero desvía el remate de ${shooter.name}`;
+        this.playTextTimer = 2.0;
         this.giveBallToTeam(isHome ? 'away' : 'home');
       }, 700);
     }
   }
 
-  /**
-   * Ejecución de jugadas especiales desde eventos del partido
-   */
   private executeSpecialPlay(special: { type: 'goal' | 'shot'; team: 'home' | 'away'; scorerName?: string }): void {
     const isHome = special.team === 'home';
     const attackers = this.players.filter(p => p.team === special.team && !p.isGK);
@@ -549,8 +678,7 @@ export class IsometricPitch {
 
     if (!shooter) return;
 
-    // Colocar al atacante en carrera hacia el área
-    shooter.x = isHome ? 72 : 28;
+    shooter.x = isHome ? 74 : 26;
     shooter.y = 32.5 + (Math.random() - 0.5) * 8;
     this.ball.holder = shooter;
     this.ball.x = shooter.x;
@@ -564,9 +692,6 @@ export class IsometricPitch {
     }
   }
 
-  /**
-   * Festejo de gol: celebración grupal del equipo y cartel broadcast
-   */
   private triggerGoalCelebration(team: 'home' | 'away', scorerName: string): void {
     this.players.filter(p => p.team === team).forEach(p => {
       p.state = 'celebrating';
@@ -574,6 +699,8 @@ export class IsometricPitch {
     this.goalBannerTimer = 180;
     this.goalScorerName = scorerName || (team === 'home' ? 'Goleador' : 'Goleador Riv');
     this.goalTeamName = team === 'home' ? this.homeTeam.name : this.awayTeam.name;
+    this.currentPlayText = `[¡GOOOOL!] Anotación confirmada de ${this.goalScorerName}`;
+    this.playTextTimer = 3.5;
     sfx.playWhistle && sfx.playWhistle();
 
     setTimeout(() => {
@@ -583,16 +710,16 @@ export class IsometricPitch {
   }
 
   /**
-   * Renderizado completo de la escena isométrica
+   * Renderizado de la escena isométrica con HUD estilo FIFA / EA FC
    */
   private draw(): void {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, 900, 520);
 
-    // Fondo del estadio / césped exterior
+    // Fondo del estadio
     this.drawStadiumSurround(ctx);
 
-    // Césped isométrico y franjas
+    // Césped y líneas
     this.drawPitchTurf(ctx);
     this.drawPitchMarkings(ctx);
     this.drawGoalpost(ctx, 'home');
@@ -601,7 +728,7 @@ export class IsometricPitch {
     // Rastro del balón en tiros
     this.drawBallTrail(ctx);
 
-    // Ordenamiento por profundidad isométrica (Z-index por Y en pantalla)
+    // Ordenamiento por profundidad Z (eje Y de pantalla)
     const renderQueue: Array<{ type: 'player' | 'ball'; y: number; item: ChibiPlayer | Ball }> = [];
 
     this.players.forEach(p => {
@@ -622,6 +749,10 @@ export class IsometricPitch {
       }
     });
 
+    // ── HUD ESTILO EA SPORTS FC: BARRA DE MOMENTUM Y TICKER TÁCTICO ──
+    this.drawTacticalMomentumHUD(ctx);
+    this.drawLiveActionTicker(ctx);
+
     // Cartel festivo si hay gol en curso
     if (this.goalBannerTimer > 0) {
       this.drawGoalBanner(ctx);
@@ -629,8 +760,90 @@ export class IsometricPitch {
   }
 
   /**
-   * Fondo perimetral del estadio para un encuadre visual completo
+   * Barra de Momentum Táctico estilo EA Sports FC (arriba en el canvas)
    */
+  private drawTacticalMomentumHUD(ctx: CanvasRenderingContext2D): void {
+    ctx.save();
+    const bx = 450;
+    const by = 24;
+
+    // Caja de fondo translúcida
+    ctx.fillStyle = 'rgba(11, 19, 32, 0.88)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(bx - 210, by - 14, 420, 28, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    // Nombre local
+    ctx.fillStyle = 'var(--accent-cyan, #00f0ff)';
+    ctx.font = 'bold 0.72rem sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(this.homeTeam.short || this.homeTeam.name.slice(0, 10).toUpperCase(), bx - 198, by + 4);
+
+    // Nombre visitante
+    ctx.fillStyle = 'var(--accent-red, #ef4444)';
+    ctx.textAlign = 'right';
+    ctx.fillText(this.awayTeam.short || this.awayTeam.name.slice(0, 10).toUpperCase(), bx + 198, by + 4);
+
+    // Barra dual de Momentum (centro)
+    const barW = 160;
+    const barH = 7;
+    const barX = bx - (barW / 2);
+    const barY = by - 3;
+
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(barX, barY, barW, barH);
+
+    // Proporción de momentum (-100 a +100 normalizado a 0 a 1)
+    const norm = Math.max(0, Math.min(1, (this.momentum + 100) / 200));
+    const fillW = barW * norm;
+
+    // Gradiente dinámico de presión
+    const grad = ctx.createLinearGradient(barX, barY, barX + barW, barY);
+    grad.addColorStop(0, '#00f0ff');
+    grad.addColorStop(0.5, '#f59e0b');
+    grad.addColorStop(1, '#ef4444');
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(barX, barY, fillW, barH);
+
+    // Línea central neutral
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(bx, barY - 1);
+    ctx.lineTo(bx, barY + barH + 1);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  /**
+   * Ticker de acción en vivo con la descripción de la jugada activa
+   */
+  private drawLiveActionTicker(ctx: CanvasRenderingContext2D): void {
+    ctx.save();
+    const tx = 450;
+    const ty = 494;
+
+    ctx.fillStyle = 'rgba(11, 19, 32, 0.90)';
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(tx - 260, ty - 13, 520, 26, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 0.72rem sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(this.currentPlayText, tx, ty + 4);
+
+    ctx.restore();
+  }
+
   private drawStadiumSurround(ctx: CanvasRenderingContext2D): void {
     const grad = ctx.createRadialGradient(450, 260, 100, 450, 260, 480);
     grad.addColorStop(0, '#102d20');
@@ -640,9 +853,6 @@ export class IsometricPitch {
     ctx.fillRect(0, 0, 900, 520);
   }
 
-  /**
-   * Césped isométrico con franjas alternadas
-   */
   private drawPitchTurf(ctx: CanvasRenderingContext2D): void {
     const c1 = this.toScreen(0, 0);
     const c2 = this.toScreen(100, 0);
@@ -659,7 +869,7 @@ export class IsometricPitch {
     ctx.fillStyle = '#050c08';
     ctx.fill();
 
-    // Superficie del campo
+    // Césped
     ctx.beginPath();
     ctx.moveTo(c1.px, c1.py);
     ctx.lineTo(c2.px, c2.py);
@@ -669,7 +879,7 @@ export class IsometricPitch {
     ctx.fillStyle = '#1e733b';
     ctx.fill();
 
-    // Franjas de corte alternadas
+    // Franjas de corte
     const stripes = 12;
     const stripeWidth = 100 / stripes;
     for (let i = 0; i < stripes; i++) {
@@ -693,15 +903,11 @@ export class IsometricPitch {
     }
   }
 
-  /**
-   * Líneas reglamentarias del campo en perspectiva isométrica
-   */
   private drawPitchMarkings(ctx: CanvasRenderingContext2D): void {
     ctx.save();
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
     ctx.lineWidth = 1.8;
 
-    // Perímetro exterior
     const c1 = this.toScreen(0, 0);
     const c2 = this.toScreen(100, 0);
     const c3 = this.toScreen(100, 65);
@@ -715,7 +921,7 @@ export class IsometricPitch {
     ctx.closePath();
     ctx.stroke();
 
-    // Línea del mediocampo
+    // Línea de medio campo
     const m1 = this.toScreen(50, 0);
     const m2 = this.toScreen(50, 65);
     ctx.beginPath();
@@ -723,7 +929,7 @@ export class IsometricPitch {
     ctx.lineTo(m2.px, m2.py);
     ctx.stroke();
 
-    // Círculo central isométrico
+    // Círculo central
     const center = this.toScreen(50, 32.5);
     ctx.beginPath();
     ctx.ellipse(center.px, center.py, 52, 26, 0, 0, Math.PI * 2);
@@ -735,14 +941,10 @@ export class IsometricPitch {
     ctx.fillStyle = '#ffffff';
     ctx.fill();
 
-    // Área grande local (X=0 a 16, Y=14 a 51)
+    // Áreas grandes y chicas
     this.drawIsoBox(ctx, 0, 14, 16, 51);
-    // Área chica local
     this.drawIsoBox(ctx, 0, 23, 6, 42);
-
-    // Área grande visitante (X=84 a 100, Y=14 a 51)
     this.drawIsoBox(ctx, 84, 14, 100, 51);
-    // Área chica visitante
     this.drawIsoBox(ctx, 94, 23, 100, 42);
 
     ctx.restore();
@@ -763,9 +965,6 @@ export class IsometricPitch {
     ctx.stroke();
   }
 
-  /**
-   * Arcos de fútbol 3D con postes blancos y red con volumen
-   */
   private drawGoalpost(ctx: CanvasRenderingContext2D, side: 'home' | 'away'): void {
     const x = side === 'home' ? 0 : 100;
     const depthX = side === 'home' ? -3.5 : 3.5;
@@ -778,7 +977,7 @@ export class IsometricPitch {
     const pTopBack = this.toScreen(x + depthX, yTop);
     const pBottomBack = this.toScreen(x + depthX, yBottom);
 
-    // Malla tridimensional del arco
+    // Malla
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(pTop.px, pTop.py - postHeight);
@@ -793,24 +992,21 @@ export class IsometricPitch {
     ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
     ctx.fill();
 
-    // Postes frontales y travesaño
+    // Postes y travesaño
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
 
-    // Poste izquierdo
     ctx.beginPath();
     ctx.moveTo(pTop.px, pTop.py);
     ctx.lineTo(pTop.px, pTop.py - postHeight);
     ctx.stroke();
 
-    // Poste derecho
     ctx.beginPath();
     ctx.moveTo(pBottom.px, pBottom.py);
     ctx.lineTo(pBottom.px, pBottom.py - postHeight);
     ctx.stroke();
 
-    // Travesaño
     ctx.beginPath();
     ctx.moveTo(pTop.px, pTop.py - postHeight);
     ctx.lineTo(pBottom.px, pBottom.py - postHeight);
@@ -820,41 +1016,42 @@ export class IsometricPitch {
   }
 
   /**
-   * Dibuja a cada futbolista estilo chibi / miniatura con su kit oficial
+   * Futbolista Chibi con Cursor de Control Activo estilo EA FC / FIFA
    */
   private drawChibiPlayer(ctx: CanvasRenderingContext2D, p: ChibiPlayer): void {
-    const pos = this.toScreen(p.x, p.y);
+    const pos = this.toScreen(p.x, p.y, p.z);
     const teamColors = p.team === 'home'
       ? (this.homeTeam.colors || ['#0088cc', '#ffffff'])
       : (this.awayTeam.colors || ['#cc2200', '#ffffff']);
     const kitColor = p.isGK ? '#facc15' : teamColors[0]!;
     const shortsColor = p.isGK ? '#1e293b' : (teamColors[1] || '#ffffff');
+    const isCarrier = this.ball.holder?.id === p.id;
 
     ctx.save();
 
-    // Sombra en el césped
+    // Sombra en el césped (se encoge si salta)
+    const shadowScale = Math.max(0.4, 1 - (p.z / 15));
     ctx.beginPath();
-    ctx.ellipse(pos.px, pos.py + 2, 8, 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(pos.px, pos.py + p.z + 2, 8 * shadowScale, 4 * shadowScale, 0, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
     ctx.fill();
 
-    // Animación de rebote (correr, patear o festejar)
+    // Animación de rebote o postura
     let bob = Math.sin(p.animStep) * 2.2;
     if (p.state === 'celebrating') {
-      bob = -Math.abs(Math.sin(p.animStep * 2.5)) * 8; // Salto alegre
-    } else if (p.state === 'diving') {
-      bob = 6; // Tendido en el césped
+      bob = -Math.abs(Math.sin(p.animStep * 2.5)) * 8;
+    } else if (p.state === 'diving' || p.state === 'sliding') {
+      bob = 6;
     }
 
     const py = pos.py + bob;
 
-    // Piernas y botines con movimiento alternado
+    // Piernas y botines
     const legSwing = Math.sin(p.animStep) * 4;
     ctx.fillStyle = shortsColor;
     ctx.fillRect(pos.px - 5, py - 7, 3.5, 6);
     ctx.fillRect(pos.px + 1.5, py - 7, 3.5, 6);
 
-    // Botines con desplazamiento
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(pos.px - 6 + (p.state === 'running' ? legSwing * 0.4 : 0), py - 2, 4.5, 3);
     ctx.fillRect(pos.px + 1.5 - (p.state === 'running' ? legSwing * 0.4 : 0), py - 2, 4.5, 3);
@@ -865,13 +1062,13 @@ export class IsometricPitch {
     ctx.roundRect(pos.px - 6, py - 18, 12, 12, 2.5);
     ctx.fill();
 
-    // Número de dorsal en la espalda
+    // Dorsal
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 7px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(String(p.number), pos.px, py - 9);
 
-    // Cabeza estilo Chibi
+    // Cabeza Chibi
     ctx.beginPath();
     ctx.arc(pos.px, py - 24, 7.5, 0, Math.PI * 2);
     ctx.fillStyle = p.skinColor;
@@ -883,7 +1080,7 @@ export class IsometricPitch {
     ctx.fillStyle = p.hairColor;
     ctx.fill();
 
-    // Ojos según la dirección de carrera
+    // Ojos orientados
     const eyeOffsetX = p.facing * 2.2;
     ctx.fillStyle = '#0f172a';
     ctx.beginPath();
@@ -891,7 +1088,7 @@ export class IsometricPitch {
     ctx.arc(pos.px + eyeOffsetX + 2.2, py - 24, 1.2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Brazos alzados si festeja gol
+    // Brazos alzados si festeja
     if (p.state === 'celebrating') {
       ctx.strokeStyle = kitColor;
       ctx.lineWidth = 2.5;
@@ -903,12 +1100,38 @@ export class IsometricPitch {
       ctx.stroke();
     }
 
+    // ── CURSOR DE JUGADOR ACTIVO EA FC / FIFA (PORTADOR DEL BALÓN) ──
+    if (isCarrier) {
+      const triY = py - 36 + Math.sin(this.gameTime * 7) * 2;
+      const cursorColor = p.team === 'home' ? 'var(--accent-cyan, #00f0ff)' : '#ef4444';
+
+      // Triángulo invertido de control
+      ctx.fillStyle = cursorColor;
+      ctx.beginPath();
+      ctx.moveTo(pos.px, triY);
+      ctx.lineTo(pos.px - 4.5, triY - 7);
+      ctx.lineTo(pos.px + 4.5, triY - 7);
+      ctx.closePath();
+      ctx.fill();
+
+      // Nametag flotante con dorsal y posición
+      ctx.fillStyle = 'rgba(11, 19, 32, 0.88)';
+      ctx.strokeStyle = cursorColor;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(pos.px - 28, triY - 21, 56, 12, 3);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 6.5px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${p.pos} · ${p.number}`, pos.px, triY - 12);
+    }
+
     ctx.restore();
   }
 
-  /**
-   * Dibuja el balón de fútbol con sombra, elevación y pentágonos
-   */
   private drawBall(ctx: CanvasRenderingContext2D, b: Ball): void {
     const shadowPos = this.toScreen(b.x, b.y, 0);
     const ballPos = this.toScreen(b.x, b.y, b.z);
@@ -931,7 +1154,6 @@ export class IsometricPitch {
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // Centro clásico
     ctx.beginPath();
     ctx.arc(ballPos.px, ballPos.py, 1.8, 0, Math.PI * 2);
     ctx.fillStyle = '#0f172a';
@@ -956,9 +1178,6 @@ export class IsometricPitch {
     ctx.restore();
   }
 
-  /**
-   * Cartel limpio de gol estilo broadcast televisivo (sin emojis)
-   */
   private drawGoalBanner(ctx: CanvasRenderingContext2D): void {
     ctx.save();
     const bx = 450;

@@ -90,7 +90,8 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
   const TACTICAL_ORDER_LABELS: Record<TacticalOrder, string> = {
     PRESSING: '[PRES] PRESIÓN ALTA',
     LOW_BLOCK: '[DEF] BLOQUE BAJO',
-    COUNTER: '[CONTRA] CONTRAATAQUE'
+    COUNTER: '[CONTRA] CONTRAATAQUE',
+    CONTROL: '[CONTROL] CALMA Y TOQUE'
   };
 
   /** Decisión táctica registrada en un momento de tensión (para el resumen del final) */
@@ -217,6 +218,20 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
       </div>
       <div style="width:100%; max-width:900px; margin:0 auto; position:relative; overflow:hidden; border-radius:8px;">
         <canvas id="isoPitchCanvas" width="900" height="520" style="width:100%; max-width:900px; aspect-ratio:900/520; height:auto; display:block; margin:0 auto; background:#0f291e; border-radius:8px; border:2px solid var(--border-color); box-shadow:0 8px 24px rgba(0,0,0,0.5);"></canvas>
+      </div>
+    </div>
+
+    <!-- ── ÓRDENES DE BANDA EN TIEMPO REAL (VISTA TÁCTICA EA FC) ── -->
+    <div class="glass-panel" style="padding:8px 12px; margin-bottom:12px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:0.75rem; font-weight:900; color:var(--accent-gold); letter-spacing:0.5px;">[ÓRDENES DE BANDA EN VIVO]</span>
+        <span class="text-sub" style="font-size:0.7rem;">Influye en el ritmo y las jugadas:</span>
+      </div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="btn-secondary btn-touchline-order" data-order="PRESSING" style="padding:4px 10px; font-size:0.72rem; border-color:rgba(239,68,68,0.5);">[ORDEN] SUBIR LÍNEAS</button>
+        <button class="btn-secondary btn-touchline-order" data-order="LOW_BLOCK" style="padding:4px 10px; font-size:0.72rem; border-color:rgba(59,130,246,0.5);">[ORDEN] REPLIEGUE</button>
+        <button class="btn-secondary btn-touchline-order" data-order="COUNTER" style="padding:4px 10px; font-size:0.72rem; border-color:rgba(245,158,11,0.5);">[ORDEN] CONTRAATAQUE</button>
+        <button class="btn-secondary btn-touchline-order" data-order="CONTROL" style="padding:4px 10px; font-size:0.72rem; border-color:rgba(16,185,129,0.5);">[ORDEN] CALMA Y TOQUE</button>
       </div>
     </div>
 
@@ -397,6 +412,27 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
     });
   });
 
+  // ── INSTRUCCIONES DE BANDA EN VIVO (EA FC TACTICAL VIEW) ──────────
+  document.querySelectorAll<HTMLElement>('.btn-touchline-order').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const target = e.currentTarget as HTMLElement;
+      const order = target.dataset.order as TacticalOrder;
+      sfx.playClick && sfx.playClick();
+      applyTacticalOrder(order, 'manual');
+      document.querySelectorAll<HTMLElement>('.btn-touchline-order').forEach(b => {
+        b.style.background = '#0f172a';
+        b.style.color = '#fff';
+      });
+      target.style.background = 'rgba(0,240,255,0.25)';
+      target.style.color = 'var(--accent-cyan)';
+      addLog({
+        minute: engine.minute,
+        type: 'commentary',
+        text: `[ORDEN DE BANDA] El DT ordena: ${TACTICAL_ORDER_LABELS[order] || order}.`
+      });
+    });
+  });
+
   // ── CONTROLES VISTA BITÁCORA vs RADAR 2D ──────────────────────────
   const btnLog = document.getElementById('tabLogView');
   const btnRadar = document.getElementById('tabRadarView');
@@ -512,6 +548,9 @@ export function renderMatch(container: HTMLElement, rival: Team, _mode = 'live',
    */
   const applyTacticalOrder = (optionId: TacticalOrder, source: 'manual' | 'automatic' = 'manual') => {
     engine.applyTacticalDecision(optionId);
+    if (isoPitch) {
+      isoPitch.setTacticalOrder(optionId);
+    }
     const badge = document.getElementById('activeTacticalOrderBadge');
     if (badge) {
       badge.innerText = `ORDEN ACTIVA: ${TACTICAL_ORDER_LABELS[optionId] || optionId}`;

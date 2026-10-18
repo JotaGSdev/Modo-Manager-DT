@@ -94,7 +94,7 @@ export const PERSONALITY_ROLES = ['none', 'captain', 'youngStar', 'rebel', 'ment
 export type PersonalityRole = (typeof PERSONALITY_ROLES)[number];
 
 /** Órdenes tácticas de los Momentos de Tensión (matchEngine.js) */
-export const TACTICAL_ORDERS = ['PRESSING', 'LOW_BLOCK', 'COUNTER'] as const;
+export const TACTICAL_ORDERS = ['PRESSING', 'LOW_BLOCK', 'COUNTER', 'CONTROL'] as const;
 export type TacticalOrder = (typeof TACTICAL_ORDERS)[number];
 
 /** Frecuencia de eventos narrativos configurable al crear carrera */

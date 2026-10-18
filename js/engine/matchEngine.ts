@@ -354,6 +354,9 @@ export class MatchEngine {
       this.homePossession = Math.max(30, this.homePossession - 8);
     } else if (optionId === 'COUNTER') {
       this.targetHomeXG += 0.35 * clutchMultiplier;
+    } else if (optionId === 'CONTROL') {
+      this.homePossession = Math.min(75, this.homePossession + 8);
+      this.targetAwayXG = Math.max(0.1, this.targetAwayXG - (0.25 * clutchMultiplier));
     }
     this.pendingTensionMoment = null;
   }
