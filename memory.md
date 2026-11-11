@@ -164,4 +164,5 @@ Financiado exclusivamente con presupuesto del club (`team.budget`). Otorga carta
 | **2026-10-18** | `86b8390` | Simulación estilo vista táctica EA FC / FIFA con indicador de control, medidor de momentum, jugadas enriquecidas y órdenes en vivo. |
 | **2026-10-17** | `e14b843` | Centrado del campo isométrico 2D, movimiento autónomo continuo de jugadores y activación en jugadas. |
 | **2026-10-17** | `76ae529` | Actualización de golden baselines E2E para la nueva interfaz y campo isométrico. |
-| **2026-11-10** | *WIP* | Desindexación de `.freebuff/` (~17MB), actualización de `.gitignore`, creación de `clients.md` y `memory.md`, y especificación de tiers de 5ª división para los 5 pilares europeos. |
+| **2026-11-10** | `0d72151` | feat(sdd): marco Spec Driven Development y especificaciones 001 a 004. |
+| **2026-11-10** | `da37173` | feat(ui): pantalla de bienvenida retro broadcast estilo PES 6 / FIFA 08 y flujo inicial con SPEC-005. |
