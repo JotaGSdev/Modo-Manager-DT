@@ -12,6 +12,7 @@
  */
 
 import { db } from './data/db.js';
+import { renderWelcomeScreen } from './ui/welcomeUI.js';
 import { renderNewCareer } from './ui/newCareerUI.js';
 import { renderDashboard } from './ui/dashboardUI.js';
 import { renderSquad } from './ui/squadUI.js';
@@ -43,22 +44,21 @@ class App {
   async init(): Promise<void> {
     await db.init();
     const appEl = document.getElementById('app');
+    if (!appEl) return;
 
-    // Si no hay guardado previo ni estado de juego activo, ir a Nueva Carrera
-    if (!db.hasSave() && !db.gameState) {
-      renderNewCareer(appEl!, () => this.startMainLayout());
-    } else {
-      // v3.7: verificar la integridad del save (JSON + checksum FNV-1a) antes
-      // de cargar; si está corrupto o truncado, ofrecer recuperar el último
-      // autoguardado válido en lugar de arrancar con un estado roto.
+    if (db.hasSave()) {
       const integrity = db.checkSaveIntegrity();
       if (integrity === 'corrupted') {
         this.showSaveRecoveryModal();
-      } else {
-        db.loadGame();
-        this.startMainLayout();
+        return;
       }
+      db.loadGame();
     }
+
+    renderWelcomeScreen(appEl, {
+      onContinue: () => this.startMainLayout(),
+      onNewCareer: () => renderNewCareer(appEl, () => this.startMainLayout())
+    });
   }
 
   /**
