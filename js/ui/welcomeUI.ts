@@ -27,7 +27,7 @@ export function renderWelcomeScreen(container: HTMLElement, callbacks: WelcomeCa
     <div style="min-height: 100vh; background: radial-gradient(circle at 50% 15%, #0f271d 0%, #07130e 45%, #030806 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 24px 20px; color: #f8fafc; font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box;">
       
       <!-- HEADER CON MARCADOR Y LOGO BROADCAST -->
-      <header style="max-width: 1040px; width: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 16px;">
+      <header style="max-width: 1040px; width: 100%; margin: 0 auto; display: flex; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 16px;">
         <div style="display: flex; align-items: center; gap: 14px;">
           <div style="width: 44px; height: 44px; border-radius: 8px; background: linear-gradient(135deg, #00c885, #007a52); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.3rem; color: #000; box-shadow: 0 0 16px rgba(0, 200, 133, 0.35);">
             EL
@@ -37,18 +37,9 @@ export function renderWelcomeScreen(container: HTMLElement, callbacks: WelcomeCa
               ENTRENADOR LEYENDA
             </div>
             <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
-              Simulador de Carrera DT • 25 Temporadas (2026 - 2051)
+              Simulador de Carrera DT
             </div>
           </div>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 0.68rem; font-weight: 800; padding: 4px 10px; background: rgba(0, 200, 133, 0.15); color: #00c885; border: 1px solid rgba(0, 200, 133, 0.3); border-radius: 4px; letter-spacing: 0.5px;">
-            ROAD TO GLORY
-          </span>
-          <span style="font-size: 0.68rem; font-weight: 800; padding: 4px 10px; background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 4px; letter-spacing: 0.5px;">
-            PES 6 / FIFA 08 VIBES
-          </span>
         </div>
       </header>
 
@@ -186,13 +177,10 @@ export function renderWelcomeScreen(container: HTMLElement, callbacks: WelcomeCa
 
       </main>
 
-      <!-- FOOTER PROFESIONAL DE TELEMETRÍA Y VERSIONADO -->
-      <footer style="max-width: 1040px; width: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 14px; font-size: 0.72rem; color: #64748b;">
+      <!-- FOOTER PROFESIONAL DE AUTORÍA -->
+      <footer style="max-width: 1040px; width: 100%; margin: 0 auto; display: flex; justify-content: center; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 14px; font-size: 0.78rem; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">
         <div>
-          Versión <strong>3.2.0-MVP</strong> · Temporada Base Oficial <strong>2025/2026</strong>
-        </div>
-        <div>
-          Desplegado en <strong>Vercel</strong> · HTML5 Canvas 2D 60 FPS · Cero Emojis
+          Desarrollado por <span style="color: #00c885; font-weight: 800;">J.GS Dev</span>
         </div>
       </footer>
 
