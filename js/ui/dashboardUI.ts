@@ -70,7 +70,7 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
 
   container.innerHTML = `
     <!-- 1. HERO COMMAND CENTER VISUAL DEL DT Y DEL CLUB -->
-    <div class="glass-panel" style="padding: 14px 18px; margin-bottom: 14px; background: radial-gradient(circle at 80% 20%, rgba(0,200,133,0.12) 0%, rgba(11,20,16,0.92) 100%); border: 1px solid rgba(0, 200, 133, 0.3); border-radius: 12px; box-shadow: 0 10px 28px rgba(0,0,0,0.4);">
+    <div class="glass-panel dashboard-hero-panel" style="padding: 14px 18px; margin-bottom: 12px; background: radial-gradient(circle at 80% 20%, rgba(0,200,133,0.12) 0%, rgba(11,20,16,0.92) 100%); border: 1px solid rgba(0, 200, 133, 0.3); border-radius: 12px; box-shadow: 0 10px 28px rgba(0,0,0,0.4);">
       <div class="dashboard-hero-deck">
         
         <!-- BLOQUE CLUB Y ESCUDO -->
@@ -144,11 +144,18 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
       </div>
     </div>
 
+    <!-- SELECTOR DE PESTAÑAS MÓVIL DEL DASHBOARD (SOLO CELULARES) -->
+    <div class="dashboard-mobile-tabs" id="dashMobileTabs">
+      <button class="dash-m-tab active" data-tab="match">⚽ Próximo Partido</button>
+      <button class="dash-m-tab" data-tab="table">🏆 Clasificación</button>
+      <button class="dash-m-tab" data-tab="feed">📰 Noticias & Goles</button>
+    </div>
+
     <!-- 2. REJILLA TRI-COLUMNA (DESKTOP) / PILA DINÁMICA (CELULAR) -->
     <div class="dashboard-main-grid">
       
       <!-- Columna 1: Tarjeta de Partido -->
-      <div class="card glass-panel" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+      <div id="dashColMatch" class="card glass-panel dash-col mobile-active" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
         ${derbyInfo.isDerby ? `
           <div style="background: linear-gradient(90deg, #f59e0b, #ef4444); color: #000; font-weight: 900; font-size: 0.74rem; text-align: center; padding: 5px 8px; border-radius: 6px; margin-bottom: 8px; letter-spacing: 0.5px;">
             [DERBY] ${derbyInfo.tag || 'EL CLÁSICO DE LA JORNADA'}
@@ -215,7 +222,7 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
       </div>
 
       <!-- Columna 2: Panel Interactivo de Tabla / Copas con Carrusel de Fases -->
-      <div class="card glass-panel" style="padding: 14px 16px; display: flex; flex-direction: column; justify-content: space-between;">
+      <div id="dashColTable" class="card glass-panel dash-col" style="padding: 14px 16px; display: flex; flex-direction: column; justify-content: space-between;">
         
         <!-- SELECTOR DE COMPETICIÓN (LIGA / COPA NACIONAL / COPA CONTINENTAL) -->
         <div>
@@ -235,7 +242,7 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
       </div>
 
       <!-- Columna 3: Tabla de Goleadores & The Feed (Red Social de Noticias) (v2.0) -->
-      <div class="card glass-panel" style="padding: 14px 16px; display:flex; flex-direction:column; justify-content:space-between;">
+      <div id="dashColFeed" class="card glass-panel dash-col" style="padding: 14px 16px; display:flex; flex-direction:column; justify-content:space-between;">
         
         <!-- PICHICHI -->
         <div style="margin-bottom:12px;">
@@ -400,6 +407,27 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
     activeCompTab = (e.target as HTMLSelectElement).value as CompTab;
     currentCupPhaseIdx = 0;
     renderCompTab();
+  });
+
+  // Selector de pestañas móvil del Dashboard (Partido / Tabla / Feed)
+  const mobileTabBtns = container.querySelectorAll<HTMLButtonElement>('.dash-m-tab');
+  const dashCols: Record<string, HTMLElement | null> = {
+    match: container.querySelector<HTMLElement>('#dashColMatch'),
+    table: container.querySelector<HTMLElement>('#dashColTable'),
+    feed: container.querySelector<HTMLElement>('#dashColFeed')
+  };
+
+  mobileTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      sfx.playClick();
+      const target = btn.dataset.tab;
+      mobileTabBtns.forEach(b => b.classList.toggle('active', b === btn));
+      Object.entries(dashCols).forEach(([key, el]) => {
+        if (el) {
+          el.classList.toggle('mobile-active', key === target);
+        }
+      });
+    });
   });
 
   // Listener para Nivel de DT

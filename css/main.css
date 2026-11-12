@@ -155,62 +155,121 @@ body {
   width: 100%;
 }
 
-/* Móvil y tablets (≤768px): navegación táctil superior/horizontal con scroll propio,
- * y ancho completo optimizado para pantallas táctiles */
+/* Móvil y tablets (≤768px): navegación táctil con barra inferior fija y top navbar ultra-compacto */
 @media (max-width: 768px) {
   .main-wrapper {
     flex-direction: column;
   }
-  .sidebar-nav {
-    width: 100%;
-    flex-direction: row;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    min-height: 0;
-    padding: 8px 10px;
-    gap: 6px;
-    position: sticky;
-    top: 56px;
-    z-index: 95;
-    background: #0d121c;
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
-  }
-  .sidebar-nav::-webkit-scrollbar {
-    height: 3px;
-  }
-  .nav-item {
-    flex: 0 0 auto;
-    padding: 8px 14px;
-    font-size: 0.82rem;
-    white-space: nowrap;
-    border-left: none !important;
-    border-bottom: 3px solid transparent;
-  }
-  .nav-item.active {
-    background: #192438;
-    color: #ffffff;
-    border-left: none !important;
-    border-bottom: 3px solid var(--accent-green) !important;
-  }
-  .main-content {
-    padding: 10px 12px;
-  }
+
+  /* BARRA SUPERIOR MÓVIL: ULTRA COMPACTA (48px) SIN DESBORDE NI APILAMIENTO */
   .top-navbar {
-    padding: 10px 14px;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    padding: 0 10px !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    background: #090e17 !important;
+    overflow: hidden !important;
+  }
+  .brand-logo {
+    font-size: 1rem !important;
+    white-space: nowrap !important;
+    gap: 6px !important;
   }
   .manager-status-bar {
-    gap: 6px;
-    font-size: 0.78rem;
+    display: flex !important;
+    gap: 6px !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    max-width: calc(100vw - 150px) !important;
   }
-  .status-pill {
-    padding: 5px 10px;
-    font-size: 0.76rem;
+  .manager-status-bar::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* En celular ocultamos las píldoras repetidas para dejar visible el juego */
+  .manager-status-bar .status-pill:nth-child(1), /* DT */
+  .manager-status-bar .status-pill:nth-child(2), /* Nivel DT */
+  .manager-status-bar .status-pill:nth-child(3), /* Club */
+  .manager-status-bar .status-pill:nth-child(5)  /* Confianza */ {
+    display: none !important;
+  }
+  .manager-status-bar .status-pill:nth-child(4), /* Presupuesto */
+  .manager-status-bar .status-pill:nth-child(6)  /* Temporada */ {
+    display: inline-flex !important;
+    padding: 4px 8px !important;
+    font-size: 0.72rem !important;
+    white-space: nowrap !important;
+    border-radius: 6px !important;
+  }
+
+  .btn-sound-toggle {
+    padding: 4px 8px !important;
+    font-size: 0.72rem !important;
+    margin-left: 4px !important;
+  }
+
+  /* BARRA DE NAVEGACIÓN EN CELULAR: FIJADA AL FONDO (ESTILO APP NATIVA FIFA MOBILE / EA FC) */
+  .sidebar-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    max-height: 52px !important;
+    background: #090e17 !important;
+    border-top: 1px solid var(--border-color) !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    z-index: 1000 !important;
+    padding: 2px 6px !important;
+    gap: 4px !important;
+    box-shadow: 0 -4px 18px rgba(0,0,0,0.65) !important;
+  }
+  .sidebar-nav::-webkit-scrollbar {
+    display: none !important;
+  }
+  .nav-item {
+    flex: 0 0 auto !important;
+    padding: 7px 11px !important;
+    font-size: 0.78rem !important;
+    border-radius: 6px !important;
+    border-left: none !important;
+    border-bottom: 2.5px solid transparent !important;
+    white-space: nowrap !important;
+  }
+  .nav-item.active {
+    background: #141f33 !important;
+    color: #ffffff !important;
+    border-left: none !important;
+    border-bottom: 2.5px solid var(--accent-green) !important;
+  }
+  .nav-item.mt-4 {
+    margin-top: 0 !important;
+  }
+
+  /* Área principal con espacio libre al fondo para que la barra inferior no tape nada */
+  .main-content {
+    padding: 8px 10px 68px 10px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
   }
 }
 
@@ -277,6 +336,16 @@ body {
   align-items: stretch;
 }
 
+.dashboard-main-grid > .dash-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Selector de pestañas móvil para el Dashboard (Oculto en PC) */
+.dashboard-mobile-tabs {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .career-screen-container {
     height: auto !important;
@@ -301,20 +370,70 @@ body {
     gap: 16px !important;
     margin: 16px auto !important;
   }
+
+  .dashboard-hero-panel {
+    padding: 10px 12px !important;
+    margin-bottom: 8px !important;
+  }
   .dashboard-hero-deck {
     display: flex !important;
     flex-direction: column !important;
-    gap: 12px !important;
+    gap: 8px !important;
   }
   .dashboard-hero-deck > div {
     border-left: none !important;
     border-right: none !important;
-    padding: 0 !important;
+    border-top: 1px solid rgba(255,255,255,0.06) !important;
+    padding: 6px 0 0 0 !important;
   }
+  .dashboard-hero-deck > div:first-child {
+    border-top: none !important;
+    padding-top: 0 !important;
+  }
+
+  /* PESTAÑAS MÓVILES EN DASHBOARD */
+  .dashboard-mobile-tabs {
+    display: flex !important;
+    gap: 6px !important;
+    margin-bottom: 10px !important;
+    width: 100% !important;
+    position: sticky !important;
+    top: 48px !important;
+    z-index: 85 !important;
+    background: rgba(10, 13, 20, 0.95) !important;
+    backdrop-filter: blur(8px) !important;
+    padding: 4px 0 !important;
+  }
+  .dash-m-tab {
+    flex: 1 !important;
+    padding: 9px 4px !important;
+    font-size: 0.78rem !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+    background: #131b2e !important;
+    color: #94a3b8 !important;
+    cursor: pointer !important;
+    text-align: center !important;
+    transition: all 0.15s ease !important;
+  }
+  .dash-m-tab.active {
+    background: var(--accent-green) !important;
+    color: #040810 !important;
+    border-color: var(--accent-green) !important;
+    box-shadow: 0 2px 10px rgba(0, 200, 133, 0.3) !important;
+  }
+
   .dashboard-main-grid {
+    display: block !important;
+  }
+  .dashboard-main-grid > .dash-col {
+    display: none !important;
+  }
+  .dashboard-main-grid > .dash-col.mobile-active {
     display: flex !important;
     flex-direction: column !important;
-    gap: 14px !important;
+    gap: 12px !important;
   }
 }
 
