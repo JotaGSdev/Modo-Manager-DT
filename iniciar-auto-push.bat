@@ -6,6 +6,9 @@ echo  🚀 ENTRENADOR LEYENDA - AUTO COMMIT & AUTO PUSH
 echo ===================================================
 echo.
 echo Guardando y monitoreando cambios automaticamente...
+echo Sincronizando commits locales pendientes con GitHub...
+git push origin main
+echo.
 echo Presiona Ctrl + C para detener cuando quieras.
 echo.
 
