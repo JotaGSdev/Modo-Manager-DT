@@ -169,4 +169,4 @@ Financiado exclusivamente con presupuesto del club (`team.budget`). Otorga carta
 | **2026-11-10** | `c86b891` | feat(ui): formulario ágil de nueva carrera en 1 pantalla con asignación aleatoria de club, pizarra táctica dinámica y SPEC-006. |
 | **2026-11-11** | `fc966b9` | feat(core): 5ta división National League (24 clubes), UI compacta sin scroll, kits diferenciados con halos visuales y ajustes en la nube. |
 | **2026-11-11** | `1fdc223` | feat(sim): command center visual del DT, flujo de caja operativo (camisetas/médicos) en dashboard/finanzas y perla oculta de Ojeador del Barro en The Feed. |
-| **2026-11-11** | `pending` | feat(responsive): soporte universal móvil y PC, viewport-fit, layout adaptativo sin scroll en PC y navegación táctil en celular. |
+| **2026-11-11** | `b890892` | feat(responsive): soporte universal móvil y PC, viewport-fit, layout adaptativo sin scroll en PC y navegación táctil en celular. |
