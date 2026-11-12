@@ -7302,5 +7302,473 @@
         "stadium": "Stadion Kranjčevićeva"
       }
     ]
+  },
+  {
+    "id": "eng_5",
+    "name": "National League (5ª División)",
+    "country": "Inglaterra",
+    "region": "Europa",
+    "tier": 5,
+    "reputation": 52,
+    "teams": [
+      {
+        "id": "barnet",
+        "name": "Barnet FC",
+        "short": "BAR",
+        "budget": 650000,
+        "wageBudget": 9500,
+        "reputation": 52,
+        "overall": 62,
+        "colors": [
+          "#f59e0b",
+          "#000000"
+        ],
+        "stadium": "The Hive Stadium"
+      },
+      {
+        "id": "oldham",
+        "name": "Oldham Athletic",
+        "short": "OLD",
+        "budget": 850000,
+        "wageBudget": 12000,
+        "reputation": 55,
+        "overall": 63,
+        "colors": [
+          "#1d4ed8",
+          "#ffffff"
+        ],
+        "stadium": "Boundary Park"
+      },
+      {
+        "id": "york_city",
+        "name": "York City",
+        "short": "YOR",
+        "budget": 720000,
+        "wageBudget": 10500,
+        "reputation": 53,
+        "overall": 62,
+        "colors": [
+          "#dc2626",
+          "#1d4ed8"
+        ],
+        "stadium": "LNER Community Stadium"
+      },
+      {
+        "id": "forest_green",
+        "name": "Forest Green Rovers",
+        "short": "FGR",
+        "budget": 800000,
+        "wageBudget": 11000,
+        "reputation": 54,
+        "overall": 63,
+        "colors": [
+          "#84cc16",
+          "#000000"
+        ],
+        "stadium": "The New Lawn"
+      },
+      {
+        "id": "southend",
+        "name": "Southend United",
+        "short": "SOU",
+        "budget": 680000,
+        "wageBudget": 10000,
+        "reputation": 53,
+        "overall": 62,
+        "colors": [
+          "#1e3a8a",
+          "#ffffff"
+        ],
+        "stadium": "Roots Hall"
+      },
+      {
+        "id": "rochdale",
+        "name": "Rochdale AFC",
+        "short": "ROC",
+        "budget": 620000,
+        "wageBudget": 9500,
+        "reputation": 52,
+        "overall": 61,
+        "colors": [
+          "#2563eb",
+          "#000000"
+        ],
+        "stadium": "Crown Oil Arena"
+      },
+      {
+        "id": "gateshead",
+        "name": "Gateshead FC",
+        "short": "GAT",
+        "budget": 550000,
+        "wageBudget": 8500,
+        "reputation": 50,
+        "overall": 61,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Gateshead International Stadium"
+      },
+      {
+        "id": "solihull",
+        "name": "Solihull Moors",
+        "short": "SOL",
+        "budget": 580000,
+        "wageBudget": 9000,
+        "reputation": 51,
+        "overall": 61,
+        "colors": [
+          "#facc15",
+          "#1d4ed8"
+        ],
+        "stadium": "Damson Park"
+      },
+      {
+        "id": "hartlepool",
+        "name": "Hartlepool United",
+        "short": "HAR",
+        "budget": 640000,
+        "wageBudget": 9500,
+        "reputation": 52,
+        "overall": 61,
+        "colors": [
+          "#2563eb",
+          "#ffffff"
+        ],
+        "stadium": "Victoria Park"
+      },
+      {
+        "id": "sutton",
+        "name": "Sutton United",
+        "short": "SUT",
+        "budget": 600000,
+        "wageBudget": 9000,
+        "reputation": 51,
+        "overall": 61,
+        "colors": [
+          "#eab308",
+          "#854d0e"
+        ],
+        "stadium": "Gander Green Lane"
+      },
+      {
+        "id": "eastleigh",
+        "name": "Eastleigh FC",
+        "short": "EAS",
+        "budget": 530000,
+        "wageBudget": 8200,
+        "reputation": 50,
+        "overall": 60,
+        "colors": [
+          "#3b82f6",
+          "#ffffff"
+        ],
+        "stadium": "Silverlake Stadium"
+      },
+      {
+        "id": "aldershot",
+        "name": "Aldershot Town",
+        "short": "ALD",
+        "budget": 520000,
+        "wageBudget": 8000,
+        "reputation": 49,
+        "overall": 60,
+        "colors": [
+          "#ef4444",
+          "#1d4ed8"
+        ],
+        "stadium": "The Recreation Ground"
+      },
+      {
+        "id": "altrincham",
+        "name": "Altrincham FC",
+        "short": "ALT",
+        "budget": 510000,
+        "wageBudget": 7800,
+        "reputation": 49,
+        "overall": 60,
+        "colors": [
+          "#dc2626",
+          "#ffffff"
+        ],
+        "stadium": "Moss Lane"
+      },
+      {
+        "id": "halifax",
+        "name": "FC Halifax Town",
+        "short": "HAL",
+        "budget": 520000,
+        "wageBudget": 8000,
+        "reputation": 49,
+        "overall": 60,
+        "colors": [
+          "#2563eb",
+          "#ffffff"
+        ],
+        "stadium": "The Shay"
+      },
+      {
+        "id": "wealdstone",
+        "name": "Wealdstone FC",
+        "short": "WEA",
+        "budget": 480000,
+        "wageBudget": 7500,
+        "reputation": 48,
+        "overall": 59,
+        "colors": [
+          "#1d4ed8",
+          "#ffffff"
+        ],
+        "stadium": "Grosvenor Vale"
+      },
+      {
+        "id": "dagenham",
+        "name": "Dagenham & Redbridge",
+        "short": "DAG",
+        "budget": 500000,
+        "wageBudget": 7600,
+        "reputation": 48,
+        "overall": 59,
+        "colors": [
+          "#ef4444",
+          "#1d4ed8"
+        ],
+        "stadium": "Victoria Road"
+      },
+      {
+        "id": "yeovil",
+        "name": "Yeovil Town",
+        "short": "YEO",
+        "budget": 560000,
+        "wageBudget": 8500,
+        "reputation": 50,
+        "overall": 61,
+        "colors": [
+          "#16a34a",
+          "#ffffff"
+        ],
+        "stadium": "Huish Park"
+      },
+      {
+        "id": "woking",
+        "name": "Woking FC",
+        "short": "WOK",
+        "budget": 510000,
+        "wageBudget": 7900,
+        "reputation": 49,
+        "overall": 60,
+        "colors": [
+          "#dc2626",
+          "#ffffff"
+        ],
+        "stadium": "Kingfield Stadium"
+      },
+      {
+        "id": "braintree",
+        "name": "Braintree Town",
+        "short": "BRA",
+        "budget": 450000,
+        "wageBudget": 7000,
+        "reputation": 47,
+        "overall": 58,
+        "colors": [
+          "#f97316",
+          "#1d4ed8"
+        ],
+        "stadium": "Cressing Road"
+      },
+      {
+        "id": "boston_utd",
+        "name": "Boston United",
+        "short": "BOS",
+        "budget": 460000,
+        "wageBudget": 7200,
+        "reputation": 47,
+        "overall": 58,
+        "colors": [
+          "#f59e0b",
+          "#000000"
+        ],
+        "stadium": "Jakemans Community Stadium"
+      },
+      {
+        "id": "ebbsfleet",
+        "name": "Ebbsfleet United",
+        "short": "EBB",
+        "budget": 470000,
+        "wageBudget": 7300,
+        "reputation": 47,
+        "overall": 58,
+        "colors": [
+          "#dc2626",
+          "#ffffff"
+        ],
+        "stadium": "Stonebridge Road"
+      },
+      {
+        "id": "afc_fylde",
+        "name": "AFC Fylde",
+        "short": "FYL",
+        "budget": 490000,
+        "wageBudget": 7500,
+        "reputation": 48,
+        "overall": 59,
+        "colors": [
+          "#ffffff",
+          "#1e3a8a"
+        ],
+        "stadium": "Mill Farm"
+      },
+      {
+        "id": "maidenhead",
+        "name": "Maidenhead United",
+        "short": "MAI",
+        "budget": 450000,
+        "wageBudget": 7000,
+        "reputation": 46,
+        "overall": 58,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "York Road"
+      },
+      {
+        "id": "tamworth",
+        "name": "Tamworth FC",
+        "short": "TAM",
+        "budget": 440000,
+        "wageBudget": 6800,
+        "reputation": 46,
+        "overall": 58,
+        "colors": [
+          "#ef4444",
+          "#000000"
+        ],
+        "stadium": "The Lamb Ground"
+      }
+    ]
+  },
+  {
+    "id": "esp_5",
+    "name": "Tercera Federación RFEF (5ª División)",
+    "country": "España",
+    "region": "Europa",
+    "tier": 5,
+    "reputation": 52,
+    "teams": [
+      {
+        "id": "toledo",
+        "name": "CD Toledo",
+        "short": "TOL",
+        "budget": 600000,
+        "wageBudget": 9000,
+        "reputation": 53,
+        "overall": 62,
+        "colors": [
+          "#15803d",
+          "#ffffff"
+        ],
+        "stadium": "Salto del Caballo"
+      },
+      {
+        "id": "real_jaen",
+        "name": "Real Jaén",
+        "short": "JAE",
+        "budget": 700000,
+        "wageBudget": 10500,
+        "reputation": 54,
+        "overall": 63,
+        "colors": [
+          "#ffffff",
+          "#1e3a8a"
+        ],
+        "stadium": "Nuevo La Victoria"
+      },
+      {
+        "id": "xerez_cd",
+        "name": "Xerez CD",
+        "short": "XER",
+        "budget": 620000,
+        "wageBudget": 9200,
+        "reputation": 53,
+        "overall": 62,
+        "colors": [
+          "#1d4ed8",
+          "#ffffff"
+        ],
+        "stadium": "Chapín"
+      },
+      {
+        "id": "poblense",
+        "name": "UD Poblense",
+        "short": "POB",
+        "budget": 450000,
+        "wageBudget": 7000,
+        "reputation": 48,
+        "overall": 59,
+        "colors": [
+          "#dc2626",
+          "#1d4ed8"
+        ],
+        "stadium": "Nou Camp de Sa Pobla"
+      },
+      {
+        "id": "manchego",
+        "name": "CD Manchego",
+        "short": "MAN",
+        "budget": 480000,
+        "wageBudget": 7400,
+        "reputation": 49,
+        "overall": 60,
+        "colors": [
+          "#1e40af",
+          "#ffffff"
+        ],
+        "stadium": "Rey Juan Carlos I"
+      },
+      {
+        "id": "marino_luanco",
+        "name": "Club Marino de Luanco",
+        "short": "MAR",
+        "budget": 520000,
+        "wageBudget": 8000,
+        "reputation": 50,
+        "overall": 60,
+        "colors": [
+          "#0284c7",
+          "#ffffff"
+        ],
+        "stadium": "Miramar"
+      },
+      {
+        "id": "bergantinos",
+        "name": "Bergantiños FC",
+        "short": "BER",
+        "budget": 490000,
+        "wageBudget": 7600,
+        "reputation": 49,
+        "overall": 59,
+        "colors": [
+          "#ef4444",
+          "#000000"
+        ],
+        "stadium": "As Eiroas"
+      },
+      {
+        "id": "coria",
+        "name": "CD Coria",
+        "short": "COR",
+        "budget": 460000,
+        "wageBudget": 7200,
+        "reputation": 48,
+        "overall": 59,
+        "colors": [
+          "#16a34a",
+          "#ffffff"
+        ],
+        "stadium": "La Isla"
+      }
+    ]
   }
 ]

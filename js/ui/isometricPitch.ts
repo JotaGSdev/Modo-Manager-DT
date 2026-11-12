@@ -107,6 +107,12 @@ export class IsometricPitch {
     scorerName?: string;
   }> = [];
 
+  // Colores calibrados con prevención de choques visuales
+  private homeKitColor = '#0088cc';
+  private homeAccentColor = '#ffffff';
+  private awayKitColor = '#cc2200';
+  private awayAccentColor = '#ffffff';
+
   constructor(
     canvas: HTMLCanvasElement,
     homeTeam: Team,
@@ -118,6 +124,24 @@ export class IsometricPitch {
     this.ctx = canvas.getContext('2d')!;
     this.homeTeam = homeTeam;
     this.awayTeam = awayTeam;
+
+    // Resolución de colores con prevención de choque de equipaciones (Kit Clash)
+    const h1 = (homeTeam.colors && homeTeam.colors[0]) || '#0088cc';
+    const h2 = (homeTeam.colors && homeTeam.colors[1]) || '#ffffff';
+    let a1 = (awayTeam.colors && awayTeam.colors[0]) || '#cc2200';
+    let a2 = (awayTeam.colors && awayTeam.colors[1]) || '#ffffff';
+
+    if (this.isColorClash(h1, a1)) {
+      a1 = (awayTeam.colors && awayTeam.colors[1] && !this.isColorClash(h1, awayTeam.colors[1]))
+        ? awayTeam.colors[1]
+        : '#facc15'; // Amarillo eléctrico alternativo para máximo contraste
+      a2 = '#0f172a';
+    }
+
+    this.homeKitColor = h1;
+    this.homeAccentColor = h2;
+    this.awayKitColor = a1;
+    this.awayAccentColor = a2;
 
     this.ball = {
       x: 50,
@@ -1015,16 +1039,31 @@ export class IsometricPitch {
     ctx.restore();
   }
 
+  private isColorClash(c1: string, c2: string): boolean {
+    const parse = (c: string) => {
+      let hex = c.replace('#', '');
+      if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+      const num = parseInt(hex, 16);
+      return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+    };
+    try {
+      const c1Arr = parse(c1);
+      const c2Arr = parse(c2);
+      const dist = Math.hypot((c1Arr[0] ?? 0) - (c2Arr[0] ?? 0), (c1Arr[1] ?? 0) - (c2Arr[1] ?? 0), (c1Arr[2] ?? 0) - (c2Arr[2] ?? 0));
+      return dist < 85;
+    } catch {
+      return false;
+    }
+  }
+
   /**
-   * Futbolista Chibi con Cursor de Control Activo estilo EA FC / FIFA
+   * Futbolista Chibi con Cursor de Control Activo y Halos de Contraste
    */
   private drawChibiPlayer(ctx: CanvasRenderingContext2D, p: ChibiPlayer): void {
     const pos = this.toScreen(p.x, p.y, p.z);
-    const teamColors = p.team === 'home'
-      ? (this.homeTeam.colors || ['#0088cc', '#ffffff'])
-      : (this.awayTeam.colors || ['#cc2200', '#ffffff']);
-    const kitColor = p.isGK ? '#facc15' : teamColors[0]!;
-    const shortsColor = p.isGK ? '#1e293b' : (teamColors[1] || '#ffffff');
+    const kitColor = p.isGK ? '#facc15' : (p.team === 'home' ? this.homeKitColor : this.awayKitColor);
+    const accentColor = p.isGK ? '#0f172a' : (p.team === 'home' ? this.homeAccentColor : this.awayAccentColor);
+    const shortsColor = p.isGK ? '#1e293b' : accentColor;
     const isCarrier = this.ball.holder?.id === p.id;
 
     ctx.save();
@@ -1033,8 +1072,15 @@ export class IsometricPitch {
     const shadowScale = Math.max(0.4, 1 - (p.z / 15));
     ctx.beginPath();
     ctx.ellipse(pos.px, pos.py + p.z + 2, 8 * shadowScale, 4 * shadowScale, 0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
     ctx.fill();
+
+    // ── HALO / ANILLO DE EQUIPO EN EL CÉSPED (Identificación instantánea sin fatiga visual) ──
+    ctx.beginPath();
+    ctx.ellipse(pos.px, pos.py + p.z + 2, 9 * shadowScale, 4.5 * shadowScale, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = p.team === 'home' ? 'rgba(0, 240, 255, 0.95)' : 'rgba(239, 68, 68, 0.95)';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
 
     // Animación de rebote o postura
     let bob = Math.sin(p.animStep) * 2.2;
@@ -1056,14 +1102,23 @@ export class IsometricPitch {
     ctx.fillRect(pos.px - 6 + (p.state === 'running' ? legSwing * 0.4 : 0), py - 2, 4.5, 3);
     ctx.fillRect(pos.px + 1.5 - (p.state === 'running' ? legSwing * 0.4 : 0), py - 2, 4.5, 3);
 
+    // Mangas contrastantes del uniforme
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(pos.px - 7.5, py - 18, 2, 7);
+    ctx.fillRect(pos.px + 5.5, py - 18, 2, 7);
+
     // Torso con camiseta del club
     ctx.fillStyle = kitColor;
     ctx.beginPath();
     ctx.roundRect(pos.px - 6, py - 18, 12, 12, 2.5);
     ctx.fill();
 
+    // Cuello de la camiseta
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(pos.px - 2.5, py - 18, 5, 2);
+
     // Dorsal
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = accentColor === '#ffffff' ? '#ffffff' : '#000000';
     ctx.font = 'bold 7px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(String(p.number), pos.px, py - 9);
