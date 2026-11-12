@@ -171,4 +171,4 @@ Financiado exclusivamente con presupuesto del club (`team.budget`). Otorga carta
 | **2026-11-11** | `1fdc223` | feat(sim): command center visual del DT, flujo de caja operativo (camisetas/médicos) en dashboard/finanzas y perla oculta de Ojeador del Barro en The Feed. |
 | **2026-11-11** | `b890892` | feat(responsive): soporte universal móvil y PC, viewport-fit, layout adaptativo sin scroll en PC y navegación táctil en celular. |
 | **2026-11-11** | `8b7b654` | fix(ui-mobile): rediseño del dashboard móvil con bottom nav estilo FIFA Mobile, header 48px y pestañas de Partido/Tabla/Feed. |
-| **2026-11-11** | `pending` | feat(leagues): 5ª división para Italia (ita_5), Alemania (ger_5) y Francia (fra_5), purga de emojis y filtro exclusivo de los 5 grandes de Europa. |
+| **2026-11-11** | `31e5f68` | feat(leagues): 5ª división para Italia (ita_5), Alemania (ger_5) y Francia (fra_5), purga de emojis y filtro exclusivo de los 5 grandes de Europa. |
