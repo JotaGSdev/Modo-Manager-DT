@@ -71,7 +71,7 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
   container.innerHTML = `
     <!-- 1. HERO COMMAND CENTER VISUAL DEL DT Y DEL CLUB -->
     <div class="glass-panel" style="padding: 14px 18px; margin-bottom: 14px; background: radial-gradient(circle at 80% 20%, rgba(0,200,133,0.12) 0%, rgba(11,20,16,0.92) 100%); border: 1px solid rgba(0, 200, 133, 0.3); border-radius: 12px; box-shadow: 0 10px 28px rgba(0,0,0,0.4);">
-      <div style="display: grid; grid-template-columns: 1.2fr 1.2fr 1.2fr; gap: 16px; align-items: center;">
+      <div class="dashboard-hero-deck">
         
         <!-- BLOQUE CLUB Y ESCUDO -->
         <div style="display: flex; align-items: center; gap: 14px;">
@@ -144,8 +144,8 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
       </div>
     </div>
 
-    <!-- 2. REJILLA TRI-COLUMNA EN 1 SOLA PANTALLA -->
-    <div style="display: grid; grid-template-columns: 1.1fr 1.1fr 0.8fr; gap: 14px; align-items: stretch;">
+    <!-- 2. REJILLA TRI-COLUMNA (DESKTOP) / PILA DINÁMICA (CELULAR) -->
+    <div class="dashboard-main-grid">
       
       <!-- Columna 1: Tarjeta de Partido -->
       <div class="card glass-panel" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">

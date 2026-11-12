@@ -155,11 +155,9 @@ body {
   width: 100%;
 }
 
-/* Móvil / ventanas estrechas (≤640px): la sidebar lateral fija de 240px
- * devora el ancho (deja ~120px de contenido a 360px) y todo lo que se
- * renderiza detrás de los modales desborda. Se convierte en una barra
- * superior horizontal con scroll propio, y el contenido pasa a ancho completo. */
-@media (max-width: 640px) {
+/* Móvil y tablets (≤768px): navegación táctil superior/horizontal con scroll propio,
+ * y ancho completo optimizado para pantallas táctiles */
+@media (max-width: 768px) {
   .main-wrapper {
     flex-direction: column;
   }
@@ -167,27 +165,156 @@ body {
     width: 100%;
     flex-direction: row;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     min-height: 0;
     padding: 8px 10px;
     gap: 6px;
+    position: sticky;
+    top: 56px;
+    z-index: 95;
+    background: #0d121c;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
   }
   .sidebar-nav::-webkit-scrollbar {
-    height: 4px;
+    height: 3px;
   }
   .nav-item {
     flex: 0 0 auto;
-    padding: 8px 12px;
+    padding: 8px 14px;
     font-size: 0.82rem;
     white-space: nowrap;
+    border-left: none !important;
+    border-bottom: 3px solid transparent;
+  }
+  .nav-item.active {
+    background: #192438;
+    color: #ffffff;
+    border-left: none !important;
+    border-bottom: 3px solid var(--accent-green) !important;
   }
   .main-content {
-    padding: 12px;
+    padding: 10px 12px;
   }
   .top-navbar {
-    padding: 10px 12px;
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 10px 14px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
     gap: 8px;
+  }
+  .manager-status-bar {
+    gap: 6px;
+    font-size: 0.78rem;
+  }
+  .status-pill {
+    padding: 5px 10px;
+    font-size: 0.76rem;
+  }
+}
+
+/* ============================================================================
+ * CLASES RESPONSIVAS COMPARTIDAS (PC vs CELULAR)
+ * ============================================================================ */
+
+/* Pantalla de Creación de Carrera: Zero Scroll en PC, Flujo Táctil en Celular */
+.career-screen-container {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 18px;
+  box-sizing: border-box;
+}
+
+.career-screen-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  max-width: 1080px;
+  width: 100%;
+  margin: 8px auto;
+}
+
+/* Pantalla de Bienvenida */
+.welcome-screen-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 32px;
+  box-sizing: border-box;
+}
+
+.welcome-cards-grid {
+  max-width: 1040px;
+  width: 100%;
+  margin: 32px auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+/* Dashboard: Centro de Mando Visual y Columnas */
+.dashboard-hero-deck {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 1.2fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 0.8fr;
+  gap: 14px;
+  align-items: stretch;
+}
+
+@media (max-width: 768px) {
+  .career-screen-container {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 10px !important;
+  }
+  .career-screen-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    min-height: auto !important;
+    margin: 8px auto !important;
+  }
+  .welcome-screen-container {
+    padding: 14px 12px !important;
+  }
+  .welcome-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    margin: 16px auto !important;
+  }
+  .dashboard-hero-deck {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .dashboard-hero-deck > div {
+    border-left: none !important;
+    border-right: none !important;
+    padding: 0 !important;
+  }
+  .dashboard-main-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
   }
 }
 

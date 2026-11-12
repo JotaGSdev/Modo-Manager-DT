@@ -135,7 +135,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
     const selectedFormation = ARCHETYPE_FORMATIONS[selectedArchetype] || '4-3-3';
 
     container.innerHTML = `
-      <div style="height: 100vh; max-height: 100vh; overflow: hidden; background: radial-gradient(circle at 50% 20%, #0d2218 0%, #06110c 50%, #020705 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 12px 18px; color: #f8fafc; font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box;">
+      <div class="career-screen-container" style="background: radial-gradient(circle at 50% 20%, #0d2218 0%, #06110c 50%, #020705 100%); color: #f8fafc; font-family: 'Inter', system-ui, sans-serif;">
         
         <!-- HEADER COMPACTO -->
         <header style="max-width: 1080px; width: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 8px;">
@@ -157,8 +157,8 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
           </button>
         </header>
 
-        <!-- FORMULARIO ULTRA-COMPACTO EN 2 COLUMNAS SIN SCROLL -->
-        <main style="max-width: 1080px; width: 100%; margin: 8px auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; flex: 1; min-height: 0;">
+        <!-- FORMULARIO: 2 COLUMNAS SIN SCROLL EN PC / FLUJO TÁCTIL EN CELULAR -->
+        <main class="career-screen-grid">
           
           <!-- COLUMNA 1: PERFIL, PAÍS, LIGA Y TÁCTICA -->
           <div class="glass-panel" style="background: rgba(11, 20, 16, 0.88); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;">

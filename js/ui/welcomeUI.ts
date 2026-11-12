@@ -23,7 +23,7 @@ export function renderWelcomeScreen(container: HTMLElement, callbacks: WelcomeCa
   const currentTeam = state ? db.teams[state.userTeamId] : null;
 
   container.innerHTML = `
-    <div style="min-height: 100vh; background: radial-gradient(circle at 50% 15%, #0f271d 0%, #07130e 45%, #030806 100%); display: flex; flex-direction: column; justify-content: space-between; padding: 24px 20px; color: #f8fafc; font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box;">
+    <div class="welcome-screen-container" style="background: radial-gradient(circle at 50% 15%, #0f271d 0%, #07130e 45%, #030806 100%); color: #f8fafc; font-family: 'Inter', system-ui, sans-serif;">
       
       <!-- HEADER CON MARCADOR Y BOTÓN DE AJUSTES EN ESQUINA DERECHA -->
       <header style="max-width: 1040px; width: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 16px;">
@@ -51,7 +51,7 @@ export function renderWelcomeScreen(container: HTMLElement, callbacks: WelcomeCa
       </header>
 
       <!-- CUERPO PRINCIPAL: CENTRO CON NUEVA CARRERA (IZQ) Y CONTINUAR (DER) -->
-      <main style="max-width: 1040px; width: 100%; margin: 32px auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; align-items: stretch;">
+      <main class="welcome-cards-grid">
         
         <!-- TARJETA IZQUIERDA: INICIAR NUEVA CARRERA -->
         <div class="glass-panel" style="background: rgba(13, 24, 19, 0.85); border: 1px solid rgba(0, 200, 133, 0.35); border-radius: 12px; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 32px rgba(0,0,0,0.45); position: relative; overflow: hidden;">
