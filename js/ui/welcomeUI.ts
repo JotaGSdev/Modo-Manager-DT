@@ -45,7 +45,7 @@ export function renderWelcomeScreen(container: HTMLElement, callbacks: WelcomeCa
         <div>
           <button id="btnHeaderSettings" class="btn-secondary" style="padding: 8px 16px; font-size: 0.82rem; font-weight: 700; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15);">
             <span>Ajustes & Nube</span>
-            <span style="font-size: 0.95rem;">⚙️</span>
+            <span style="font-size: 0.76rem; font-weight: 800; color: #38bdf8;">[CONFIG]</span>
           </button>
         </div>
       </header>
@@ -65,21 +65,21 @@ export function renderWelcomeScreen(container: HTMLElement, callbacks: WelcomeCa
               Iniciar Nueva Carrera
             </h2>
             <p style="font-size: 0.88rem; color: #94a3b8; line-height: 1.5; margin-bottom: 20px;">
-              Comienza tu trayectoria como director técnico novato de 35 años. Elige tu país de origen, selecciona la liga a dirigir y forja tu modelo táctico con un club asignado.
+              Comienza tu trayectoria como director técnico novato de 35 años en los 5 Grandes de Europa desde sus divisiones de base. Elige tu país de origen, la liga a dirigir y forja tu modelo táctico con un club asignado.
             </p>
 
             <div style="background: rgba(5, 12, 9, 0.7); border: 1px solid rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 8px; margin-bottom: 20px;">
-              <div style="font-size: 0.75rem; font-weight: 700; color: #f1f5f9; margin-bottom: 6px;">Ligas de Inicio Disponibles:</div>
+              <div style="font-size: 0.75rem; font-weight: 700; color: #f1f5f9; margin-bottom: 6px;">Ligas de Inicio Disponibles (5ª División):</div>
               <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.6;">
-                🏴󠁧󠁢󠁥󠁮󠁧󠁿 National League (5ª División) · 🇪🇸 Tercera RFEF (5ª División)<br>
-                🇮🇹 Serie B / Serie C · 🇩🇪 2. Bundesliga · 🇫🇷 Ligue 2
+                Inglaterra (National League - 5ª Div) · España (Tercera RFEF - 5ª Div)<br>
+                Italia (Eccellenza - 5ª Div) · Alemania (Oberliga - 5ª Div) · Francia (National 3 - 5ª Div)
               </div>
             </div>
           </div>
 
           <button id="btnWelcomeNewCareerPrime" class="btn-primary" style="width: 100%; padding: 14px; font-size: 0.95rem; font-weight: 900; letter-spacing: 0.5px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
             <span>INICIAR NUEVA CARRERA</span>
-            <span style="font-size: 1.1rem;">+</span>
+            <span style="font-size: 1.1rem; font-weight: 900;">&rarr;</span>
           </button>
         </div>
 

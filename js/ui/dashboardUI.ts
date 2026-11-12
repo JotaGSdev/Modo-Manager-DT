@@ -146,9 +146,9 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
 
     <!-- SELECTOR DE PESTAÑAS MÓVIL DEL DASHBOARD (SOLO CELULARES) -->
     <div class="dashboard-mobile-tabs" id="dashMobileTabs">
-      <button class="dash-m-tab active" data-tab="match">⚽ Próximo Partido</button>
-      <button class="dash-m-tab" data-tab="table">🏆 Clasificación</button>
-      <button class="dash-m-tab" data-tab="feed">📰 Noticias & Goles</button>
+      <button class="dash-m-tab active" data-tab="match">[PRÓXIMO PARTIDO]</button>
+      <button class="dash-m-tab" data-tab="table">[CLASIFICACIÓN]</button>
+      <button class="dash-m-tab" data-tab="feed">[NOTICIAS & GOLES]</button>
     </div>
 
     <!-- 2. REJILLA TRI-COLUMNA (DESKTOP) / PILA DINÁMICA (CELULAR) -->

@@ -7770,5 +7770,455 @@
         "stadium": "La Isla"
       }
     ]
+  },
+  {
+    "id": "ita_5",
+    "name": "Eccellenza (5ª División)",
+    "country": "Italia",
+    "region": "Europa",
+    "tier": 5,
+    "reputation": 51,
+    "teams": [
+      {
+        "id": "siena",
+        "name": "Siena FC",
+        "short": "SIE",
+        "budget": 700000,
+        "wageBudget": 10000,
+        "reputation": 55,
+        "overall": 63,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Artemio Franchi"
+      },
+      {
+        "id": "pistoiese",
+        "name": "US Pistoiese",
+        "short": "PIS",
+        "budget": 650000,
+        "wageBudget": 9500,
+        "reputation": 54,
+        "overall": 62,
+        "colors": [
+          "#ea580c",
+          "#000000"
+        ],
+        "stadium": "Marcello Melani"
+      },
+      {
+        "id": "sanremese",
+        "name": "Sanremese Calcio",
+        "short": "SAN",
+        "budget": 520000,
+        "wageBudget": 8000,
+        "reputation": 51,
+        "overall": 61,
+        "colors": [
+          "#0284c7",
+          "#ffffff"
+        ],
+        "stadium": "Comunale di Sanremo"
+      },
+      {
+        "id": "legnano",
+        "name": "AC Legnano",
+        "short": "LEG",
+        "budget": 550000,
+        "wageBudget": 8500,
+        "reputation": 52,
+        "overall": 61,
+        "colors": [
+          "#991b1b",
+          "#ffffff"
+        ],
+        "stadium": "Giovanni Mari"
+      },
+      {
+        "id": "fanfulla",
+        "name": "ASD Fanfulla",
+        "short": "FAN",
+        "budget": 480000,
+        "wageBudget": 7500,
+        "reputation": 49,
+        "overall": 60,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Dossenina"
+      },
+      {
+        "id": "chieri",
+        "name": "ASD Chieri",
+        "short": "CHI",
+        "budget": 500000,
+        "wageBudget": 7800,
+        "reputation": 50,
+        "overall": 60,
+        "colors": [
+          "#1e3a8a",
+          "#38bdf8"
+        ],
+        "stadium": "Piero De Paoli"
+      },
+      {
+        "id": "varesina",
+        "name": "Varesina Sport",
+        "short": "VAR",
+        "budget": 530000,
+        "wageBudget": 8200,
+        "reputation": 51,
+        "overall": 61,
+        "colors": [
+          "#dc2626",
+          "#1e3a8a"
+        ],
+        "stadium": "Comunale di Venegono"
+      },
+      {
+        "id": "barletta",
+        "name": "Barletta 1922",
+        "short": "BAR",
+        "budget": 600000,
+        "wageBudget": 9000,
+        "reputation": 53,
+        "overall": 62,
+        "colors": [
+          "#dc2626",
+          "#ffffff"
+        ],
+        "stadium": "Cosimo Puttilli"
+      },
+      {
+        "id": "akragas",
+        "name": "Akragas 2018",
+        "short": "AKR",
+        "budget": 470000,
+        "wageBudget": 7200,
+        "reputation": 48,
+        "overall": 59,
+        "colors": [
+          "#ffffff",
+          "#0284c7"
+        ],
+        "stadium": "Esseneto"
+      },
+      {
+        "id": "acireale",
+        "name": "Città di Acireale",
+        "short": "ACI",
+        "budget": 490000,
+        "wageBudget": 7600,
+        "reputation": 49,
+        "overall": 60,
+        "colors": [
+          "#991b1b",
+          "#ffffff"
+        ],
+        "stadium": "Aci e Galatea"
+      }
+    ]
+  },
+  {
+    "id": "ger_5",
+    "name": "Oberliga (5ª División)",
+    "country": "Alemania",
+    "region": "Europa",
+    "tier": 5,
+    "reputation": 51,
+    "teams": [
+      {
+        "id": "tebe_berlin",
+        "name": "Tennis Borussia Berlin",
+        "short": "TeBe",
+        "budget": 680000,
+        "wageBudget": 10200,
+        "reputation": 54,
+        "overall": 63,
+        "colors": [
+          "#7c3aed",
+          "#ffffff"
+        ],
+        "stadium": "Mommsenstadion"
+      },
+      {
+        "id": "altona93",
+        "name": "Altona 93",
+        "short": "ALT",
+        "budget": 620000,
+        "wageBudget": 9400,
+        "reputation": 53,
+        "overall": 62,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Adolf-Jäger-Kampfbahn"
+      },
+      {
+        "id": "kfc_uerdingen",
+        "name": "KFC Uerdingen 05",
+        "short": "KFC",
+        "budget": 720000,
+        "wageBudget": 11000,
+        "reputation": 56,
+        "overall": 63,
+        "colors": [
+          "#1e3a8a",
+          "#dc2626"
+        ],
+        "stadium": "Grotenburg-Stadion"
+      },
+      {
+        "id": "wormatia",
+        "name": "Wormatia Worms",
+        "short": "WOR",
+        "budget": 580000,
+        "wageBudget": 8800,
+        "reputation": 52,
+        "overall": 61,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "EWR-Arena"
+      },
+      {
+        "id": "eintracht_trier",
+        "name": "SV Eintracht Trier",
+        "short": "TRI",
+        "budget": 650000,
+        "wageBudget": 9800,
+        "reputation": 54,
+        "overall": 62,
+        "colors": [
+          "#1e3a8a",
+          "#000000"
+        ],
+        "stadium": "Moselstadion"
+      },
+      {
+        "id": "reutlingen",
+        "name": "SSV Reutlingen 05",
+        "short": "REU",
+        "budget": 560000,
+        "wageBudget": 8600,
+        "reputation": 51,
+        "overall": 61,
+        "colors": [
+          "#ffffff",
+          "#000000"
+        ],
+        "stadium": "Kreuzeiche"
+      },
+      {
+        "id": "tus_koblenz",
+        "name": "TuS Koblenz",
+        "short": "KOB",
+        "budget": 590000,
+        "wageBudget": 9000,
+        "reputation": 52,
+        "overall": 61,
+        "colors": [
+          "#1d4ed8",
+          "#ffffff"
+        ],
+        "stadium": "Stadion Oberwerth"
+      },
+      {
+        "id": "preussen_berlin",
+        "name": "BFC Preussen",
+        "short": "PRE",
+        "budget": 500000,
+        "wageBudget": 7800,
+        "reputation": 50,
+        "overall": 60,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Preussenstadion"
+      },
+      {
+        "id": "ratingen",
+        "name": "Ratingen 04/19",
+        "short": "RAT",
+        "budget": 480000,
+        "wageBudget": 7400,
+        "reputation": 49,
+        "overall": 60,
+        "colors": [
+          "#ea580c",
+          "#1e3a8a"
+        ],
+        "stadium": "Stadionring"
+      },
+      {
+        "id": "bayreuth_ii",
+        "name": "SpVgg Bayreuth II",
+        "short": "BAY",
+        "budget": 450000,
+        "wageBudget": 7000,
+        "reputation": 48,
+        "overall": 59,
+        "colors": [
+          "#f59e0b",
+          "#000000"
+        ],
+        "stadium": "Hans-Walter-Wild"
+      }
+    ]
+  },
+  {
+    "id": "fra_5",
+    "name": "National 3 (5ª División)",
+    "country": "Francia",
+    "region": "Europa",
+    "tier": 5,
+    "reputation": 50,
+    "teams": [
+      {
+        "id": "as_cannes",
+        "name": "AS Cannes",
+        "short": "CAN",
+        "budget": 750000,
+        "wageBudget": 11500,
+        "reputation": 56,
+        "overall": 64,
+        "colors": [
+          "#dc2626",
+          "#ffffff"
+        ],
+        "stadium": "Pierre-de-Coubertin"
+      },
+      {
+        "id": "racing_cff",
+        "name": "Racing Club de France",
+        "short": "RCF",
+        "budget": 680000,
+        "wageBudget": 10200,
+        "reputation": 54,
+        "overall": 63,
+        "colors": [
+          "#0284c7",
+          "#ffffff"
+        ],
+        "stadium": "Yves-du-Manoir"
+      },
+      {
+        "id": "tours_fc",
+        "name": "Tours FC",
+        "short": "TOU",
+        "budget": 640000,
+        "wageBudget": 9600,
+        "reputation": 53,
+        "overall": 62,
+        "colors": [
+          "#1d4ed8",
+          "#ffffff"
+        ],
+        "stadium": "Vallée du Cher"
+      },
+      {
+        "id": "fc_sete",
+        "name": "FC Sète 34",
+        "short": "SET",
+        "budget": 580000,
+        "wageBudget": 8800,
+        "reputation": 52,
+        "overall": 61,
+        "colors": [
+          "#16a34a",
+          "#ffffff"
+        ],
+        "stadium": "Louis-Michel"
+      },
+      {
+        "id": "gazelec",
+        "name": "Gazélec Ajaccio",
+        "short": "GFCA",
+        "budget": 620000,
+        "wageBudget": 9400,
+        "reputation": 53,
+        "overall": 62,
+        "colors": [
+          "#dc2626",
+          "#1d4ed8"
+        ],
+        "stadium": "Ange-Casanova"
+      },
+      {
+        "id": "beauvais",
+        "name": "AS Beauvais Oise",
+        "short": "BEA",
+        "budget": 540000,
+        "wageBudget": 8200,
+        "reputation": 51,
+        "overall": 61,
+        "colors": [
+          "#dc2626",
+          "#ffffff"
+        ],
+        "stadium": "Pierre-Brisson"
+      },
+      {
+        "id": "calais",
+        "name": "Calais Beau Marais",
+        "short": "CAL",
+        "budget": 490000,
+        "wageBudget": 7600,
+        "reputation": 49,
+        "overall": 60,
+        "colors": [
+          "#000000",
+          "#dc2626"
+        ],
+        "stadium": "Épopée"
+      },
+      {
+        "id": "vannes_oc",
+        "name": "Vannes OC",
+        "short": "VAN",
+        "budget": 520000,
+        "wageBudget": 8000,
+        "reputation": 50,
+        "overall": 60,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "La Rabine"
+      },
+      {
+        "id": "poitiers",
+        "name": "Stade Poitevin FC",
+        "short": "POI",
+        "budget": 480000,
+        "wageBudget": 7400,
+        "reputation": 49,
+        "overall": 60,
+        "colors": [
+          "#000000",
+          "#ffffff"
+        ],
+        "stadium": "Michel-Amand"
+      },
+      {
+        "id": "libourne",
+        "name": "FC Libourne",
+        "short": "LIB",
+        "budget": 510000,
+        "wageBudget": 7800,
+        "reputation": 50,
+        "overall": 60,
+        "colors": [
+          "#1d4ed8",
+          "#ffffff"
+        ],
+        "stadium": "Jean-Antoine-Moueix"
+      }
+    ]
   }
 ]

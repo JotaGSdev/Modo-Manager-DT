@@ -54,6 +54,11 @@ export const LEAGUE_CHAMPION_PRIZE_EUR: Record<string, number> = {
   ita_2: 2_000_000,  // Serie B
   ger_2: 2_000_000,  // 2. Bundesliga
   fra_2: 1_500_000,  // Ligue 2
+  eng_5: 350_000,    // National League (5ª Div)
+  esp_5: 250_000,    // Tercera RFEF (5ª Div)
+  ita_5: 250_000,    // Eccellenza (5ª Div)
+  ger_5: 250_000,    // Oberliga (5ª Div)
+  fra_5: 250_000,    // National 3 (5ª Div)
 
   // ── Norte y Centroamérica ──────────────────────────────────────────────
   mex_1: 2_800_000,  // Liga MX ~$3M

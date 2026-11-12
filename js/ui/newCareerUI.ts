@@ -50,15 +50,13 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
   // Países disponibles para nacionalidad del DT (todo el mundo sin textos extra)
   const allCountries = Array.from(new Set(db.leagues.map(l => l.country))).sort();
 
-  // Países de ligas disponibles para dirigir
+  // Los 5 Grandes de Europa (Todos con 5ª división base para inicio de carrera)
   const LEAGUE_COUNTRIES = [
-    { name: 'Inglaterra', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra (National League - 5ª Div)' },
-    { name: 'España', label: '🇪🇸 España (Tercera RFEF - 5ª Div)' },
-    { name: 'Italia', label: '🇮🇹 Italia (Serie B)' },
-    { name: 'Alemania', label: '🇩🇪 Alemania (2. Bundesliga)' },
-    { name: 'Francia', label: '🇫🇷 Francia (Ligue 2)' },
-    { name: 'Argentina', label: '🇦🇷 Argentina (Liga Profesional)' },
-    { name: 'Perú', label: '🇵🇪 Perú (Liga 1)' }
+    { name: 'Inglaterra', label: 'Inglaterra (National League - 5ª Div)' },
+    { name: 'España', label: 'España (Tercera RFEF - 5ª Div)' },
+    { name: 'Italia', label: 'Italia (Eccellenza - 5ª Div)' },
+    { name: 'Alemania', label: 'Alemania (Oberliga - 5ª Div)' },
+    { name: 'Francia', label: 'Francia (National 3 - 5ª Div)' }
   ];
 
   /**
@@ -253,7 +251,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
                   3. Club Asignado
                 </span>
                 <button id="btnRerollClub" class="btn-secondary" style="padding: 4px 8px; font-size: 0.7rem; font-weight: 800; border-radius: 5px; cursor: pointer; color: #38bdf8; display: flex; align-items: center; gap: 4px;">
-                  <span>🎲 Sortear Otro Club</span>
+                  <span>[SORTEAR OTRO CLUB]</span>
                 </button>
               </div>
 
@@ -305,7 +303,7 @@ export function renderNewCareer(container: HTMLElement, onCareerStarted: () => v
             <!-- BOTÓN DE INICIO -->
             <button id="btnSignContract" class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.92rem; font-weight: 900; letter-spacing: 0.5px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
               <span>FIRMAR CONTRATO Y COMENZAR</span>
-              <span>✍️</span>
+              <span style="font-size: 1.1rem; font-weight: 900;">&rarr;</span>
             </button>
           </div>
 
