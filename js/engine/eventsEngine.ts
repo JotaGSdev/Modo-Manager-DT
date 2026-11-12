@@ -187,6 +187,15 @@ export class EventsEngine {
         description: `Tu máximo goleador exige ser el mejor pagado de la plantilla. Su representante amenza con activar cláusulas de rescisión si no hay acuerdo en 2 semanas.`,
         optionA: { label: 'Acceder y renovarle (€50K/sem extra) (+8 Moral del jugador, -Team Spirit resto)', bonusType: 'morale', bonusVal: 8, cost: 50000 },
         optionB: { label: 'Mantener firmeza y demostrar que nadie está por encima del equipo (+5 Confianza Directiva)', bonusType: 'board', bonusVal: 5 }
+      },
+
+      // OJEADOR DEL BARRO — Oportunidad de oro en categorías base (v3.14)
+      {
+        category: 'MERCADO',
+        title: 'OJEADOR DEL BARRO: JOYA OCULTA DETECTADA',
+        description: `Nuestro scout de categorías inferiores ha descubierto a una perla de 17 años en campos de tierra con condiciones físicas y técnicas sorprendentes. El informe lo califica con potencial de primera división.`,
+        optionA: { label: 'Firmar contrato formativo (€25K) (+12% Proyección de Cantera)', bonusType: 'tactical', bonusVal: 12, cost: 25000 },
+        optionB: { label: 'Incorporarlo a pruebas sin costo inicial (+4% Confianza Directiva)', bonusType: 'board', bonusVal: 4 }
       }
     ];
 
@@ -332,7 +341,9 @@ export class EventsEngine {
       OFERTA_DT_JUGADOR:   '[OFERTA]',
       AGENTE_EXIGE:        '[AGENTE]',
       RIVAL_SONDEA:        '[SONDEO]',
-      DESCONTENTO:         '[ALERTA]'
+      DESCONTENTO:         '[ALERTA]',
+      OJEADOR_BARRO:       '[OJEADOR]',
+      VENTA_CAMISETA:      '[MARKETING]'
     };
 
     const feedItem: FeedItem = {

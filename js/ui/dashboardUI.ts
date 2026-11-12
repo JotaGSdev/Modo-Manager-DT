@@ -57,31 +57,90 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
   if (userTeam.region === 'Europa') contCupName = 'UEFA Champions League';
   else if (userTeam.region === 'Norteamérica') contCupName = 'Concacaf Champions Cup';
 
+  // Jugador clave mediático (tipo Lamine Yamal) para venta de camisetas
+  const starPlayer = [...squad].sort((a, b) => {
+    const aStar = (a.isWonderkid ? 25 : 0) + (a.formStreak === 'hot' ? 12 : 0) + a.overall;
+    const bStar = (b.isWonderkid ? 25 : 0) + (b.formStreak === 'hot' ? 12 : 0) + b.overall;
+    return bStar - aStar;
+  })[0] || squad[0];
+
+  const weeklyShirtRevenue = starPlayer ? Math.round((starPlayer.overall * 115 + (starPlayer.isWonderkid ? 4800 : 1200))) : 2500;
+  const weeklyPhysicalCost = 4200;
+  const currentArchName = (gameState.managerArchetype || 'TIKI_TAKA').replace('_', ' ');
+
   container.innerHTML = `
-    <!-- 1. BANDA SUPERIOR DE KPIs DEL CLUB -->
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px;">
-      <div class="glass-panel text-center" style="padding: 10px 12px;">
-        <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">PJ TEMPORADA</span>
-        <h4 style="margin: 2px 0 0 0; font-size: 1.25rem; color: var(--accent-green);">${userStanding ? userStanding.played : 0} PJ</h4>
-        <span class="text-sub" style="font-size: 0.72rem;">Jornada ${gameState.week}/${gameState.maxWeeks}</span>
-      </div>
+    <!-- 1. HERO COMMAND CENTER VISUAL DEL DT Y DEL CLUB -->
+    <div class="glass-panel" style="padding: 14px 18px; margin-bottom: 14px; background: radial-gradient(circle at 80% 20%, rgba(0,200,133,0.12) 0%, rgba(11,20,16,0.92) 100%); border: 1px solid rgba(0, 200, 133, 0.3); border-radius: 12px; box-shadow: 0 10px 28px rgba(0,0,0,0.4);">
+      <div style="display: grid; grid-template-columns: 1.2fr 1.2fr 1.2fr; gap: 16px; align-items: center;">
+        
+        <!-- BLOQUE CLUB Y ESCUDO -->
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 58px; height: 58px; background: #0c1813; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+            ${renderTeamBadgeSVG(userTeam, 46)}
+          </div>
+          <div>
+            <div style="font-size: 0.68rem; color: #38bdf8; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+              ${league.name}
+            </div>
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.45rem; font-weight: 900; margin: 0; color: #ffffff; line-height: 1.1;">
+              ${userTeam.name}
+            </h2>
+            <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 3px; display: flex; align-items: center; gap: 8px;">
+              <span>OVR: <strong style="color: #00c885;">${userTeam.overall}</strong></span>
+              <span>·</span>
+              <span>Posición: <strong style="color: #f59e0b;">${userPosLabel}</strong></span>
+            </div>
+          </div>
+        </div>
 
-      <div class="glass-panel text-center" style="padding: 10px 12px;">
-        <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">MÁXIMO GOLEADOR</span>
-        <h4 style="margin: 2px 0 0 0; font-size: 1.05rem; color: #ffffff; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${topClubScorer.name}</h4>
-        <span class="stat-ovr mt-1" style="font-size: 0.72rem; padding: 2px 6px;">${topClubScorer.seasonGoals || 0} Goles</span>
-      </div>
+        <!-- BLOQUE PERFIL DEL ENTRENADOR & RPG -->
+        <div style="border-left: 1px solid rgba(255,255,255,0.08); border-right: 1px solid rgba(255,255,255,0.08); padding: 0 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-size: 0.68rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">DIRECTOR TÉCNICO</span>
+            <span class="badge" style="font-size: 0.65rem; background: rgba(0,200,133,0.15); color: #00c885; font-weight: 800; border-radius: 4px; padding: 2px 6px;">
+              [${currentArchName}]
+            </span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 900; margin: 0; color: #ffffff;">
+              ${gameState.managerName || 'Entrenador'}
+            </h3>
+            <span style="font-size: 0.72rem; color: #94a3b8;">(${gameState.managerAge || 35} años)</span>
+          </div>
+          
+          <!-- BARRA DE NIVEL RPG -->
+          <div style="margin-top: 6px; cursor: pointer;" id="kpiManagerLevel" title="Haz clic para ver el Árbol de Talentos">
+            <div style="display: flex; justify-content: space-between; font-size: 0.68rem; font-weight: 800; margin-bottom: 2px;">
+              <span style="color: var(--accent-gold);">Nivel ${rpg.level}</span>
+              <span style="color: #38bdf8;">${rpg.talentPoints > 0 ? `+${rpg.talentPoints} pts listos` : 'EXP: Al día'}</span>
+            </div>
+            <div style="width: 100%; height: 5px; background: rgba(0,0,0,0.5); border-radius: 3px; overflow: hidden;">
+              <div style="width: ${Math.min(100, (rpg.xp % 100)) || 45}%; height: 100%; background: linear-gradient(90deg, #f59e0b, #00c885); border-radius: 3px;"></div>
+            </div>
+          </div>
+        </div>
 
-      <div class="glass-panel text-center" style="padding: 10px 12px;">
-        <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">LÍDER ASISTENCIAS</span>
-        <h4 style="margin: 2px 0 0 0; font-size: 1.05rem; color: #ffffff; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${topClubAssister.name}</h4>
-        <span class="text-highlight mt-1" style="font-size: 0.75rem;">${Math.floor((topClubAssister.overall - 65) / 4) + 1} Asistencias</span>
-      </div>
+        <!-- BLOQUE CASH FLOW OPERATIVO & MARKETING -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-size: 0.68rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">BALANCE OPERATIVO</span>
+            <span style="font-size: 0.7rem; font-weight: 900; color: #38bdf8;">
+              €${((userTeam.budget || 0) / 1000000).toFixed(2)}M
+            </span>
+          </div>
+          
+          <div style="background: rgba(5,12,9,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 6px 10px; font-size: 0.7rem; display: flex; flex-direction: column; gap: 3px;">
+            <div style="display: flex; justify-content: space-between; color: #cbd5e1;">
+              <span>Venta Camisetas (${starPlayer ? starPlayer.name.slice(0, 10) : 'Club'}):</span>
+              <strong style="color: #00c885;">+€${weeklyShirtRevenue.toLocaleString()}/sem</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; color: #cbd5e1;">
+              <span>Preparadores Físicos:</span>
+              <strong style="color: #ef4444;">-€${weeklyPhysicalCost.toLocaleString()}/sem</strong>
+            </div>
+          </div>
+        </div>
 
-      <div class="glass-panel text-center" style="padding: 10px 12px; cursor: pointer;" id="kpiManagerLevel" title="Haz clic para ver el Árbol de Talentos">
-        <span class="text-sub" style="font-size: 0.75rem; font-weight: 800;">NIVEL DE DT</span>
-        <h4 style="margin: 2px 0 0 0; font-size: 1.05rem; color: var(--accent-gold); font-weight: 900;">Nivel ${rpg.level}</h4>
-        <span class="text-highlight" style="font-size: 0.72rem;">${rpg.talentPoints > 0 ? `[!] ${rpg.talentPoints} pts listos` : `(${userPosLabel})`}</span>
       </div>
     </div>
 
@@ -120,6 +179,12 @@ export function renderDashboard(container: HTMLElement, navigateTo: NavigateFn):
             <h4 style="font-size: 0.95rem; margin-top: 4px;">${nextRival.name}</h4>
             <span class="team-ovr text-sub" style="font-size: 0.78rem;">OVR: ${nextRival.overall}</span>
           </div>
+        </div>
+
+        <!-- MÁXIMO GOLEADOR Y ASISTENTE DEL CLUB -->
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; padding: 5px 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 6px;">
+          <span style="color: #94a3b8;">Goleador: <strong style="color: #00c885;">${topClubScorer.name}</strong> (${topClubScorer.seasonGoals || 0}G)</span>
+          <span style="color: #94a3b8;">Asistencias: <strong style="color: #38bdf8;">${topClubAssister.name}</strong></span>
         </div>
 
         <!-- ENFOQUE DE ENTRENAMIENTO SEMANAL -->

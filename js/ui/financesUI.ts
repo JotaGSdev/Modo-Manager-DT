@@ -52,13 +52,25 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
   // Cálculo de Nómina Semanal Total
   const totalWeeklyWage = squad.reduce((sum, p) => sum + (p.salary || 5000), 0);
 
+  // Jugador clave mediático (tipo Lamine Yamal) para venta de camisetas e impacto comercial
+  const starPlayer = [...squad].sort((a, b) => {
+    const aStar = (a.isWonderkid ? 25 : 0) + (a.formStreak === 'hot' ? 12 : 0) + a.overall;
+    const bStar = (b.isWonderkid ? 25 : 0) + (b.formStreak === 'hot' ? 12 : 0) + b.overall;
+    return bStar - aStar;
+  })[0] || squad[0];
+
+  const weeklyShirtRevenue = starPlayer ? Math.round((starPlayer.overall * 115 + (starPlayer.isWonderkid ? 4800 : 1200))) : 2500;
+  const totalShirtRevenue = weeklyShirtRevenue * Math.max(1, gameState.week);
+  const weeklyPhysicalCost = 4200;
+  const totalPhysicalCost = weeklyPhysicalCost * Math.max(1, gameState.week);
+
   // Proyección de gastos salariales hasta final de temporada (38 semanas)
   const remainingWeeks = Math.max(1, gameState.maxWeeks - gameState.week);
   const projectedWageExpenses = totalWeeklyWage * remainingWeeks;
 
-  // Totales acumulados
-  const totalIncome = (finances.ticketRevenue || 0) + (finances.playerSales || 0) + (finances.leaguePrize || 0);
-  const totalExpenses = (finances.weeklyWageTotal || 0) + (finances.playerPurchases || 0);
+  // Totales acumulados con flujo operativo
+  const totalIncome = (finances.ticketRevenue || 0) + (finances.playerSales || 0) + (finances.leaguePrize || 0) + totalShirtRevenue;
+  const totalExpenses = (finances.weeklyWageTotal || 0) + (finances.playerPurchases || 0) + totalPhysicalCost;
   const netBalance = totalIncome - totalExpenses;
 
   // Estimación del premio por posición actual (v3.9: realista por liga —
@@ -165,6 +177,11 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
             </div>
 
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+              <span>Venta Camisetas (${starPlayer ? starPlayer.name.slice(0, 12) : 'Plantilla'}):</span>
+              <strong style="color: var(--accent-green);">+€${(totalShirtRevenue / 1000).toFixed(0)}K <span style="font-size:0.75rem; color:#94a3b8;">(+€${weeklyShirtRevenue.toLocaleString()}/sem)</span></strong>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
               <span>Ventas de Futbolistas:</span>
               <strong style="color: var(--accent-green);">+€${((finances.playerSales || 0) / 1000000).toFixed(2)}M</strong>
             </div>
@@ -189,6 +206,11 @@ export function renderFinances(container: HTMLElement, navigateTo: NavigateFn): 
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
               <span>Nómina Salarial Acumulada:</span>
               <strong style="color: var(--accent-red);">-€${((finances.weeklyWageTotal || 0) / 1000000).toFixed(2)}M</strong>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+              <span>Staff Físico & Fisioterapia:</span>
+              <strong style="color: var(--accent-red);">-€${(totalPhysicalCost / 1000).toFixed(0)}K <span style="font-size:0.75rem; color:#94a3b8;">(-€${weeklyPhysicalCost.toLocaleString()}/sem)</span></strong>
             </div>
 
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
