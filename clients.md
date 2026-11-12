@@ -13,11 +13,11 @@ Desarrollar un simulador de gestión técnica y deportiva de fútbol enfocado en
 ### Pilares Fundamentales
 1. **Inicio en el Fútbol de Barro ("Road to Glory")**: El jugador no inicia en un gigante europeo; comienza obligatoriamente en las divisiones más bajas del escalafón futbolístico para ascender paso a paso.
 2. **Los 5 Pilares Europeos (Pirámide de Ascenso)**:
-   - 🏴󠁧󠁢󠁥󠁮󠁧󠁿 **Inglaterra**: 5ª División (National League) ➔ League Two ➔ League One ➔ Championship ➔ Premier League.
-   - 🇪🇸 **España**: Segunda / Tercera Federación (RFEF) ➔ Primera Federación ➔ LaLiga Hypermotion ➔ LaLiga EA Sports.
-   - 🇮🇹 **Italia**: Serie C ➔ Serie B ➔ Serie A.
-   - 🇩🇪 **Alemania**: 3. Liga / Regionalliga ➔ 2. Bundesliga ➔ Bundesliga.
-   - 🇫🇷 **Francia**: Championnat National ➔ Ligue 2 ➔ Ligue 1.
+   - **Inglaterra**: 5ª División (National League) ➔ League Two ➔ League One ➔ Championship ➔ Premier League.
+   - **España**: 5ª División (Tercera Federación RFEF) ➔ Segunda Federación ➔ Primera Federación ➔ LaLiga Hypermotion ➔ LaLiga EA Sports.
+   - **Italia**: 5ª División (Eccellenza) ➔ Serie D ➔ Serie C ➔ Serie B ➔ Serie A.
+   - **Alemania**: 5ª División (Oberliga) ➔ Regionalliga ➔ 3. Liga ➔ 2. Bundesliga ➔ Bundesliga.
+   - **Francia**: 5ª División (National 3) ➔ National 2 ➔ Championnat National ➔ Ligue 2 ➔ Ligue 1.
 3. **Restricciones Realistas de Reputación y Fichajes**:
    - Un club de 5ª división no puede tentar ni fichar promesas de potencial 90 ni estrellas mundiales (OVR 80+).
    - El mercado impone un techo estricto por reputación de club y categoría.
